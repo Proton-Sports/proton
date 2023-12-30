@@ -1,0 +1,15 @@
+bin/
+obj/
+data/
+modules/
+resources/*
+!resources/proton-client/resource.toml
+!resources/proton-server/resource.toml
+server.log
+altv-crash-handler
+altv-server
+altv-voice-server
+AltV.Net.Host.dll
+AltV.Net.Host.runtimeconfig.json
+.server-crashes-cache/
+cache/
