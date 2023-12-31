@@ -8,4 +8,6 @@ public sealed class PersistenceOptions
 
     [Required]
     public required string ConnectionString { get; set; }
+    [Required]
+    public required string MigrationsAssemblyName { get; set; }
 }
