@@ -13,3 +13,5 @@ AltV.Net.Host.dll
 AltV.Net.Host.runtimeconfig.json
 .server-crashes-cache/
 cache/
+.vs/
+update.json
