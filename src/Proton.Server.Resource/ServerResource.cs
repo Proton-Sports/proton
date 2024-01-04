@@ -2,6 +2,7 @@ using System.Reflection;
 using AltV.Net.Async;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Proton.Shared.Interfaces;
 
 namespace Proton.Server.Resource;
 
@@ -23,7 +24,11 @@ public sealed class ServerResource : AsyncResource
             .BuildServiceProvider();
     }
 
-    public override void OnStart() { }
+    public override void OnStart()
+    {
+        // TODO: Add logging for startup
+        serviceProvider.GetServices<IStartup>();
+    }
 
     public override void OnStop() { }
 }
