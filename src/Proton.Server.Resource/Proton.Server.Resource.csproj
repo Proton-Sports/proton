@@ -18,6 +18,7 @@
     <PackageReference Include="AltV.Net" />
     <PackageReference Include="AltV.Net.Async" />
     <PackageReference Include="BCrypt.Net-Next" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" />
   </ItemGroup>
 
   <ItemGroup>
