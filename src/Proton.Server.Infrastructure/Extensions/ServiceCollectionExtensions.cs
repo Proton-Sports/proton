@@ -36,7 +36,8 @@ public static class ServiceCollectionExtensions
 #else
             .EnableThreadSafetyChecks(false)
 #endif
-            .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
+            .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking)
+            .UseModel(Proton.Server.Infrastructure.Persistence.CompiledModels.DefaultDbContextModel.Instance);
         });
         serviceCollection.AddSingleton<IDbContextFactory, DefaultDbContextFactory>();
         return serviceCollection;
