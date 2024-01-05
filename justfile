@@ -19,6 +19,18 @@ publish-server:
 publish-client:
     dotnet publish ./src/Proton.Client.Resource/Proton.Client.Resource.csproj
 
+ef +args:
+    dotnet ef {{args}} --project src/Proton.Server.Resource
+
+migrations +args:
+    just ef migrations {{args}}
+
+db +args:
+    just ef db {{args}}
+
+optimize:
+    just ef dbcontext optimize -n Proton.Server.Infrastructure.Persistence.CompiledModels -o ../Proton.Server.Infrastructure/Persistence/CompiledModels
+
 update: update-server update-modules update-data
 
 update-server:
