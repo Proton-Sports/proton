@@ -1,0 +1,3 @@
+[submodule "src-webview"]
+	path = src-webview
+	url = git@github.com:Proton-Sports/proton-webview
