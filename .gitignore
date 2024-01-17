@@ -3,6 +3,10 @@ obj/
 data/
 modules/
 resources/*
+!resources/proton-client
+!resources/proton-server
+resources/proton-client/*
+resources/proton-server/*
 !resources/proton-client/resource.toml
 !resources/proton-server/resource.toml
 server.log
