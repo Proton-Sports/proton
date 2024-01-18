@@ -23,6 +23,89 @@ namespace Proton.Server.Resource.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("Proton.Server.Core.Models.RaceMap", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("RaceMaps");
+                });
+
+            modelBuilder.Entity("Proton.Server.Core.Models.RacePoint", b =>
+                {
+                    b.Property<long>("MapId")
+                        .HasColumnType("bigint");
+
+                    b.Property<int>("Index")
+                        .HasColumnType("integer");
+
+                    b.Property<float>("Radius")
+                        .HasColumnType("real");
+
+                    b.ComplexProperty<Dictionary<string, object>>("Position", "Proton.Server.Core.Models.RacePoint.Position#Vector3", b1 =>
+                        {
+                            b1.Property<float>("X")
+                                .HasColumnType("real");
+
+                            b1.Property<float>("Y")
+                                .HasColumnType("real");
+
+                            b1.Property<float>("Z")
+                                .HasColumnType("real");
+                        });
+
+                    b.HasKey("MapId", "Index");
+
+                    b.ToTable("RacePoint");
+                });
+
+            modelBuilder.Entity("Proton.Server.Core.Models.RaceStartPoint", b =>
+                {
+                    b.Property<long>("MapId")
+                        .HasColumnType("bigint");
+
+                    b.Property<int>("Index")
+                        .HasColumnType("integer");
+
+                    b.ComplexProperty<Dictionary<string, object>>("Position", "Proton.Server.Core.Models.RaceStartPoint.Position#Vector3", b1 =>
+                        {
+                            b1.Property<float>("X")
+                                .HasColumnType("real");
+
+                            b1.Property<float>("Y")
+                                .HasColumnType("real");
+
+                            b1.Property<float>("Z")
+                                .HasColumnType("real");
+                        });
+
+                    b.ComplexProperty<Dictionary<string, object>>("Rotation", "Proton.Server.Core.Models.RaceStartPoint.Rotation#Vector3", b1 =>
+                        {
+                            b1.Property<float>("X")
+                                .HasColumnType("real");
+
+                            b1.Property<float>("Y")
+                                .HasColumnType("real");
+
+                            b1.Property<float>("Z")
+                                .HasColumnType("real");
+                        });
+
+                    b.HasKey("MapId", "Index");
+
+                    b.ToTable("RaceStartPoint");
+                });
+
             modelBuilder.Entity("Proton.Server.Core.Tables.Log.Session", b =>
                 {
                     b.Property<int>("Id")
@@ -82,6 +165,28 @@ namespace Proton.Server.Resource.Migrations
                     b.ToTable("Users");
                 });
 
+            modelBuilder.Entity("Proton.Server.Core.Models.RacePoint", b =>
+                {
+                    b.HasOne("Proton.Server.Core.Models.RaceMap", "Map")
+                        .WithMany("RacePoints")
+                        .HasForeignKey("MapId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Map");
+                });
+
+            modelBuilder.Entity("Proton.Server.Core.Models.RaceStartPoint", b =>
+                {
+                    b.HasOne("Proton.Server.Core.Models.RaceMap", "Map")
+                        .WithMany("StartPoints")
+                        .HasForeignKey("MapId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Map");
+                });
+
             modelBuilder.Entity("Proton.Server.Core.Tables.Log.Session", b =>
                 {
                     b.HasOne("Proton.Server.Core.Tables.User", "_User")
@@ -93,110 +198,18 @@ namespace Proton.Server.Resource.Migrations
                     b.Navigation("_User");
                 });
 
+            modelBuilder.Entity("Proton.Server.Core.Models.RaceMap", b =>
+                {
+                    b.Navigation("RacePoints");
+
+                    b.Navigation("StartPoints");
+                });
+
             modelBuilder.Entity("Proton.Server.Core.Tables.User", b =>
                 {
                     b.Navigation("Sessions");
-                    modelBuilder.Entity("Proton.Shared.Models.RaceMap", b =>
-                        {
-                            b.Property<long>("Id")
-                                .ValueGeneratedOnAdd()
-                                .HasColumnType("bigint");
-
-                            NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
-
-                            b.Property<string>("Name")
-                                .IsRequired()
-                                .HasMaxLength(64)
-                                .HasColumnType("character varying(64)");
-
-                            b.HasKey("Id");
-
-                            b.ToTable("RaceMap");
-                        });
-
-                    modelBuilder.Entity("Proton.Shared.Models.RacePoint", b =>
-                        {
-                            b.Property<long>("MapId")
-                                .HasColumnType("bigint");
-
-                            b.Property<int>("Index")
-                                .HasColumnType("integer");
-
-                            b.Property<float>("Radius")
-                                .HasColumnType("real");
-
-                            b.ComplexProperty<Dictionary<string, object>>("Position", "Proton.Shared.Models.RacePoint.Position#Vector3", b1 =>
-                                {
-                                    b1.Property<float>("X")
-                                        .HasColumnType("real");
-
-                                    b1.Property<float>("Y")
-                                        .HasColumnType("real");
-
-                                    b1.Property<float>("Z")
-                                        .HasColumnType("real");
-                                });
-
-                            b.HasKey("MapId", "Index");
-
-                            b.ToTable("RacePoint");
-                        });
-
-                    modelBuilder.Entity("Proton.Shared.Models.RaceStartPoint", b =>
-                        {
-                            b.Property<long>("MapId")
-                                .HasColumnType("bigint");
-
-                            b.Property<int>("Index")
-                                .HasColumnType("integer");
-
-                            b.ComplexProperty<Dictionary<string, object>>("Position", "Proton.Shared.Models.RaceStartPoint.Position#Vector3", b1 =>
-                                {
-                                    b1.Property<float>("X")
-                                        .HasColumnType("real");
-
-                                    b1.Property<float>("Y")
-                                        .HasColumnType("real");
-
-                                    b1.Property<float>("Z")
-                                        .HasColumnType("real");
-                                });
-
-                            b.HasKey("MapId", "Index");
-
-                            b.ToTable("RaceStartPoint");
-                        });
-
-                    modelBuilder.Entity("Proton.Shared.Models.RacePoint", b =>
-                        {
-                            b.HasOne("Proton.Shared.Models.RaceMap", "Map")
-                                .WithMany("RacePoints")
-                                .HasForeignKey("MapId")
-                                .OnDelete(DeleteBehavior.Cascade)
-                                .IsRequired();
-
-                            b.Navigation("Map");
-                        });
-
-                    modelBuilder.Entity("Proton.Shared.Models.RaceStartPoint", b =>
-                        {
-                            b.HasOne("Proton.Shared.Models.RaceMap", "Map")
-                                .WithMany("StartPoints")
-                                .HasForeignKey("MapId")
-                                .OnDelete(DeleteBehavior.Cascade)
-                                .IsRequired();
-
-                            b.Navigation("Map");
-                        });
-
-                    modelBuilder.Entity("Proton.Shared.Models.RaceMap", b =>
-                        {
-                            b.Navigation("RacePoints");
-
-                            b.Navigation("StartPoints");
-                        });
-#pragma warning restore 612, 618
                 });
+#pragma warning restore 612, 618
         }
     }
 }

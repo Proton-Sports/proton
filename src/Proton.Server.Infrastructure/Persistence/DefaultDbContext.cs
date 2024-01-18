@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Proton.Server.Core.Interfaces;
+using Proton.Server.Core.Models;
 using Proton.Server.Core.Tables;
 using Proton.Server.Core.Tables.Log;
 
@@ -10,6 +11,9 @@ public class DefaultDbContext : DbContext, IDbContext
 {
     public DbSet<User> Users { get; set; }
     public DbSet<Session> Sessions { get; set; }
+    public DbSet<RaceMap> RaceMaps => Set<RaceMap>();
+    public DbSet<RaceStartPoint> RaceStartPoints => Set<RaceStartPoint>();
+    public DbSet<RacePoint> RacePoints => Set<RacePoint>();
 
     public DefaultDbContext() { }
     public DefaultDbContext(DbContextOptions options) : base(options) { }
@@ -33,5 +37,10 @@ public class DefaultDbContext : DbContext, IDbContext
     EntityEntry<TEntity> IDbContext.Attach<TEntity>(TEntity entity) where TEntity : class
     {
         return Attach(entity);
+    }
+
+    public void AddRange(params IAggregateRoot[] entities)
+    {
+        base.AddRange(entities);
     }
 }

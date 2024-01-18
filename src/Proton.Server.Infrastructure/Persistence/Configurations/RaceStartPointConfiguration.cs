@@ -12,6 +12,7 @@ public sealed class RaceStartPointConfiguration : IEntityTypeConfiguration<RaceS
         builder.Property(x => x.MapId);
         builder.Property(x => x.Index);
         builder.ComplexProperty(x => x.Position);
+        builder.ComplexProperty(x => x.Rotation);
 
         builder.HasOne(x => x.Map).WithMany(x => x.StartPoints).HasForeignKey(x => x.MapId);
     }
