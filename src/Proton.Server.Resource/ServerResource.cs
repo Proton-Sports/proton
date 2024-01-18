@@ -1,8 +1,13 @@
 using System.Reflection;
+using AltV.Net;
 using AltV.Net.Async;
+using AltV.Net.Elements.Args;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Proton.Shared.Adapters;
+using Proton.Shared.Dtos;
 using Proton.Shared.Interfaces;
+using Proton.Shared.Models;
 
 namespace Proton.Server.Resource;
 
@@ -21,11 +26,16 @@ public sealed class ServerResource : AsyncResource
 
         serviceProvider = serviceCollection
             .AddInfrastructure(configuration)
+            .AddRaces()
             .BuildServiceProvider();
     }
 
     public override void OnStart()
     {
+        Alt.RegisterMValueAdapter(SharedRaceCreatorDataMValueAdapter.Instance);
+        Alt.RegisterMValueAdapter(RaceMapDto.Adapter.Instance);
+        Alt.RegisterMValueAdapter(DefaultMValueAdapters.GetArrayAdapter(RaceMapDto.Adapter.Instance));
+
         // TODO: Add logging for startup
         serviceProvider.GetServices<IStartup>();
     }

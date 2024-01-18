@@ -9,10 +9,10 @@ website = 'example.com'
 language = 'en'
 description = 'alt:V Sample Server'
 modules = ['csharp-module']
-resources = ['proton-server', 'proton-client']
+resources = ['proton-server', 'proton-client', 'proton-ui']
 debug = true
 spawnAfterConnect = false
-enableSyncedMetaData = false
+enableSyncedMetaData = true
 
 [csharp-module]
 disableDependencyDownload = true

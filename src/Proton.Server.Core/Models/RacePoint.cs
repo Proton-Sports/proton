@@ -1,8 +1,9 @@
 using System.Numerics;
+using Proton.Server.Core.Interfaces;
 
 namespace Proton.Server.Core.Models;
 
-public class RacePoint
+public class RacePoint : IAggregateRoot
 {
     public long MapId { get; set; }
     public RaceMap Map { get; set; } = null!;

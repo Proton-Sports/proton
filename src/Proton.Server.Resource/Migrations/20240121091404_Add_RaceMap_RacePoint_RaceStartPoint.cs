@@ -6,13 +6,13 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Proton.Server.Resource.Migrations
 {
     /// <inheritdoc />
-    public partial class Create_RaceMap_RacePoint_RaceStartPoint : Migration
+    public partial class Add_RaceMap_RacePoint_RaceStartPoint : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "RaceMap",
+                name: "RaceMaps",
                 columns: table => new
                 {
                     Id = table.Column<long>(type: "bigint", nullable: false)
@@ -21,7 +21,7 @@ namespace Proton.Server.Resource.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_RaceMap", x => x.Id);
+                    table.PrimaryKey("PK_RaceMaps", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -39,9 +39,9 @@ namespace Proton.Server.Resource.Migrations
                 {
                     table.PrimaryKey("PK_RacePoint", x => new { x.MapId, x.Index });
                     table.ForeignKey(
-                        name: "FK_RacePoint_RaceMap_MapId",
+                        name: "FK_RacePoint_RaceMaps_MapId",
                         column: x => x.MapId,
-                        principalTable: "RaceMap",
+                        principalTable: "RaceMaps",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -54,15 +54,18 @@ namespace Proton.Server.Resource.Migrations
                     Index = table.Column<int>(type: "integer", nullable: false),
                     Position_X = table.Column<float>(type: "real", nullable: false),
                     Position_Y = table.Column<float>(type: "real", nullable: false),
-                    Position_Z = table.Column<float>(type: "real", nullable: false)
+                    Position_Z = table.Column<float>(type: "real", nullable: false),
+                    Rotation_X = table.Column<float>(type: "real", nullable: false),
+                    Rotation_Y = table.Column<float>(type: "real", nullable: false),
+                    Rotation_Z = table.Column<float>(type: "real", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_RaceStartPoint", x => new { x.MapId, x.Index });
                     table.ForeignKey(
-                        name: "FK_RaceStartPoint_RaceMap_MapId",
+                        name: "FK_RaceStartPoint_RaceMaps_MapId",
                         column: x => x.MapId,
-                        principalTable: "RaceMap",
+                        principalTable: "RaceMaps",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -78,7 +81,7 @@ namespace Proton.Server.Resource.Migrations
                 name: "RaceStartPoint");
 
             migrationBuilder.DropTable(
-                name: "RaceMap");
+                name: "RaceMaps");
         }
     }
 }
