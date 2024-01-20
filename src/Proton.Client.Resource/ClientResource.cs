@@ -1,5 +1,6 @@
 using AltV.Net.Client.Async;
 using Microsoft.Extensions.DependencyInjection;
+using Proton.Client.Resource.Authentication.Extentions;
 using Proton.Shared.Interfaces;
 
 namespace Proton.Server.Resource;
@@ -11,7 +12,9 @@ public sealed class ClientResource : AsyncResource
     public ClientResource()
     {
         var serviceCollection = new ServiceCollection();
-        serviceProvider = serviceCollection.BuildServiceProvider();
+        serviceProvider = serviceCollection
+            .AddAuthentication()
+            .BuildServiceProvider();
     }
 
     public override void OnStart()

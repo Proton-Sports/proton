@@ -1,3 +1,5 @@
+set shell := ["powershell.exe", "-c"]
+
 default: publish run
 
 build: build-client build-server

@@ -25,12 +25,15 @@
     <AllOutputFiles Include="$(OutputPath)\publish\**\*.*" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Authentication\Scripts\" />
+  </ItemGroup>
+
   <Target Name="CopyFiles" AfterTargets="publish">
     <PropertyGroup>
       <TargetLocation>..\..\resources\proton-client\bin</TargetLocation>
     </PropertyGroup>
-    <Copy Condition=" '$(TargetLocation)' != '' " SourceFiles="@(AllOutputFiles)"
-      DestinationFolder="$(TargetLocation)\%(RecursiveDir)" SkipUnchangedFiles="true" />
+    <Copy Condition=" '$(TargetLocation)' != '' " SourceFiles="@(AllOutputFiles)" DestinationFolder="$(TargetLocation)\%(RecursiveDir)" SkipUnchangedFiles="true" />
   </Target>
 
 </Project>

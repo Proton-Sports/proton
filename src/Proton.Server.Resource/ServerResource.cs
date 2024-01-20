@@ -1,7 +1,9 @@
 using System.Reflection;
+using AltV.Net;
 using AltV.Net.Async;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Proton.Server.Resource.Authentication.Extentions;
 using Proton.Shared.Interfaces;
 
 namespace Proton.Server.Resource;
@@ -21,6 +23,8 @@ public sealed class ServerResource : AsyncResource
 
         serviceProvider = serviceCollection
             .AddInfrastructure(configuration)
+            .AddSingleton<IConfiguration>(configuration)
+            .AddAuthentication()
             .BuildServiceProvider();
     }
 
