@@ -2,7 +2,7 @@ using Microsoft.EntityFrameworkCore.ChangeTracking;
 
 namespace Proton.Server.Core.Interfaces;
 
-public interface IDbContext
+public interface IDbContext : IDisposable, IAsyncDisposable
 {
     EntityEntry<TEntity> Add<TEntity>(TEntity entity) where TEntity : class, IAggregateRoot;
     ValueTask<EntityEntry<TEntity>> AddAsync<TEntity>(TEntity entity, CancellationToken cancellationToken = default) where TEntity : class, IAggregateRoot;
