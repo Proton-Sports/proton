@@ -13,7 +13,8 @@ public static class ServiceCollectionExtensions
         serviceCollection.AddSingleton<IGameplayCamera, DefaultGameplayCamera>();
         serviceCollection.AddSingleton<IScriptCameraFactory, DefaultScriptCameraFactory>();
         serviceCollection.AddSingleton<IRaycastService, DefaultRaycastService>();
-        serviceCollection.AddSingleton<INoClip, DefaultNoClip>();
+        // serviceCollection.AddSingleton<INoClip, DefaultNoClip>();
+        serviceCollection.AddSingleton<INoClip, ClientOnlyNoClip>();
         serviceCollection.AddSingleton<IUiViewFactory, DefaultUiViewFactory>();
         serviceCollection.AddSingleton(provider => (IUiView)Alt.CreateWebView("http://localhost:5173"));
         // serviceCollection.AddSingleton(provider => (IUiView)Alt.CreateWebView("http://assets/proton-ui/dist/index.html"));
