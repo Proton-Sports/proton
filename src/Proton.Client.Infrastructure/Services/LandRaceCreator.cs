@@ -95,27 +95,23 @@ public class LandRaceCreator : IRaceCreator
         return checkpoint != default;
     }
 
-    public bool TryGetLastRacePointRadius(out float radius)
+    public bool UpdateRacePointPosition(ICheckpoint checkpoint, Position position)
     {
-        var lastCheckpoint = racePointDatas.Last?.Value.Checkpoint;
-        if (lastCheckpoint is null)
+        for (var node = racePointDatas.First; node is not null; node = node.Next)
         {
-            radius = default;
-            return false;
-        }
-        radius = lastCheckpoint.Radius;
-        return true;
-    }
+            var current = node.Value;
+            if (current.Checkpoint != checkpoint) continue;
 
-    public bool TrySetLastRacePointRadius(float radius)
-    {
-        var lastCheckpoint = racePointDatas.Last?.Value.Checkpoint;
-        if (lastCheckpoint is null)
-        {
-            return false;
+            current.Checkpoint.Position = position;
+            current.Blip.Position = position;
+            var previous = node.Previous?.Value;
+            if (previous is not null)
+            {
+                previous.Checkpoint.NextPosition = position;
+            }
+            return true;
         }
-        lastCheckpoint.Radius = radius;
-        return true;
+        return false;
     }
 
     public void AddStartPoint(Position position, Rotation rotation)

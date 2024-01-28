@@ -1,6 +1,7 @@
 using AltV.Net.Client;
 using AltV.Net.Client.Async;
 using AltV.Net.Client.Elements.Data;
+using AltV.Net.Client.Elements.Interfaces;
 using AltV.Net.Data;
 using Proton.Client.Core.Interfaces;
 using Proton.Client.Infrastructure.Interfaces;
@@ -23,6 +24,7 @@ public sealed class RaceCreatorScript : IStartup
     private PointType pointType = PointType.Start;
     private long id;
     private string name = string.Empty;
+    private ICheckpoint? movingRaceCheckpoint = default;
 
     public RaceCreatorScript(
         IRaceCreator raceCreator,
@@ -195,7 +197,11 @@ public sealed class RaceCreatorScript : IStartup
             case Key.U:
                 {
                     Position position = Alt.LocalPlayer.Position;
-                    if (!noClip.IsStarted) position = Alt.LocalPlayer.Position;
+                    if (!noClip.IsStarted)
+                    {
+                        position = Alt.LocalPlayer.Position;
+                        if (!Alt.Natives.GetGroundZExcludingObjectsFor3dCoord(position.X, position.Y, position.Z, ref position.Z, true, true)) return;
+                    }
                     else if (noClip.TryGetRaycastData(out var data) && data is { IsHit: true }) position = data.EndPosition;
                     else break;
                     if (raceCreator.TryGetClosestRaceCheckpointTo(position, out var checkpoint))
@@ -207,12 +213,43 @@ public sealed class RaceCreatorScript : IStartup
             case Key.N:
                 {
                     Position position = Alt.LocalPlayer.Position;
-                    if (!noClip.IsStarted) position = Alt.LocalPlayer.Position;
+                    if (!noClip.IsStarted)
+                    {
+                        position = Alt.LocalPlayer.Position;
+                        if (!Alt.Natives.GetGroundZExcludingObjectsFor3dCoord(position.X, position.Y, position.Z, ref position.Z, true, true)) return;
+                    }
                     else if (noClip.TryGetRaycastData(out var data) && data is { IsHit: true }) position = data.EndPosition;
                     else break;
                     if (raceCreator.TryGetClosestRaceCheckpointTo(position, out var checkpoint))
                     {
                         checkpoint.Radius = Math.Max(1, checkpoint.Radius - 0.5f);
+                    }
+                    break;
+                }
+            case Key.M:
+                {
+                    Position position = Alt.LocalPlayer.Position;
+                    if (!noClip.IsStarted)
+                    {
+                        position = Alt.LocalPlayer.Position;
+                        if (!Alt.Natives.GetGroundZExcludingObjectsFor3dCoord(position.X, position.Y, position.Z, ref position.Z, true, true)) return;
+                    }
+                    else if (noClip.TryGetRaycastData(out var data) && data is { IsHit: true }) position = data.EndPosition;
+                    else break;
+                    if (raceCreator.TryGetClosestRaceCheckpointTo(position, out var checkpoint))
+                    {
+                        if (movingRaceCheckpoint is not null)
+                        {
+                            movingRaceCheckpoint.Color = new Rgba(255, 255, 255, 255);
+                        }
+                        movingRaceCheckpoint = checkpoint;
+                        movingRaceCheckpoint.Color = new Rgba(0, 255, 0, 255);
+                    }
+                    else if (movingRaceCheckpoint is not null)
+                    {
+                        raceCreator.UpdateRacePointPosition(movingRaceCheckpoint, position);
+                        movingRaceCheckpoint.Color = new Rgba(255, 255, 255, 255);
+                        movingRaceCheckpoint = default;
                     }
                     break;
                 }
