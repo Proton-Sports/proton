@@ -19,8 +19,7 @@ public interface IRaceCreator
     void AddRacePoint(Position position, float radius);
     void RemoveRacePoint();
     bool TryGetClosestRaceCheckpointTo(Position position, out ICheckpoint checkpoint);
-    bool TryGetLastRacePointRadius(out float radius);
-    bool TrySetLastRacePointRadius(float radius);
+    bool UpdateRacePointPosition(ICheckpoint checkpoint, Position position);
     // https://github.com/FabianTerhorst/coreclr-module/issues/840
     // bool TrySetLastRacePointRadius(Func<float, float> setRadius);
 }
