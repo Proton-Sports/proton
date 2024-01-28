@@ -49,16 +49,6 @@ public sealed class RaceCreatorScript : IStartup
         uiView.On("race:creator:submit", HandleSubmit);
         uiView.On("race:creator:stop", HandleStop);
         Alt.OnWindowFocusChange += HandleWindowFocusChange;
-        Alt.OnConsoleCommand += (name, args) =>
-        {
-            if (name == "mainmenu")
-            {
-                uiView.Mount(Route.RaceMainMenu);
-                uiView.Focus();
-                Alt.ShowCursor(true);
-                Alt.GameControlsEnabled = false;
-            }
-        };
     }
 
     private void HandleCreateMap(string mapName)

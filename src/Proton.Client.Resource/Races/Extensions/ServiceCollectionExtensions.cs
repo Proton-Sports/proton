@@ -6,7 +6,9 @@ public static partial class ServiceCollectionExtensions
 {
     public static IServiceCollection AddRaces(this IServiceCollection serviceCollection)
     {
-        serviceCollection.AddStartup<RaceCreatorScript>();
+        serviceCollection
+            .AddStartup<RaceMainMenuScript>()
+            .AddStartup<RaceCreatorScript>();
         return serviceCollection;
     }
 }
