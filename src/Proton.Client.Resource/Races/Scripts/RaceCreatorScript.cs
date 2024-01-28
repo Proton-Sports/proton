@@ -194,17 +194,25 @@ public sealed class RaceCreatorScript : IStartup
                 }
             case Key.U:
                 {
-                    if (raceCreator.TryGetLastRacePointRadius(out var radius) && radius > 1f)
+                    Position position = Alt.LocalPlayer.Position;
+                    if (!noClip.IsStarted) position = Alt.LocalPlayer.Position;
+                    else if (noClip.TryGetRaycastData(out var data) && data is { IsHit: true }) position = data.EndPosition;
+                    else break;
+                    if (raceCreator.TryGetClosestRaceCheckpointTo(position, out var checkpoint))
                     {
-                        _ = raceCreator.TrySetLastRacePointRadius(Math.Max(1, radius - 0.5f));
+                        checkpoint.Radius += 0.5f;
                     }
                     break;
                 }
             case Key.N:
                 {
-                    if (raceCreator.TryGetLastRacePointRadius(out var radius))
+                    Position position = Alt.LocalPlayer.Position;
+                    if (!noClip.IsStarted) position = Alt.LocalPlayer.Position;
+                    else if (noClip.TryGetRaycastData(out var data) && data is { IsHit: true }) position = data.EndPosition;
+                    else break;
+                    if (raceCreator.TryGetClosestRaceCheckpointTo(position, out var checkpoint))
                     {
-                        _ = raceCreator.TrySetLastRacePointRadius(radius + 0.5f);
+                        checkpoint.Radius = Math.Max(1, checkpoint.Radius - 0.5f);
                     }
                     break;
                 }

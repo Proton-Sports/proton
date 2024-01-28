@@ -51,6 +51,12 @@ public class ClientOnlyNoClip : INoClip
         Alt.OnTick -= HandleTick;
     }
 
+    public bool TryGetRaycastData(out RaycastData data)
+    {
+        data = raycastData!;
+        return raycastData != default;
+    }
+
     private void HandleTick()
     {
         Alt.Natives.DisableControlAction(0, ActionForward, true);

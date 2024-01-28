@@ -1,3 +1,4 @@
+using System.Numerics;
 using AltV.Net.Client;
 using AltV.Net.Client.Elements.Interfaces;
 using AltV.Net.Data;
@@ -21,8 +22,6 @@ public class LandRaceCreator : IRaceCreator
     public string Name { get; set; } = string.Empty;
     public IEnumerable<SharedRacePoint> RacePoints => racePointDatas.Select(x => new SharedRacePoint(x.Position, x.Checkpoint.Radius));
     public IEnumerable<SharedRaceStartPoint> StartPoints => startPointDatas.Select(x => new SharedRaceStartPoint(x.Position, x.Rotation));
-
-    public LandRaceCreator() { }
 
     public void ClearRacePoints()
     {
@@ -77,6 +76,23 @@ public class LandRaceCreator : IRaceCreator
             newLastData.Blip.Sprite = BlipSpriteRadarRaceLand;
             newLastData.Blip.Color = BlipColorPrimary;
         }
+    }
+
+    public bool TryGetClosestRaceCheckpointTo(Position position, out ICheckpoint checkpoint)
+    {
+        var precision = 0.5f;
+        checkpoint = default!;
+        float maxSquared = float.MaxValue;
+        foreach (var data in racePointDatas)
+        {
+            var distanceSquared = Vector3.DistanceSquared(position, data.Checkpoint.Position) - precision;
+            if (distanceSquared < (data.Checkpoint.Radius * data.Checkpoint.Radius) && distanceSquared < maxSquared)
+            {
+                checkpoint = data.Checkpoint;
+                maxSquared = distanceSquared;
+            }
+        }
+        return checkpoint != default;
     }
 
     public bool TryGetLastRacePointRadius(out float radius)

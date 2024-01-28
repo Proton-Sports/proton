@@ -1,3 +1,4 @@
+using AltV.Net.Client.Elements.Interfaces;
 using AltV.Net.Data;
 using Proton.Shared.Models;
 
@@ -17,6 +18,7 @@ public interface IRaceCreator
     void ImportRacePoints(IEnumerable<SharedRacePoint> points);
     void AddRacePoint(Position position, float radius);
     void RemoveRacePoint();
+    bool TryGetClosestRaceCheckpointTo(Position position, out ICheckpoint checkpoint);
     bool TryGetLastRacePointRadius(out float radius);
     bool TrySetLastRacePointRadius(float radius);
     // https://github.com/FabianTerhorst/coreclr-module/issues/840
