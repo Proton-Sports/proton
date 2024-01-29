@@ -12,8 +12,8 @@ namespace Proton.Server.Core.Tables.Log
         [Key]
         public int Id { get; set; }
         public bool IsActive { get; set; } = true;
-        public DateTime TimestampLogin {  get; set; }
-        public DateTime TimestampLogout { get; set; }
+        public DateTime TimestampLogin { get; set; } = DateTime.UtcNow;
+        public DateTime? TimestampLogout { get; set; }
         public string Ipv4 { get; set; } = "";
         public string Ipv6 { get; set; } = "";
         public string Country { get; set; } = "";

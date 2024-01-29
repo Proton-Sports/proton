@@ -2,6 +2,7 @@
 using AltV.Net.Async;
 using AltV.Net.Elements.Entities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Proton.Server.Core.Interfaces;
 using Proton.Server.Infrastructure.Authentication;
 using Proton.Server.Infrastructure.Persistence;
@@ -18,32 +19,69 @@ public class AuthenticationScript : IStartup
 {
     private readonly DiscordHandler discord;
     private readonly IDbContextFactory<DefaultDbContext> dbContextFactory;
-    private readonly DefaultDbContext dbContext;
+    private readonly IConfiguration configuration;
 
-    public AuthenticationScript(DiscordHandler discord, IDbContextFactory<DefaultDbContext> dbContextFactory)
+    private Dictionary<IPlayer, DiscordAccountHandler> playerAuthenticationStore = new Dictionary<IPlayer, DiscordAccountHandler>();
+
+    public AuthenticationScript(DiscordHandler discord, 
+        IDbContextFactory<DefaultDbContext> dbContextFactory,
+        IConfiguration configuration)
     {
         this.discord = discord;
         this.dbContextFactory = dbContextFactory;
-
-        dbContext = dbContextFactory.CreateDbContext();
+        this.configuration = configuration;
         AltAsync.OnPlayerConnect += OnPlayerConnect;
-    }
+        AltAsync.OnPlayerDisconnect += OnPlayerDisconnect;
+        AltAsync.OnResourceStop += OnResourceStop;
+        Alt.OnClient<string>("authentication:token:exchange", (player, token) => OnTokenExchange(player, token).GetAwaiter());
+    }    
 
     /// <summary>
     /// Checking if the OAuth Token is still valid and offer to login as User
     /// </summary>
-    public async Task OnPlayerConnect(IPlayer p, string reason)
+    public Task OnPlayerConnect(IPlayer p, string reason)
     {
-        Alt.Log(dbContext.Users.Count().ToString());
-        Alt.LogInfo("player joined");
+        string? appId = configuration["Discord:AppId"];
+        p.Emit("authentication:token:check", appId);
+
+        return Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// Logging the User out
+    /// </summary>
+    public async Task OnPlayerDisconnect(IPlayer p, string reason)
+    {
+        await playerAuthenticationStore[p].Logout();
+        playerAuthenticationStore.Remove(p);
     }
 
     /// <summary>
     /// The client sends the Discord OAuth Challenge Token
     /// </summary>
-    [AsyncClientEvent("authentication:token:exchange")]
-    public async Task OnTokenExchange(IPlayer p, string token)
+    private async Task OnTokenExchange(IPlayer p, string token)
     {
+        var account = await discord.GetAccountHandler(token, dbContextFactory);
+        playerAuthenticationStore.Add(p, account);
 
+        if (!account.IsUserRegistered())
+        {
+            await account.Register(p.SocialClubName);
+        }
+
+        await account.Login(p.Ip);
+    }
+
+    /// <summary>
+    /// Log all Users out if the server stopps
+    /// </summary>
+    private async Task OnResourceStop(INativeResource resource)
+    {
+        foreach (var k in playerAuthenticationStore)
+        {
+            await k.Value.Logout();
+        }
+
+        playerAuthenticationStore.Clear();
     }
 }

@@ -1,3 +1,4 @@
+using AltV.Net.Client;
 using AltV.Net.Client.Async;
 using Microsoft.Extensions.DependencyInjection;
 using Proton.Client.Resource.Authentication.Extentions;
@@ -21,6 +22,7 @@ public sealed class ClientResource : AsyncResource
     {
         // TODO: Add logging for startup
         serviceProvider.GetServices<IStartup>();
+        Alt.Log("loaded!!!");
     }
 
     public override void OnStop() { }

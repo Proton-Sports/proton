@@ -1,5 +1,7 @@
 ﻿using Discord.Rest;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Proton.Server.Infrastructure.Persistence;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,13 +12,11 @@ namespace Proton.Server.Infrastructure.Authentication
 {
     public class DiscordHandler
     {
-        private readonly IConfiguration configuration;
-        private readonly DiscordRestClient DiscordRest;
-        public DiscordHandler(IConfiguration configuration)
+        public async Task<DiscordAccountHandler> GetAccountHandler(string Token, IDbContextFactory<DefaultDbContext> defaultDbFactory)
         {
-            this.configuration = configuration;
-            this.DiscordRest = new DiscordRestClient();
-            DiscordRest.LoginAsync(Discord.TokenType.Bot, configuration["Discord:Token"]);
+            var client = new DiscordRestClient();
+            await client.LoginAsync(Discord.TokenType.Bearer, Token);
+            return new DiscordAccountHandler(client, defaultDbFactory);
         }
     }
 }

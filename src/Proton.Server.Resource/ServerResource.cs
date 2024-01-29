@@ -31,7 +31,7 @@ public sealed class ServerResource : AsyncResource
     public override void OnStart()
     {
         // TODO: Add logging for startup
-        serviceProvider.GetServices<IStartup>();
+        var services = serviceProvider.GetServices<IStartup>();
     }
 
     public override void OnStop() { }

@@ -1,5 +1,6 @@
 ﻿
 using Microsoft.Extensions.DependencyInjection;
+using Proton.Client.Resource.Authentication.Scripts;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,6 +13,7 @@ internal static class ServiceCollectionExtensions
 {
     public static IServiceCollection AddAuthentication(this IServiceCollection services)
     {
+        services.AddStartup<AuthenticationScript>();
         return services;
     }
 }
