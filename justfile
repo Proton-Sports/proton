@@ -1,3 +1,4 @@
+set windows-shell := ["nu", "-c"]
 set shell := ["powershell.exe", "-c"]
 
 default: publish run

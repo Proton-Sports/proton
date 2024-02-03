@@ -7,6 +7,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="AltV.Net.Client" />
+    <PackageReference Include="AltV.Net.Client.Async" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Proton.Shared\Proton.Shared.csproj" />
   </ItemGroup>
 

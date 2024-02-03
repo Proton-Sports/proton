@@ -3,8 +3,14 @@ obj/
 data/
 modules/
 resources/*
+!resources/proton-client
+!resources/proton-server
+resources/proton-client/*
+resources/proton-server/*
+resources/proton-ui/*
 !resources/proton-client/resource.toml
 !resources/proton-server/resource.toml
+!resources/proton-ui/resource.toml
 server.log
 altv-crash-handler
 altv-server
@@ -15,3 +21,4 @@ AltV.Net.Host.runtimeconfig.json
 cache/
 .vs/
 update.json
+*.exe

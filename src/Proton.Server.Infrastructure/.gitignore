@@ -1,0 +1,2 @@
+Persistence/CompiledModels/*
+!Persistence/CompiledModels/DefaultDbContextModel.cs

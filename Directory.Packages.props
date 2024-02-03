@@ -4,6 +4,7 @@
   </PropertyGroup>
   <ItemGroup>
     <!-- Core -->
+    <PackageVersion Include="AltV.Community.MValueAdapters.Generators" Version="0.1.6" PrivateAssets="true" ExcludeAssets="runtime" />
     <PackageVersion Include="DisCatSharp" Version="10.6.1" />
     <PackageVersion Include="Discord.Net.Rest" Version="3.13.0" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.0" />
