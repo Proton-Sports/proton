@@ -37,8 +37,7 @@
     <PropertyGroup>
       <TargetLocation>..\..\resources\proton-server\bin</TargetLocation>
     </PropertyGroup>
-    <Copy Condition=" '$(TargetLocation)' != '' " SourceFiles="@(AllOutputFiles)"
-      DestinationFolder="$(TargetLocation)\%(RecursiveDir)" SkipUnchangedFiles="true" />
+    <Copy Condition=" '$(TargetLocation)' != '' " SourceFiles="@(AllOutputFiles)" DestinationFolder="$(TargetLocation)\%(RecursiveDir)" SkipUnchangedFiles="true" />
   </Target>
 
 </Project>

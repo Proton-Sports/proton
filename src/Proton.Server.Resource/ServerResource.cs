@@ -6,6 +6,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Proton.Shared.Adapters;
 using Proton.Shared.Dtos;
+using Proton.Server.Resource.Authentication.Extentions;
 using Proton.Shared.Interfaces;
 using Proton.Shared.Models;
 
@@ -27,6 +28,8 @@ public sealed class ServerResource : AsyncResource
         serviceProvider = serviceCollection
             .AddInfrastructure(configuration)
             .AddRaces()
+            .AddSingleton<IConfiguration>(configuration)
+            .AddAuthentication()
             .BuildServiceProvider();
     }
 
@@ -37,7 +40,7 @@ public sealed class ServerResource : AsyncResource
         Alt.RegisterMValueAdapter(DefaultMValueAdapters.GetArrayAdapter(RaceMapDto.Adapter.Instance));
 
         // TODO: Add logging for startup
-        serviceProvider.GetServices<IStartup>();
+        var services = serviceProvider.GetServices<IStartup>();
     }
 
     public override void OnStop() { }

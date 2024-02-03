@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Proton.Client.Infrastructure.Interfaces;
 using Proton.Shared.Adapters;
 using Proton.Shared.Dtos;
+using Proton.Client.Resource.Authentication.Extentions;
 using Proton.Shared.Interfaces;
 using Proton.Shared.Models;
 
@@ -20,6 +21,7 @@ public sealed class ClientResource : AsyncResource
         var serviceCollection = new ServiceCollection()
             .AddInfrastructure()
             .AddNoClips()
+            .AddAuthentication()
             .AddRaces();
         serviceProvider = serviceCollection.BuildServiceProvider();
     }
@@ -32,6 +34,7 @@ public sealed class ClientResource : AsyncResource
 
         // TODO: Add logging for startup
         serviceProvider.GetServices<IStartup>();
+        Alt.Log("loaded!!!");
     }
 
     public override void OnStop() { }

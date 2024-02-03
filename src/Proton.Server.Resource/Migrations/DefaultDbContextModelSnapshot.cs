@@ -132,7 +132,7 @@ namespace Proton.Server.Resource.Migrations
                     b.Property<DateTime>("TimestampLogin")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<DateTime>("TimestampLogout")
+                    b.Property<DateTime?>("TimestampLogout")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<int>("UserId")
