@@ -2,18 +2,18 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Proton.Server.Core.Interfaces;
 using Proton.Server.Core.Models;
-using Proton.Server.Core.Tables;
-using Proton.Server.Core.Tables.Log;
+using Proton.Server.Core.Models.Log;
 
 namespace Proton.Server.Infrastructure.Persistence;
 
 public class DefaultDbContext : DbContext, IDbContext
 {
-    public DbSet<User> Users { get; set; }
-    public DbSet<Session> Sessions { get; set; }
+    public DbSet<User> Users => Set<User>();
+    public DbSet<Session> Sessions => Set<Session>();
     public DbSet<RaceMap> RaceMaps => Set<RaceMap>();
     public DbSet<RaceStartPoint> RaceStartPoints => Set<RaceStartPoint>();
     public DbSet<RacePoint> RacePoints => Set<RacePoint>();
+    public DbSet<Vehicle> Vehicles => Set<Vehicle>();
 
     public DefaultDbContext() { }
     public DefaultDbContext(DbContextOptions options) : base(options) { }

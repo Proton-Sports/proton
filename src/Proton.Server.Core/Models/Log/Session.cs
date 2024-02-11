@@ -4,8 +4,9 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Proton.Server.Core.Models;
 
-namespace Proton.Server.Core.Tables.Log
+namespace Proton.Server.Core.Models.Log
 {
     public class Session
     {
