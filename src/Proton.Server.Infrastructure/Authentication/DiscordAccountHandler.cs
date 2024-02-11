@@ -1,6 +1,7 @@
 ﻿using Discord.Rest;
 using Microsoft.EntityFrameworkCore;
-using Proton.Server.Core.Tables;
+using Proton.Server.Core.Models;
+using Proton.Server.Core.Models.Log;
 using Proton.Server.Infrastructure.Persistence;
 using System;
 using System.Collections.Generic;
@@ -38,7 +39,7 @@ namespace Proton.Server.Infrastructure.Authentication
             else
             {
                 string IPv6 = Ip.Replace(ipSplited.Last().ToString(), "");
-                defaultDb.Sessions.Add(new Core.Tables.Log.Session
+                defaultDb.Sessions.Add(new Session
                 {
                     UserId = user.Id,
                     Ipv4 = ipSplited.Last().ToString(),
