@@ -1,7 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Proton.Server.Core.Tables;
-using Proton.Server.Core.Tables.Log;
+using Proton.Server.Core.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,7 +13,8 @@ namespace Proton.Server.Infrastructure.Persistence.Configurations
     {
         public void Configure(EntityTypeBuilder<User> builder)
         {
-            builder.HasMany<Session>(x => x.Sessions);
+            builder.HasMany(x => x.Sessions);
+            builder.HasMany(x => x.OwnedVehicles);
         }
     }
 }
