@@ -27,7 +27,7 @@ public sealed class ServerResource : AsyncResource
 
         serviceProvider = serviceCollection
             .AddInfrastructure(configuration)
-            .AddRaces()
+            //.AddRaces()
             .AddSingleton<IConfiguration>(configuration)
             .AddAuthentication()
             .BuildServiceProvider();
