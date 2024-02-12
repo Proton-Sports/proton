@@ -33,6 +33,10 @@
     <AllOutputFiles Include="$(OutputPath)\publish\**\*.*" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Migrations\" />
+  </ItemGroup>
+
   <Target Name="CopyFiles" AfterTargets="publish">
     <PropertyGroup>
       <TargetLocation>..\..\resources\proton-server\bin</TargetLocation>

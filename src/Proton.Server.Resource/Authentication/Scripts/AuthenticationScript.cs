@@ -10,6 +10,8 @@ using Proton.Shared.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.AccessControl;
+using System.Security.Principal;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -33,7 +35,10 @@ public class AuthenticationScript : IStartup
         AltAsync.OnPlayerConnect += OnPlayerConnect;
         AltAsync.OnPlayerDisconnect += OnPlayerDisconnect;
         AltAsync.OnResourceStop += OnResourceStop;
-        Alt.OnClient<string>("authentication:token:exchange", (player, token) => OnTokenExchange(player, token).GetAwaiter());
+        Alt.OnClient<string>("authentication:token:exchange", 
+            (player, token) => OnTokenExchange(player, token).GetAwaiter());
+        Alt.OnClient("authentication:login",
+            (player) => OnPlayerWantsLogin(player).GetAwaiter());
     }    
 
     /// <summary>
@@ -64,6 +69,13 @@ public class AuthenticationScript : IStartup
         var account = await discord.GetAccountHandler(token, dbContextFactory);
         playerAuthenticationStore.Add(p, account);
 
+        var discordProfile = account.GetCurrentUser();
+        p.Emit("authentication:login:information", discordProfile.GetAvatarUrl());
+    }
+
+    private async Task OnPlayerWantsLogin(IPlayer p)
+    {
+        var account = playerAuthenticationStore[p]; //null checking
         if (!account.IsUserRegistered())
         {
             await account.Register(p.SocialClubName);

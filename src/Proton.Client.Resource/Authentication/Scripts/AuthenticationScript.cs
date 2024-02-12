@@ -1,6 +1,7 @@
 ﻿using AltV.Net;
 using AltV.Net.Client;
 using AltV.Net.Client.Async;
+using Proton.Client.Infrastructure.Interfaces;
 using Proton.Shared.Interfaces;
 using System;
 using System.Collections.Generic;
@@ -12,11 +13,16 @@ namespace Proton.Client.Resource.Authentication.Scripts;
 
 public sealed class AuthenticationScript : IStartup
 {
+    private readonly IUiView uiView;
 
-    public AuthenticationScript()
+    public AuthenticationScript(IUiView uiView)
     {
-        Alt.Log("auth");
-        Alt.OnServer<string>("authentication:token:check", (appId) => OnAuthenticationCheck(appId).GetAwaiter());
+        Alt.OnServer<string>("authentication:token:check", 
+            (appId) => OnAuthenticationCheck(appId).GetAwaiter());
+        Alt.OnServer<string, string>("authentication:login:information", 
+            (avatar, name) => OnProfileInformation(avatar, name));
+
+        this.uiView = uiView;
     }
 
     /// <summary>
@@ -24,8 +30,6 @@ public sealed class AuthenticationScript : IStartup
     /// </summary>
     public async Task OnAuthenticationCheck(string AppId)
     {
-        Alt.LogInfo("player joined");
-
         Alt.LogInfo($"[AUTH] Player Request OAuth2Token, AppId: {AppId}");
         try
         {
@@ -39,5 +43,11 @@ public sealed class AuthenticationScript : IStartup
             Alt.Log(ex.Source);
             Alt.Log(ex.StackTrace);
         }
+    }
+
+    public Task OnProfileInformation(string AvatarUri, string Username)
+    {
+        uiView.Emit("authentication:information", AvatarUri, Username);
+        return Task.CompletedTask;
     }
 }
