@@ -27,7 +27,7 @@ public sealed class ServerResource : AsyncResource
 
         serviceProvider = serviceCollection
             .AddInfrastructure(configuration)
-            .AddRaces()
+            //.AddRaces()
             .AddSingleton<IConfiguration>(configuration)
             .AddAuthentication()
             .BuildServiceProvider();
@@ -35,9 +35,9 @@ public sealed class ServerResource : AsyncResource
 
     public override void OnStart()
     {
-        Alt.RegisterMValueAdapter(SharedRaceCreatorDataMValueAdapter.Instance);
-        Alt.RegisterMValueAdapter(RaceMapDto.Adapter.Instance);
-        Alt.RegisterMValueAdapter(DefaultMValueAdapters.GetArrayAdapter(RaceMapDto.Adapter.Instance));
+        //Alt.RegisterMValueAdapter(SharedRaceCreatorDataMValueAdapter.Instance);
+        //Alt.RegisterMValueAdapter(RaceMapDto.Adapter.Instance);
+        //Alt.RegisterMValueAdapter(DefaultMValueAdapters.GetArrayAdapter(RaceMapDto.Adapter.Instance));
 
         // TODO: Add logging for startup
         var services = serviceProvider.GetServices<IStartup>();
