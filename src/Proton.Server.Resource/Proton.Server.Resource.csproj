@@ -23,6 +23,10 @@
     <ProjectReference Include="..\Proton.Server.Infrastructure\Proton.Server.Infrastructure.csproj" />
   </ItemGroup>
 
+    <PropertyGroup>
+	    <EFMigrationsAdditionalArgs>--msbuildprojectextensionspath "$(BaseIntermediateOutputPath)."</EFMigrationsAdditionalArgs>
+    </PropertyGroup>
+
   <ItemGroup>
     <Content Include="appsettings*.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>

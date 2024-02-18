@@ -1,0 +1,6 @@
+FROM altmp/altv-server:release
+
+ENV ALTV_NAME="Proton - DEV"
+ENV ALTV_DEBUG=true
+
+COPY ../resources/ /altv/resources/

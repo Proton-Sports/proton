@@ -70,7 +70,7 @@ public class AuthenticationScript : IStartup
         playerAuthenticationStore.Add(p, account);
 
         var discordProfile = account.GetCurrentUser();
-        p.Emit("authentication:login:information", discordProfile.GetAvatarUrl());
+        p.Emit("authentication:login:information", discordProfile.GetAvatarUrl(), p.Name);
     }
 
     private async Task OnPlayerWantsLogin(IPlayer p)
@@ -82,6 +82,8 @@ public class AuthenticationScript : IStartup
         }
 
         await account.Login(p.Ip);
+
+        p.Emit("authentication:login:ok");
     }
 
     /// <summary>

@@ -2,6 +2,7 @@
 using AltV.Net.Client;
 using AltV.Net.Client.Async;
 using Proton.Client.Infrastructure.Interfaces;
+using Proton.Shared.Contants;
 using Proton.Shared.Interfaces;
 using System;
 using System.Collections.Generic;
@@ -21,8 +22,12 @@ public sealed class AuthenticationScript : IStartup
             (appId) => OnAuthenticationCheck(appId).GetAwaiter());
         Alt.OnServer<string, string>("authentication:login:information", 
             (avatar, name) => OnProfileInformation(avatar, name));
+        Alt.OnServer("authentication:login:ok",
+            () => LoginOk());
 
         this.uiView = uiView;
+
+        this.uiView.On("authentication:login", SendLoginRequest);
     }
 
     /// <summary>
@@ -30,6 +35,9 @@ public sealed class AuthenticationScript : IStartup
     /// </summary>
     public async Task OnAuthenticationCheck(string AppId)
     {
+        uiView.Mount(Route.Auth);
+        uiView.Focus();
+
         Alt.LogInfo($"[AUTH] Player Request OAuth2Token, AppId: {AppId}");
         try
         {
@@ -48,6 +56,24 @@ public sealed class AuthenticationScript : IStartup
     public Task OnProfileInformation(string AvatarUri, string Username)
     {
         uiView.Emit("authentication:information", AvatarUri, Username);
+        Alt.ShowCursor(true);
+        Alt.GameControlsEnabled = false;
+        return Task.CompletedTask;
+    }
+
+    public Task SendLoginRequest()
+    {
+        Alt.EmitServer("authentication:login");
+        return Task.CompletedTask;
+    }
+
+    public Task LoginOk()
+    {
+        Alt.ShowCursor(false);
+        Alt.GameControlsEnabled = true;
+        uiView.Unfocus();
+        uiView.Unmount(Route.Auth);
+        uiView.Visible = false;
         return Task.CompletedTask;
     }
 }

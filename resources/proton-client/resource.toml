@@ -1,4 +1,4 @@
 client-type = 'csharp'
 client-main = 'bin/Proton.Client.Resource.dll'
 client-files = ['bin/*']
-deps = ['proton-server', 'proton-ui']
+deps = ['proton-server']
