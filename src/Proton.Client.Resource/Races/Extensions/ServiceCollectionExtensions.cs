@@ -8,7 +8,8 @@ public static partial class ServiceCollectionExtensions
     {
         serviceCollection
             .AddStartup<RaceMainMenuScript>()
-            .AddStartup<RaceCreatorScript>();
+            .AddStartup<RaceCreatorScript>()
+            .AddStartup<RaceHostScript>();
         return serviceCollection;
     }
 }

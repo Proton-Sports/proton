@@ -4,10 +4,11 @@ using Proton.Shared.Adapters;
 
 namespace Proton.Shared.Dtos;
 
-public sealed class RaceHostSubmitDto : IMValueConvertible
+public sealed record class RaceHostSubmitDto : IMValueConvertible
 {
-    public long RaceId { get; set; }
+    public long MapId { get; set; }
     public string VehicleName { get; set; } = string.Empty;
+    public int Racers { get; set; }
     public int Duration { get; set; }
     public string Description { get; set; } = string.Empty;
     public bool Ghosting { get; set; }
@@ -33,14 +34,20 @@ public sealed class RaceHostSubmitDto : IMValueConvertible
             {
                 switch (reader.NextName())
                 {
-                    case "raceId":
-                        dto.RaceId = reader.NextLong();
+                    case "mapId":
+                        dto.MapId = (long)reader.NextDouble();
                         break;
                     case "vehicleName":
                         dto.VehicleName = reader.NextString();
                         break;
+                    case "racers":
+                        dto.Racers = (int)reader.NextDouble();
+                        break;
                     case "duration":
-                        dto.Duration = reader.NextInt();
+                        dto.Duration = (int)reader.NextDouble();
+                        break;
+                    case "description":
+                        dto.Description = reader.NextString();
                         break;
                     case "ghosting":
                         dto.Ghosting = reader.NextBool();
@@ -49,7 +56,8 @@ public sealed class RaceHostSubmitDto : IMValueConvertible
                         dto.Type = reader.NextString();
                         break;
                     case "laps":
-                        dto.Laps = reader.NextInt();
+                        dto.Laps = (int)reader.NextDouble();
+                        // else reader.SkipValue();
                         break;
                     case "time":
                         dto.Time = reader.NextString();
@@ -72,10 +80,12 @@ public sealed class RaceHostSubmitDto : IMValueConvertible
         public override void ToMValue(RaceHostSubmitDto value, IMValueWriter writer)
         {
             writer.BeginObject();
-            writer.Name("raceId");
-            writer.Value(value.RaceId);
+            writer.Name("mapId");
+            writer.Value(value.MapId);
             writer.Name("vehicleName");
             writer.Value(value.VehicleName);
+            writer.Name("racers");
+            writer.Value(value.Racers);
             writer.Name("duration");
             writer.Value(value.Duration);
             writer.Name("description");
