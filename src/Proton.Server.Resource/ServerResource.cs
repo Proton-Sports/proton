@@ -8,7 +8,7 @@ using Proton.Shared.Adapters;
 using Proton.Shared.Dtos;
 using Proton.Server.Resource.Authentication.Extentions;
 using Proton.Shared.Interfaces;
-using Proton.Shared.Models;
+using System.Globalization;
 
 namespace Proton.Server.Resource;
 
@@ -38,6 +38,7 @@ public sealed class ServerResource : AsyncResource
         Alt.RegisterMValueAdapter(SharedRaceCreatorDataMValueAdapter.Instance);
         Alt.RegisterMValueAdapter(RaceMapDto.Adapter.Instance);
         Alt.RegisterMValueAdapter(DefaultMValueAdapters.GetArrayAdapter(RaceMapDto.Adapter.Instance));
+        Alt.RegisterMValueAdapter(RaceHostSubmitDto.Adapter.Instance);
 
         // TODO: Add logging for startup
         var services = serviceProvider.GetServices<IStartup>();

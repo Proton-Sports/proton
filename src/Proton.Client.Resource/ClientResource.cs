@@ -31,6 +31,7 @@ public sealed class ClientResource : AsyncResource
         Alt.RegisterMValueAdapter(SharedRaceCreatorDataMValueAdapter.Instance);
         Alt.RegisterMValueAdapter(RaceMapDto.Adapter.Instance);
         Alt.RegisterMValueAdapter(DefaultMValueAdapters.GetArrayAdapter(RaceMapDto.Adapter.Instance));
+        Alt.RegisterMValueAdapter(RaceHostSubmitDto.Adapter.Instance);
 
         // TODO: Add logging for startup
         serviceProvider.GetServices<IStartup>();

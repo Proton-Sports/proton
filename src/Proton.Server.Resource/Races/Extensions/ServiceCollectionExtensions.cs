@@ -6,7 +6,9 @@ public static class ServiceCollectionExtensions
 {
     public static IServiceCollection AddRaces(this IServiceCollection serviceCollection)
     {
-        serviceCollection.AddStartup<RaceCreatorScript>();
+        serviceCollection
+            .AddStartup<RaceCreatorScript>()
+            .AddStartup<RaceHostScript>();
         return serviceCollection;
     }
 }
