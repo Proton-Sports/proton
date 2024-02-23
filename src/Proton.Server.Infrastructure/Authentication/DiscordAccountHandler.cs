@@ -27,7 +27,7 @@ namespace Proton.Server.Infrastructure.Authentication
             return defaultDb.Users.Where(x => x.DiscordId == GetCurrentUser().Id).Any();
         }
 
-        public async Task Login(string Ip)
+        public async Task<int> Login(string Ip)
         {
             var defaultDb = defaultDbFactory.CreateDbContext();
             string[] ipSplited = Ip.Split(':');
@@ -35,6 +35,7 @@ namespace Proton.Server.Infrastructure.Authentication
             if(user is null)
             {
                 await Console.Out.WriteLineAsync("user null");
+                return 0;
             }
             else
             {
@@ -47,6 +48,7 @@ namespace Proton.Server.Infrastructure.Authentication
                 });
 
                 await defaultDb.SaveChangesAsync();
+                return user.Id;
             }
         }
 

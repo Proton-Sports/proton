@@ -9,6 +9,8 @@ using Proton.Shared.Dtos;
 using Proton.Server.Resource.Authentication.Extentions;
 using Proton.Shared.Interfaces;
 using Proton.Shared.Models;
+using AltV.Net.Elements.Entities;
+using Proton.Server.Infrastructure.Factorys;
 
 namespace Proton.Server.Resource;
 
@@ -41,6 +43,11 @@ public sealed class ServerResource : AsyncResource
 
         // TODO: Add logging for startup
         var services = serviceProvider.GetServices<IStartup>();
+    }
+
+    public override IEntityFactory<IPlayer> GetPlayerFactory()
+    {
+        return new PPlayerFactory();
     }
 
     public override void OnStop() { }

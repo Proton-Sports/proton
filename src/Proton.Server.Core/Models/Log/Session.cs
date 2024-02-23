@@ -10,8 +10,7 @@ namespace Proton.Server.Core.Models.Log
 {
     public class Session
     {
-        [Key]
-        public int Id { get; set; }
+        public long Id { get; set; }
         public bool IsActive { get; set; } = true;
         public DateTime TimestampLogin { get; set; } = DateTime.UtcNow;
         public DateTime? TimestampLogout { get; set; }
@@ -20,7 +19,7 @@ namespace Proton.Server.Core.Models.Log
         public string Country { get; set; } = "";
 
         //Foreign key for User 
-        public int UserId { get; set; }
+        public long UserId { get; set; }
         public User? _User { get; set; }
     }
 }

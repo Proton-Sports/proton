@@ -11,11 +11,10 @@ namespace Proton.Server.Core.Models
 {
     public class User
     {
-        [Key]
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int Id { get; set; }
+        public long Id { get; set; }
         public string Username { get; set; } = "";
         public ulong DiscordId { get; set; } = 0;
+        public int Money { get; set; } = 0;
 
         public ICollection<OwnedVehicle> OwnedVehicles { get; set; } = new List<OwnedVehicle>();
         public ICollection<Session> Sessions { get; set; } = new List<Session>();

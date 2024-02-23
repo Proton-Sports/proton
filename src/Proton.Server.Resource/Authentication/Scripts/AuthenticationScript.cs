@@ -3,6 +3,7 @@ using AltV.Net.Async;
 using AltV.Net.Elements.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Proton.Server.Core.Factorys;
 using Proton.Server.Core.Interfaces;
 using Proton.Server.Infrastructure.Authentication;
 using Proton.Server.Infrastructure.Persistence;
@@ -37,8 +38,7 @@ public class AuthenticationScript : IStartup
         AltAsync.OnResourceStop += OnResourceStop;
         Alt.OnClient<string>("authentication:token:exchange", 
             (player, token) => OnTokenExchange(player, token).GetAwaiter());
-        Alt.OnClient("authentication:login",
-            (player) => OnPlayerWantsLogin(player).GetAwaiter());
+        Alt.OnClient("authentication:login", (p) => OnPlayerWantsLogin(p));
     }    
 
     /// <summary>
@@ -73,17 +73,25 @@ public class AuthenticationScript : IStartup
         p.Emit("authentication:login:information", discordProfile.GetAvatarUrl(), p.Name);
     }
 
-    private async Task OnPlayerWantsLogin(IPlayer p)
+    private async Task OnPlayerWantsLogin(IPlayer _p)
     {
+        var p = (PPlayer)_p;
         var account = playerAuthenticationStore[p]; //null checking
         if (!account.IsUserRegistered())
         {
             await account.Register(p.SocialClubName);
         }
 
-        await account.Login(p.Ip);
-
-        p.Emit("authentication:login:ok");
+        int id = await account.Login(p.Ip);
+        if(id != 0)
+        {
+            p.ProtonId = id;
+            p.Emit("authentication:login:ok");
+        }
+        else
+        {
+            p.Kick("There was a mistake while logging in!");
+        }        
     }
 
     /// <summary>
