@@ -3,6 +3,7 @@ using AltV.Net.Async;
 using AltV.Net.Elements.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Proton.Server.Core.Factorys;
 using Proton.Server.Core.Interfaces;
 using Proton.Server.Infrastructure.Authentication;
 using Proton.Server.Infrastructure.Persistence;
@@ -25,7 +26,7 @@ public class AuthenticationScript : IStartup
 
     private Dictionary<IPlayer, DiscordAccountHandler> playerAuthenticationStore = new Dictionary<IPlayer, DiscordAccountHandler>();
 
-    public AuthenticationScript(DiscordHandler discord, 
+    public AuthenticationScript(DiscordHandler discord,
         IDbContextFactory<DefaultDbContext> dbContextFactory,
         IConfiguration configuration)
     {
@@ -35,11 +36,10 @@ public class AuthenticationScript : IStartup
         AltAsync.OnPlayerConnect += OnPlayerConnect;
         AltAsync.OnPlayerDisconnect += OnPlayerDisconnect;
         AltAsync.OnResourceStop += OnResourceStop;
-        Alt.OnClient<string>("authentication:token:exchange", 
+        Alt.OnClient<string>("authentication:token:exchange",
             (player, token) => OnTokenExchange(player, token).GetAwaiter());
-        Alt.OnClient("authentication:login",
-            (player) => OnPlayerWantsLogin(player).GetAwaiter());
-    }    
+        Alt.OnClient("authentication:login", (p) => OnPlayerWantsLogin(p));
+    }
 
     /// <summary>
     /// Checking if the OAuth Token is still valid and offer to login as User
@@ -73,17 +73,25 @@ public class AuthenticationScript : IStartup
         p.Emit("authentication:login:information", discordProfile.GetAvatarUrl(), p.Name);
     }
 
-    private async Task OnPlayerWantsLogin(IPlayer p)
+    private async Task OnPlayerWantsLogin(IPlayer _p)
     {
+        var p = (PPlayer)_p;
         var account = playerAuthenticationStore[p]; //null checking
         if (!account.IsUserRegistered())
         {
             await account.Register(p.SocialClubName);
         }
 
-        await account.Login(p.Ip);
-
-        p.Emit("authentication:login:ok");
+        var id = await account.Login(p.Ip);
+        if (id != 0)
+        {
+            p.ProtonId = id;
+            p.Emit("authentication:login:ok");
+        }
+        else
+        {
+            p.Kick("There was a mistake while logging in!");
+        }
     }
 
     /// <summary>
