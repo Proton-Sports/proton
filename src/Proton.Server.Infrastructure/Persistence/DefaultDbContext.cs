@@ -14,6 +14,7 @@ public class DefaultDbContext : DbContext, IDbContext
     public DbSet<RaceStartPoint> RaceStartPoints => Set<RaceStartPoint>();
     public DbSet<RacePoint> RacePoints => Set<RacePoint>();
     public DbSet<Vehicle> Vehicles => Set<Vehicle>();
+    public DbSet<OwnedVehicle> PlayerGarages => Set<OwnedVehicle>();
 
     public DefaultDbContext() { }
     public DefaultDbContext(DbContextOptions options) : base(options) { }

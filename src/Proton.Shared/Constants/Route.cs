@@ -12,4 +12,5 @@ public sealed class Route
     public static readonly Route RaceMainMenu = new("race-main-menu");
     public static readonly Route RaceCreator = new("race-creator");
     public static readonly Route Auth = new("auth");
+    public static readonly Route VehicleShop = new("car_shop");
 }

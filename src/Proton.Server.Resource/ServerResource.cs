@@ -11,6 +11,7 @@ using Proton.Shared.Interfaces;
 using Proton.Shared.Models;
 using AltV.Net.Elements.Entities;
 using Proton.Server.Infrastructure.Factorys;
+using Proton.Server.Resource.Shop.Extentions;
 
 namespace Proton.Server.Resource;
 
@@ -31,7 +32,8 @@ public sealed class ServerResource : AsyncResource
             .AddInfrastructure(configuration)
             //.AddRaces()
             .AddSingleton<IConfiguration>(configuration)
-            .AddAuthentication()
+            //.AddAuthentication()
+            .AddShops()
             .BuildServiceProvider();
     }
 

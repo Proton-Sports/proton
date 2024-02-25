@@ -14,7 +14,7 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddInfrastructure(this IServiceCollection serviceCollection, IConfiguration configuration)
     {
         AddPersistence(serviceCollection, configuration);
-        serviceCollection.AddSingleton<INoClip, DefaultNoClip>();
+        serviceCollection.AddSingleton<INoClip, DefaultNoClip>();        
         return serviceCollection;
     }
 

@@ -9,6 +9,7 @@ using Proton.Shared.Dtos;
 using Proton.Client.Resource.Authentication.Extentions;
 using Proton.Shared.Interfaces;
 using Proton.Shared.Models;
+using Proton.Client.Resource.Shop.Extentions;
 
 namespace Proton.Server.Resource;
 
@@ -22,6 +23,7 @@ public sealed class ClientResource : AsyncResource
             .AddInfrastructure()
             .AddNoClips()
             .AddAuthentication()
+            .AddShop()
             .AddRaces();
         serviceProvider = serviceCollection.BuildServiceProvider();
     }

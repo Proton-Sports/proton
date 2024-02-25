@@ -13,11 +13,11 @@ namespace Proton.Shared.Models
         public IMValueBaseAdapter GetAdapter() => SharedShopItemAdapter.Instance;
 
         public string Displayname { get; set; }
-        public int Id { get; set; }
+        public long Id { get; set; }
         public string Vehiclename { get; set; }
         public int Price { get; set; }
 
-        public SharedShopItem(int id, string displayname, string vehicleName, int price)
+        public SharedShopItem(long id, string displayname, string vehicleName, int price)
         {
             Displayname = displayname;
             Id = id;

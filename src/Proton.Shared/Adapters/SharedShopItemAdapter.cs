@@ -17,7 +17,7 @@ namespace Proton.Shared.Adapters
         {
             if (reader.Peek() == MValueReaderToken.Nil) return null!;
 
-            int id = default;
+            long id = default;
             string displayname = string.Empty;
             string vehiclename = string.Empty;
             int price = default;
@@ -28,7 +28,7 @@ namespace Proton.Shared.Adapters
                 {
                     case "id":
                         {
-                            id = reader.NextInt();
+                            id = reader.NextLong();
                             break;
                         }
                     case "displayname":

@@ -1,5 +1,7 @@
 ﻿using AltV.Net;
+using AltV.Net.Async;
 using AltV.Net.Elements.Entities;
+using AltV.Net.Enums;
 using Microsoft.EntityFrameworkCore;
 using Proton.Server.Core.Extentions;
 using Proton.Server.Core.Factorys;
@@ -16,18 +18,26 @@ using System.Xml.Linq;
 
 namespace Proton.Server.Infrastructure.Services
 {
-    internal class VehiclShopService : ShopAbstract
+    public class VehicleShopService : ShopAbstract
     {
         private readonly IDbContextFactory<DefaultDbContext> defaultDbFactory;
 
-        public VehiclShopService(IDbContextFactory<DefaultDbContext> defaultDbFactory)
+        public VehicleShopService(IDbContextFactory<DefaultDbContext> defaultDbFactory)
         {
+            Console.WriteLine("Loading ShopService");
             this.defaultDbFactory = defaultDbFactory;
 
-            Alt.OnClient<int, string>(ShopPurchase, 
+            Alt.OnClient<int, string>(ShopPurchase,
                 (p, id, color) => BuyItem(p, id, color).GetAwaiter());
             Alt.OnClient(ShopGetData, GetAllItems);
-            Alt.OnClient(ShopGetOwnData, GetOwnedItems);  
+            Alt.OnClient(ShopGetOwnData, GetOwnedItems);
+            Alt.OnPlayerConnect += Alt_OnPlayerConnect;
+        }
+
+        private void Alt_OnPlayerConnect(IPlayer player, string reason)
+        {
+            player.Spawn(new AltV.Net.Data.Position(-1061, 2960, 100));
+            player.Model = (uint)PedModel.FreemodeMale01;
         }
 
         /// <summary>
@@ -53,14 +63,14 @@ namespace Proton.Server.Infrastructure.Services
                     return;
                 }
 
-                dbUser.OwnedVehicles.Add(new Core.Models.OwnedVehicle
+                dbUser.Garage.Add(new Core.Models.OwnedVehicle
                 {
                     Price = vehicle.Price,
                     DisplayName = vehicle.DisplayName,
                     AltVHash = vehicle.AltVHash,
                     AltVColor = Color
                 });
-                
+
                 db.Users.Update(dbUser);
                 await db.SaveChangesAsync();
                 Player.Emit(ShopPurchase, (int)ShopStatus.OK);
@@ -71,10 +81,11 @@ namespace Proton.Server.Infrastructure.Services
             }
         }
 
-        public override Task<List<SharedShopItem>> GetAllItems()
+        public override Task<List<SharedShopItem>> GetAllItems(IPlayer player)
         {
             var db = defaultDbFactory.CreateDbContext();
             var vehicles = db.Vehicles.ToList();
+            player.Emit(ShopGetData, (int)ShopStatus.ITEM_NOT_FOUND);
             return Task.FromResult(vehicles.ToShopItems());
         }
 
@@ -86,12 +97,12 @@ namespace Proton.Server.Infrastructure.Services
 
             if (user != null)
             {
-                var vehicles = user.OwnedVehicles.ToShopItems();
-                Player.Emit(ShopGetData, (int)ShopStatus.ITEM_NOT_FOUND, vehicles);
+                var vehicles = user.Garage.ToShopItems();
+                Player.Emit(ShopGetOwnData, (int)ShopStatus.ITEM_NOT_FOUND, vehicles);
                 return Task.CompletedTask;
             }
 
-            Player.Emit(ShopGetData, (int)ShopStatus.ITEM_NOT_FOUND);
+            Player.Emit(ShopGetOwnData, (int)ShopStatus.ITEM_NOT_FOUND);
 
             return Task.CompletedTask;
         }

@@ -1,0 +1,4 @@
+set shell := ["powershell.exe", "-c"]
+
+optimize:
+    dotnet ef dbcontext optimize -n Proton.Server.Infrastructure.Persistence.CompiledModels -o ../Proton.Server.Infrastructure/Persistence/CompiledModels

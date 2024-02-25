@@ -13,7 +13,7 @@ namespace Proton.Server.Infrastructure.Persistence.Configurations
     {
         public void Configure(EntityTypeBuilder<Vehicle> builder)
         {
-            builder.HasKey(x => x.Id);
+            builder.HasKey(x=> x.Id);
         }
     }
 }

@@ -12,7 +12,7 @@ namespace Proton.Server.Core.Extentions
     {
         public static List<SharedShopItem> ToShopItems(this ICollection<Vehicle> v)
         {
-            List<SharedShopItem > items = new List<SharedShopItem>();
+            List<SharedShopItem> items = new List<SharedShopItem>();
             foreach (var vehicle in v)
                 items.Add(ToShopItem(vehicle));
 
@@ -28,7 +28,12 @@ namespace Proton.Server.Core.Extentions
             return items;
         }
 
-        public static SharedShopItem ToShopItem(this Vehicle v) 
+        public static SharedShopItem ToShopItem(this Vehicle v)
+        {
+            return new SharedShopItem(v.Id, v.DisplayName, v.AltVHash, v.Price);
+        }
+
+        public static SharedShopItem ToShopItem(this OwnedVehicle v)
         {
             return new SharedShopItem(v.Id, v.DisplayName, v.AltVHash, v.Price);
         }

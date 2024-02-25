@@ -9,13 +9,11 @@ using System.Threading.Tasks;
 
 namespace Proton.Server.Infrastructure.Persistence.Configurations
 {
-    public sealed class UserConfiguration : IEntityTypeConfiguration<User>
+    public sealed class OwnedVehicleConfiguration : IEntityTypeConfiguration<OwnedVehicle>
     {
-        public void Configure(EntityTypeBuilder<User> builder)
+        public void Configure(EntityTypeBuilder<OwnedVehicle> builder)
         {
-            builder.HasMany(x => x.Sessions);
-            builder.HasMany(x => x.Garage);
-            builder.HasKey(x => x.Id);
+            builder.HasKey(x=> x.Id);
         }
     }
 }

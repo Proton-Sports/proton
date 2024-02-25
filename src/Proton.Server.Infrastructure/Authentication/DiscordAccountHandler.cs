@@ -27,7 +27,7 @@ namespace Proton.Server.Infrastructure.Authentication
             return defaultDb.Users.Where(x => x.DiscordId == GetCurrentUser().Id).Any();
         }
 
-        public async Task<int> Login(string Ip)
+        public async Task<long> Login(string Ip)
         {
             var defaultDb = defaultDbFactory.CreateDbContext();
             string[] ipSplited = Ip.Split(':');
