@@ -4,10 +4,7 @@
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <StartAction>Program</StartAction>
-    <StartWorkingDirectory>$(SolutionDir)..\..</StartWorkingDirectory>
-    <StartProgram>bash</StartProgram>
-    <StartArguments>-c "./altv-server"</StartArguments>
+    <LangVersion>Preview</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>

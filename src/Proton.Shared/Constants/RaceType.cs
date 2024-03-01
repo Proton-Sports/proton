@@ -1,4 +1,4 @@
-namespace Proton.Server.Infrastructure.Constants;
+namespace Proton.Shared.Constants;
 
 public enum RaceType : byte
 {

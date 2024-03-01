@@ -4,7 +4,7 @@ using Proton.Shared.Interfaces;
 using Proton.Shared.Dtos;
 using Proton.Shared.Contants;
 
-namespace Proton.Client.Resource.Races.Scripts;
+namespace Proton.Client.Resource.Features.Races.Scripts;
 
 public sealed class RaceHostScript : IStartup
 {
@@ -19,21 +19,6 @@ public sealed class RaceHostScript : IStartup
         Alt.OnServer("race-host:submit", HandleServerSubmit);
         Alt.OnServer<List<RaceMapDto>>("race-host:availableMaps", HandleServerAvailableMaps);
         Alt.OnServer<int>("race-host:getMaxRacers", HandleServerGetMaxRacers);
-        Alt.OnConsoleCommand += (command, args) =>
-        {
-            if (command.Equals("race-host"))
-            {
-                uiView.Mount(Route.RaceMainMenuList);
-                Alt.ShowCursor(true);
-                uiView.Focus();
-            }
-            if (command.Equals("hide-race-host"))
-            {
-                uiView.Unmount(Route.RaceMainMenuList);
-                Alt.ShowCursor(false);
-                uiView.Unfocus();
-            }
-        };
     }
 
     private void HandleWebViewSubmit(RaceHostSubmitDto dto)

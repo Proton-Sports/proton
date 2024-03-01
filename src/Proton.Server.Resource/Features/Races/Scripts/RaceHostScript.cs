@@ -2,24 +2,26 @@ using AltV.Net;
 using AltV.Net.Elements.Entities;
 using Proton.Shared.Interfaces;
 using Proton.Shared.Dtos;
-using System.Collections.Concurrent;
-using Proton.Server.Infrastructure.Models;
 using AltV.Net.Enums;
-using Proton.Server.Infrastructure.Constants;
+using Proton.Server.Resource.Features.Races.Constants;
+using Proton.Server.Resource.Features.Races.Models;
 using System.Globalization;
 using Proton.Server.Core.Interfaces;
 using AltV.Net.Async;
 using Microsoft.EntityFrameworkCore;
+using Proton.Shared.Constants;
 
-namespace Proton.Server.Resource.Races.Scripts;
+namespace Proton.Server.Resource.Features.Races.Scripts;
 
 public sealed class RaceHostScript : IStartup
 {
+	private readonly IRaceService raceService;
 	private readonly IDbContextFactory dbContextFactory;
-	private readonly ConcurrentDictionary<IPlayer, Race> hostRaceDictionary = new();
+	private long counter = 0;
 
-	public RaceHostScript(IDbContextFactory dbContextFactory)
+	public RaceHostScript(IRaceService raceService, IDbContextFactory dbContextFactory)
 	{
+		this.raceService = raceService;
 		this.dbContextFactory = dbContextFactory;
 		Alt.OnClient<IPlayer, RaceHostSubmitDto>("race-host:submit", HandleSubmit);
 		AltAsync.OnClient<IPlayer, Task>("race-host:availableMaps", HandleAvailableMapsAsync);
@@ -28,7 +30,7 @@ public sealed class RaceHostScript : IStartup
 
 	private void HandleSubmit(IPlayer player, RaceHostSubmitDto dto)
 	{
-		if (hostRaceDictionary.ContainsKey(player))
+		if (raceService.Races.Any(x => x.Host == player))
 		{
 			// TODO: Error handling
 			return;
@@ -42,11 +44,13 @@ public sealed class RaceHostScript : IStartup
 
 		var race = new Race
 		{
+			Id = ++counter,
 			Host = player,
 			VehicleModel = model,
 			MapId = dto.MapId,
-			Racers = dto.Racers,
+			MaxParticipants = dto.Racers,
 			Duration = dto.Duration,
+			CountdownSeconds = dto.Countdown,
 			Description = dto.Description,
 			Ghosting = dto.Ghosting,
 			Type = dto.Type switch
@@ -71,9 +75,12 @@ public sealed class RaceHostScript : IStartup
 				}))(dto.ExactTime),
 				_ => new TimeOnly(5, 0, 0),
 			},
-			Weather = dto.Weather
+			Weather = dto.Weather,
+			CreatedTime = DateTimeOffset.UtcNow,
+			Status = RaceStatus.Open,
 		};
-		hostRaceDictionary[player] = race;
+		raceService.AddRace(race);
+		raceService.AddParticipant(race.Id, new RaceParticipant { Player = player });
 		player.Emit("race-host:submit");
 	}
 
@@ -91,6 +98,6 @@ public sealed class RaceHostScript : IStartup
 	{
 		await using var ctx = await dbContextFactory.CreateDbContextAsync().ConfigureAwait(false);
 		var racers = await ctx.RaceMaps.Where(x => x.Id == mapId).Select(x => x.StartPoints.Count).FirstOrDefaultAsync().ConfigureAwait(false);
-		player.Emit("race-host:getMaxRacers", Math.Min(racers, 1));
+		player.Emit("race-host:getMaxRacers", Math.Max(racers, 1));
 	}
 }

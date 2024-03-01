@@ -42,3 +42,12 @@ update-windows-modules:
 
 update-windows-data:
     wget -P ./data -N https://cdn.alt-mp.com/data/release/data/vehmodels.bin https://cdn.alt-mp.com/data/release/data/vehmods.bin https://cdn.alt-mp.com/data/release/data/clothes.bin https://cdn.alt-mp.com/data/release/data/pedmodels.bin https://cdn.alt-mp.com/data/release/data/rpfdata.bin https://cdn.alt-mp.com/data/release/data/weaponmodels.bin
+
+optimize:
+    dotnet ef dbcontext optimize --project src/Proton.Server.Resource -n Proton.Server.Infrastructure.Persistence.CompiledModels -o ../Proton.Server.Infrastructure/Persistence/CompiledModels
+
+mig +rest:
+    dotnet ef migrations {{rest}} --project src/Proton.Server.Resource
+
+db +rest:
+    dotnet ef database {{rest}} --project src/Proton.Server.Resource
