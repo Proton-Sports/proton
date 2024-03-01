@@ -10,6 +10,7 @@ public sealed record class RaceHostSubmitDto : IMValueConvertible
     public string VehicleName { get; set; } = string.Empty;
     public int Racers { get; set; }
     public int Duration { get; set; }
+    public int Countdown { get; set; }
     public string Description { get; set; } = string.Empty;
     public bool Ghosting { get; set; }
     public string Type { get; set; } = string.Empty;
@@ -46,6 +47,9 @@ public sealed record class RaceHostSubmitDto : IMValueConvertible
                     case "duration":
                         dto.Duration = (int)reader.NextDouble();
                         break;
+                    case "countdown":
+                        dto.Countdown = (int)reader.NextDouble();
+                        break;
                     case "description":
                         dto.Description = reader.NextString();
                         break;
@@ -57,7 +61,6 @@ public sealed record class RaceHostSubmitDto : IMValueConvertible
                         break;
                     case "laps":
                         dto.Laps = (int)reader.NextDouble();
-                        // else reader.SkipValue();
                         break;
                     case "time":
                         dto.Time = reader.NextString();
@@ -88,6 +91,8 @@ public sealed record class RaceHostSubmitDto : IMValueConvertible
             writer.Value(value.Racers);
             writer.Name("duration");
             writer.Value(value.Duration);
+            writer.Name("countdown");
+            writer.Value(value.Countdown);
             writer.Name("description");
             writer.Value(value.Description);
             writer.Name("ghosting");

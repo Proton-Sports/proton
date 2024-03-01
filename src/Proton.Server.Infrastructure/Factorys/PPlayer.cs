@@ -1,9 +1,9 @@
 ﻿using AltV.Net;
-using AltV.Net.Elements.Entities;
+using AltV.Net.Async.Elements.Entities;
 
 namespace Proton.Server.Core.Factorys
 {
-    public class PPlayer : Player
+    public class PPlayer : AsyncPlayer
     {
         //If -1 Player not Loggedin
         public long ProtonId { get; set; } = -1;

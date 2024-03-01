@@ -9,6 +9,7 @@ using Proton.Shared.Dtos;
 using Proton.Client.Resource.Authentication.Extentions;
 using Proton.Shared.Interfaces;
 using Proton.Shared.Models;
+using Proton.Shared.Extensions;
 
 namespace Proton.Server.Resource;
 
@@ -22,16 +23,13 @@ public sealed class ClientResource : AsyncResource
             .AddInfrastructure()
             .AddNoClips()
             .AddAuthentication()
-            .AddRaces();
+            .AddRaceFeatures();
         serviceProvider = serviceCollection.BuildServiceProvider();
     }
 
     public override void OnStart()
     {
-        Alt.RegisterMValueAdapter(SharedRaceCreatorDataMValueAdapter.Instance);
-        Alt.RegisterMValueAdapter(RaceMapDto.Adapter.Instance);
-        Alt.RegisterMValueAdapter(DefaultMValueAdapters.GetArrayAdapter(RaceMapDto.Adapter.Instance));
-        Alt.RegisterMValueAdapter(RaceHostSubmitDto.Adapter.Instance);
+        ResourceExtensions.RegisterMValueAdapters();
 
         // TODO: Add logging for startup
         serviceProvider.GetServices<IStartup>();

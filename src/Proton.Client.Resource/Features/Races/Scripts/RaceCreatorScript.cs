@@ -10,7 +10,7 @@ using Proton.Shared.Dtos;
 using Proton.Shared.Interfaces;
 using Proton.Shared.Models;
 
-namespace Proton.Client.Resource.Races.Scripts;
+namespace Proton.Client.Resource.Features.Races.Scripts;
 
 public sealed class RaceCreatorScript : IStartup
 {
