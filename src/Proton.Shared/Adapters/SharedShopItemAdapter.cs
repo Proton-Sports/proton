@@ -20,6 +20,7 @@ namespace Proton.Shared.Adapters
             long id = default;
             string displayname = string.Empty;
             string vehiclename = string.Empty;
+            string category = string.Empty;
             int price = default;
             reader.BeginObject();
             while (reader.HasNext())
@@ -46,6 +47,11 @@ namespace Proton.Shared.Adapters
                             price = reader.NextInt();
                             break;
                         }
+                    case "category":
+                        {
+                            category = reader.NextString();
+                            break;
+                        }
                     default:
                         {
                             reader.SkipValue();
@@ -54,7 +60,7 @@ namespace Proton.Shared.Adapters
                 }
             }
             reader.EndObject();
-            return new(id, displayname, vehiclename, price);
+            return new(id, displayname, vehiclename, price, category);
         }
 
         public void ToMValue(SharedShopItem value, IMValueWriter writer)
@@ -68,6 +74,8 @@ namespace Proton.Shared.Adapters
             writer.Value(value.Vehiclename);
             writer.Name("price");
             writer.Value(value.Price);
+            writer.Name("category");
+            writer.Value(value.Category);
             writer.EndObject();
         }
 

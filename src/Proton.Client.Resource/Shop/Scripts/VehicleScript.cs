@@ -8,6 +8,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace Proton.Client.Resource.Shop.Scripts
@@ -16,6 +18,8 @@ namespace Proton.Client.Resource.Shop.Scripts
     {
         private readonly IUiView uiView;
         private List<SharedShopItem> shopItems = new List<SharedShopItem>();
+        private Dictionary<string, List<SharedShopItem>> shopItemsSorted = new Dictionary<string, List<SharedShopItem>>();
+        private Dictionary<string, List<SharedShopItem>> ownedItemsSorted = new Dictionary<string, List<SharedShopItem>>();
         private List<SharedShopItem> ownedItems = new List<SharedShopItem>();
 
         private ILocalVehicle? previewVehicle;
@@ -26,15 +30,17 @@ namespace Proton.Client.Resource.Shop.Scripts
 
             this.uiView.On<string>("shop:select:vehicle", 
                 (displayName) => SetVehiclePreview(displayName));
-            Alt.OnServer<List<SharedShopItem>>("shop:items",
-                (items) => GetShopItems(items, ref shopItems, "notOwned"));
-            Alt.OnServer<List<SharedShopItem>>("shop:items:owned",
-                (items) => GetShopItems(items, ref ownedItems, "owned"));
+            Alt.OnServer<int, List<SharedShopItem>>("shop:items",
+                (state, items) => GetShopItems(state, items, ref shopItems, "notOwned", ref shopItemsSorted));
+            Alt.OnServer<int , List<SharedShopItem>>("shop:items:owned",
+                (state, items) => GetShopItems(state, items, ref ownedItems, "owned", ref ownedItemsSorted));
 
             Alt.EmitServer("shop:items");
             Alt.EmitServer("shop:items:owned");
 
             Alt.OnConsoleCommand += Alt_OnConsoleCommand;
+
+            uiView.Mount(Route.VehicleShop);
         }
 
         private void Alt_OnConsoleCommand(string name, string[] args)
@@ -42,21 +48,47 @@ namespace Proton.Client.Resource.Shop.Scripts
             Console.WriteLine(name);
             if (name != "vehtest") return;
 
-            uiView.Emit("shop:vehicles:menuStatus", false);
-            uiView.Mount(Route.VehicleShop);
-            Alt.GameControlsEnabled = false;
-            Alt.ShowCursor(true);
+            Console.WriteLine($"NotOwned: {shopItems.Count}");
+            Console.WriteLine($"Owned: {ownedItems.Count}");
+            foreach (var item in shopItems)
+            {
+                Console.WriteLine(item.Displayname);
+            }
+            MountUi();
         }
 
-        private void GetShopItems(List<SharedShopItem> items, 
+        private void GetShopItems(int state, List<SharedShopItem> items, 
             ref List<SharedShopItem> list,
-            string type)
+            string type, ref Dictionary<string, List<SharedShopItem>> sortList)
         {
-            Console.WriteLine(items.Count);
+            
             list.Clear();
             list.AddRange(items);
+            Sort(items, ref sortList);
 
-            uiView.Emit($"shop:vehicles:{type}", list);
+            Console.WriteLine($"State: {state}, count: {items.Count}, type: {type}, path: 'shop:vehicles:{type}', Data: {JsonSerializer.Serialize(sortList)}");
+
+            uiView.Emit($"shop:vehicles:{type}", JsonSerializer.Serialize(sortList));
+        }
+
+        private void Sort(List<SharedShopItem> items, ref Dictionary<string, List<SharedShopItem>> shop)
+        {
+            var uniqe = items.GroupBy(x => x.Category).ToList().Distinct();
+            shop.Clear();
+
+            foreach(var u in uniqe)
+                shop.Add(u.Key, u.ToList());
+        }
+
+        private void MountUi()
+        {   
+            uiView.Focus();
+            Alt.GameControlsEnabled = false;
+            Alt.ShowCursor(true);
+            uiView.Emit("shop:vehicles:menuStatus", false);
+            uiView.Emit($"shop:vehicles:owned", JsonSerializer.Serialize(shopItemsSorted));
+            uiView.Emit($"shop:vehicles:notOwned", JsonSerializer.Serialize(ownedItemsSorted));
+            uiView.Visible = true;
         }
 
         private void SetVehiclePreview(string name)

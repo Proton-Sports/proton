@@ -36,7 +36,7 @@ namespace Proton.Server.Infrastructure.Services
 
         private void Alt_OnPlayerConnect(IPlayer player, string reason)
         {
-            player.Spawn(new AltV.Net.Data.Position(-1061, 2960, 100));
+            player.Spawn(new AltV.Net.Data.Position(-365.425f, -131.809f, 37.873f));
             player.Model = (uint)PedModel.FreemodeMale01;
         }
 
@@ -85,7 +85,8 @@ namespace Proton.Server.Infrastructure.Services
         {
             var db = defaultDbFactory.CreateDbContext();
             var vehicles = db.Vehicles.ToList();
-            player.Emit(ShopGetData, (int)ShopStatus.ITEM_NOT_FOUND);
+            Console.WriteLine("Sending Vehicles: " + vehicles.Count);
+            player.Emit(ShopGetData, (int)ShopStatus.OK, vehicles.ToShopItems());
             return Task.FromResult(vehicles.ToShopItems());
         }
 
@@ -98,11 +99,11 @@ namespace Proton.Server.Infrastructure.Services
             if (user != null)
             {
                 var vehicles = user.Garage.ToShopItems();
-                Player.Emit(ShopGetOwnData, (int)ShopStatus.ITEM_NOT_FOUND, vehicles);
+                Player.Emit(ShopGetOwnData, (int)ShopStatus.OK, vehicles);
                 return Task.CompletedTask;
             }
 
-            Player.Emit(ShopGetOwnData, (int)ShopStatus.ITEM_NOT_FOUND);
+            Player.Emit(ShopGetOwnData, (int)ShopStatus.ITEM_NOT_FOUND, new List<SharedShopItem>());
 
             return Task.CompletedTask;
         }
