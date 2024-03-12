@@ -7,7 +7,7 @@
     <StartAction>Program</StartAction>
     <StartWorkingDirectory>$(SolutionDir)..\..</StartWorkingDirectory>
     <StartProgram>bash</StartProgram>
-    <StartArguments>-c "./altv-server"</StartArguments>
+    <StartArguments>-c "./altv-server.exe"</StartArguments>
   </PropertyGroup>
 
   <ItemGroup>
@@ -36,7 +36,7 @@
   <ItemGroup>
     <AllOutputFiles Include="$(OutputPath)\publish\**\*.*" />
   </ItemGroup>
-
+	
   <ItemGroup>
     <Folder Include="Migrations\" />
   </ItemGroup>
