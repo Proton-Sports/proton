@@ -40,14 +40,14 @@ public sealed class RaceCreatorScript : IStartup
         this.uiView = uiView;
 
         Alt.OnServer("race:creator:stop", HandleServerStop);
-        Alt.OnServer<List<RaceMapDto>>("race:creator:map", HandleServerMap);
-        Alt.OnServer<RaceMapDto>("race:creator:editMap", HandleServerEditMap);
-        Alt.OnServer<int>("race:creator:deleteMap", HandleServerDeleteMap);
-        uiView.On("race:creator:map", HandleMap);
+        Alt.OnServer<List<RaceMapDto>>("race-menu-creator:map", HandleServerMap);
+        Alt.OnServer<RaceMapDto>("race-menu-creator:editMap", HandleServerEditMap);
+        Alt.OnServer<int>("race-menu-creator:deleteMap", HandleServerDeleteMap);
+        uiView.On("race-menu-creator:map", HandleMap);
         uiView.On<string>("race:creator:changeMode", HandleChangeMode);
-        uiView.On<string>("race:creator:createMap", HandleCreateMap);
-        uiView.On<int>("race:creator:deleteMap", HandleDeleteMap);
-        uiView.On<long, string>("race:creator:editMap", HandleEditMap);
+        uiView.On<string>("race-menu-creator:createMap", HandleCreateMap);
+        uiView.On<int>("race-menu-creator:deleteMap", HandleDeleteMap);
+        uiView.On<long, string>("race-menu-creator:editMap", HandleEditMap);
         uiView.On("race:creator:submit", HandleSubmit);
         uiView.On("race:creator:stop", HandleStop);
         Alt.OnWindowFocusChange += HandleWindowFocusChange;
@@ -61,12 +61,12 @@ public sealed class RaceCreatorScript : IStartup
 
     private void HandleDeleteMap(int id)
     {
-        Alt.EmitServer("race:creator:deleteMap", id);
+        Alt.EmitServer("race-menu-creator:deleteMap", id);
     }
 
     private void HandleServerDeleteMap(int id)
     {
-        uiView.Emit("race:creator:deleteMap", id);
+        uiView.Emit("race-menu-creator:deleteMap", id);
     }
 
     private void HandleEditMap(long id, string type)
@@ -78,7 +78,7 @@ public sealed class RaceCreatorScript : IStartup
             "race" => PointType.Race,
             _ => PointType.Start
         };
-        Alt.EmitServer("race:creator:editMap", id, type);
+        Alt.EmitServer("race-menu-creator:editMap", id, type);
     }
 
     private void HandleSubmit()
@@ -298,7 +298,7 @@ public sealed class RaceCreatorScript : IStartup
 
     private void HandleMap()
     {
-        Alt.EmitServer("race:creator:map");
+        Alt.EmitServer("race-menu-creator:map");
     }
 
     private void HandleChangeMode(string mode)
@@ -308,7 +308,7 @@ public sealed class RaceCreatorScript : IStartup
 
     private void HandleServerMap(List<RaceMapDto> maps)
     {
-        uiView.Emit("race:creator:map", maps);
+        uiView.Emit("race-menu-creator:map", maps);
     }
 
     private void HandleServerEditMap(RaceMapDto map)

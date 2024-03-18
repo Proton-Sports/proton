@@ -33,10 +33,10 @@ public sealed class RaceCreatorScript : IStartup
         };
         Alt.OnClient("race:creator:stop", HandleStop);
         Alt.OnClient<IPlayer, string>("race:creator:changeMode", HandleChangeMode);
-        AltAsync.OnClient<IPlayer, long, string, Task>("race:creator:editMap", HandleEditMapAsync);
-        AltAsync.OnClient<IPlayer, Task>("race:creator:map", HandleMapAsync);
+        AltAsync.OnClient<IPlayer, long, string, Task>("race-menu-creator:editMap", HandleEditMapAsync);
+        AltAsync.OnClient<IPlayer, Task>("race-menu-creator:map", HandleMapAsync);
         AltAsync.OnClient<IPlayer, SharedRaceCreatorData, Task>("race:creator:submit", HandleSubmitAsync);
-        AltAsync.OnClient<IPlayer, int, Task>("race:creator:deleteMap", HandleDeleteMapAsync);
+        AltAsync.OnClient<IPlayer, int, Task>("race-menu-creator:deleteMap", HandleDeleteMapAsync);
     }
 
     private void HandleStop(IPlayer player)
@@ -111,7 +111,7 @@ public sealed class RaceCreatorScript : IStartup
     {
         await using var ctx = await dbContextFactory.CreateDbContextAsync().ConfigureAwait(false);
         var maps = await ctx.RaceMaps.ToArrayAsync().ConfigureAwait(false);
-        player.Emit("race:creator:map", maps.Select(x => new RaceMapDto { Id = x.Id, Name = x.Name }).ToList());
+        player.Emit("race-menu-creator:map", maps.Select(x => new RaceMapDto { Id = x.Id, Name = x.Name }).ToList());
     }
 
     private async Task HandleEditMapAsync(IPlayer player, long id, string type)
@@ -131,7 +131,7 @@ public sealed class RaceCreatorScript : IStartup
             return;
         }
 
-        player.Emit("race:creator:editMap", new RaceMapDto
+        player.Emit("race-menu-creator:editMap", new RaceMapDto
         {
             Id = map.Id,
             Name = map.Name,
@@ -146,7 +146,7 @@ public sealed class RaceCreatorScript : IStartup
         var count = await ctx.RaceMaps.Where(x => x.Id == id).ExecuteDeleteAsync().ConfigureAwait(false);
         if (count == 1)
         {
-            player.Emit("race:creator:deleteMap", id);
+            player.Emit("race-menu-creator:deleteMap", id);
         }
     }
 }
