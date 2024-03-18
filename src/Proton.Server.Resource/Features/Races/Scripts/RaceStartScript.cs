@@ -46,7 +46,7 @@ public sealed class RaceStartScript : IStartup
 			else if (participant.FinishTime != 0) ++finishedCount;
 		}
 
-		if (false && finishedCount == participants.Count)
+		if (finishedCount == participants.Count)
 		{
 			raceService.DestroyRace(race);
 		}
