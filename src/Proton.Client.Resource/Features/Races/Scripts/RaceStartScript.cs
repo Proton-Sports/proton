@@ -20,6 +20,12 @@ public sealed class RaceStartScript : IStartup
         Alt.OnServer<RaceStartDto>("race-start:start", HandleServerStart);
         Alt.OnServer("race:destroy", RemoveRacePointHit);
         Alt.OnServer("race:leave", RemoveRacePointHit);
+        Alt.OnConnectionComplete += HandleConnectionComplete;
+    }
+
+    private void HandleConnectionComplete()
+    {
+        Alt.Natives.SetLocalPlayerAsGhost(false, false);
     }
 
     private void HandleServerStart(RaceStartDto dto)
