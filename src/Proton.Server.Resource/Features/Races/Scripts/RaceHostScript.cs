@@ -24,17 +24,24 @@ public sealed class RaceHostScript : IStartup
 		this.raceService = raceService;
 		this.dbContextFactory = dbContextFactory;
 		Alt.OnClient<IPlayer, RaceHostSubmitDto>("race-host:submit", HandleSubmit);
+		Alt.OnClient<IPlayer, RaceHostSubmitDto>("race-host:submit", (player, dto) =>
+		{
+			Task.Run(async () =>
+			{
+				await Task.Delay(3000); HandleSubmit(player, dto);
+			});
+		});
 		AltAsync.OnClient<IPlayer, Task>("race-host:availableMaps", HandleAvailableMapsAsync);
 		AltAsync.OnClient<IPlayer, long, Task>("race-host:getMaxRacers", HandleGetMaxRacersAsync);
 	}
 
 	private void HandleSubmit(IPlayer player, RaceHostSubmitDto dto)
 	{
-		if (raceService.Races.Any(x => x.Host == player))
-		{
-			// TODO: Error handling
-			return;
-		}
+		// if (raceService.Races.Any(x => x.Host == player))
+		// {
+		// 	// TODO: Error handling
+		// 	return;
+		// }
 
 		if (!Enum.TryParse<VehicleModel>(dto.VehicleName, true, out var model))
 		{
