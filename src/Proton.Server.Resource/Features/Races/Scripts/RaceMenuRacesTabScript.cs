@@ -85,6 +85,9 @@ public sealed class RaceMenuRacesTabScript : IStartup
         var race = raceService.Races.FirstOrDefault(x => x.Id == id);
         if (race is null) return;
 
+        var participants = raceService.GetParticipants(id);
+        if (participants.Count == race.MaxParticipants) return;
+
         if (raceService.TryGetRaceByParticipant(player, out var oldRace))
         {
             if (id == oldRace.Id) return;
