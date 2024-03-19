@@ -9,6 +9,7 @@ public interface IRaceService
     event Action<Race, IPlayer>? ParticipantLeft;
     event Func<Race, Task>? RacePrepared;
     event Func<Race, Task>? RaceStarted;
+    event Action<Race>? RaceCreated;
 
     IReadOnlyCollection<Race> Races { get; }
 

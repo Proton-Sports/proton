@@ -14,7 +14,6 @@ public static class ServiceCollectionExtensions
             .AddSingleton<IGameplayCamera, DefaultGameplayCamera>()
             .AddSingleton<IScriptCameraFactory, DefaultScriptCameraFactory>()
             .AddSingleton<IRaycastService, DefaultRaycastService>()
-            // .AddSingleton<INoClip, DefaultNoClip>()
             .AddSingleton<INoClip, ClientOnlyNoClip>()
             .AddSingleton<IUiViewFactory, DefaultUiViewFactory>();
         // serviceCollection.AddSingleton(provider => (IUiView)Alt.CreateWebView("http://localhost:5173"));
