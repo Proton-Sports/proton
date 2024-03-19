@@ -6,6 +6,9 @@ namespace Proton.Client.Resource.Features.Races.Scripts;
 
 public sealed class RaceLeaveScript : IStartup
 {
+    // TODO: Removed this when https://github.com/altmp/coreclr-module/pull/8 is released
+    private bool added = false;
+
     public RaceLeaveScript()
     {
         Alt.OnServer<long>("race:join", HandleServerJoin);
@@ -15,17 +18,29 @@ public sealed class RaceLeaveScript : IStartup
 
     private void HandleServerJoin(long raceId)
     {
-        Alt.OnKeyUp += HandleKeyUp;
+        if (!added)
+        {
+            Alt.OnKeyUp += HandleKeyUp;
+            added = true;
+        }
     }
 
     private void HandleServerLeave(long raceId)
     {
-        Alt.OnKeyUp -= HandleKeyUp;
+        if (added)
+        {
+            Alt.OnKeyUp -= HandleKeyUp;
+            added = false;
+        }
     }
 
     private void HandleServerPrepare(long raceId)
     {
-        Alt.OnKeyUp -= HandleKeyUp;
+        if (added)
+        {
+            Alt.OnKeyUp -= HandleKeyUp;
+            added = false;
+        }
     }
 
     private void HandleKeyUp(Key key)
