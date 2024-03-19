@@ -322,6 +322,12 @@ public sealed class RaceCreatorScript : IStartup
 
     private void Start()
     {
+        if (uiView.IsMounted(Route.RaceMainMenuList))
+        {
+            Alt.GameControlsEnabled = true;
+            uiView.Unmount(Route.RaceMainMenuList);
+            Alt.ShowCursor(false);
+        }
         raceCreator.ClearStartPoints();
         raceCreator.ClearRacePoints();
         uiView.Unmount(Route.RaceMainMenu);
