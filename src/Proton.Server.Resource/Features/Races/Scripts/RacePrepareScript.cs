@@ -58,8 +58,6 @@ public sealed class RacePrepareScript : IStartup
 
             participant.Vehicle = vehicle;
             vehicle.Dimension = (int)race.Id;
-            vehicle.ManualEngineControl = true;
-            vehicle.EngineOn = false;
 
             var now = DateTimeOffset.UtcNow;
             participant.Player.SetDateTime(now.Day - 1, now.Month - 1, now.Year, race.Time.Hour, race.Time.Minute, race.Time.Second);

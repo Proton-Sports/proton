@@ -1,7 +1,6 @@
 using AltV.Net.Client;
 using AltV.Net.Elements.Entities;
 using AsyncAwaitBestPractices;
-using Proton.Client.Core.Interfaces;
 using Proton.Client.Infrastructure.Interfaces;
 using Proton.Shared.Constants;
 using Proton.Shared.Contants;
@@ -25,13 +24,14 @@ public sealed class RacePrepareScript : IStartup
 			HandleServerMountAsync(dto)
 				.SafeFireAndForget((exception) => Alt.LogError(exception.Message));
 		});
+		Alt.OnServer<long>("race:start", HandleOnStarted);
 	}
 
 	private async Task HandleServerMountAsync(RacePrepareDto dto)
 	{
 		var task = uiView.TryMountAsync(Route.RacePrepare);
 
-		Alt.GameControlsEnabled = false;
+		Alt.OnTick += DisableVehicleMovement;
 		raceService.RaceType = (RaceType)dto.RaceType;
 		raceService.Dimension = dto.Dimension;
 		raceService.EnsureRacePointsCapacity(dto.RacePoints.Count);
@@ -48,5 +48,17 @@ public sealed class RacePrepareScript : IStartup
 		{
 			uiView.Emit("race-prepare:setData", new RacePrepareDto { EndTime = dto.EndTime });
 		}
+	}
+
+	private void HandleOnStarted(long _)
+	{
+		Alt.OnTick -= DisableVehicleMovement;
+	}
+
+	private void DisableVehicleMovement()
+	{
+		Alt.Natives.DisableControlAction(27, 71, true);
+		Alt.Natives.DisableControlAction(27, 72, true);
+		Alt.Natives.DisableControlAction(27, 76, true);
 	}
 }
