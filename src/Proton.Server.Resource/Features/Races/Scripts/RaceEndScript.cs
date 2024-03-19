@@ -35,7 +35,7 @@ public sealed class RaceEndScript : IStartup
                 var players = participants.Select(x => x.Player).ToArray();
                 race.Status = RaceStatus.Ended;
                 raceService.DestroyRace(race);
-                Alt.EmitClients(players, "race:end");
+                Alt.EmitClients(players, "race:destroy");
             }
         }
         timer.Change(1000, Timeout.Infinite);
