@@ -17,11 +17,13 @@ public sealed class DefaultRaceService : IRaceService
     public event Action<Race, IPlayer>? ParticipantLeft;
     public event Func<Race, Task>? RacePrepared;
     public event Func<Race, Task>? RaceStarted;
+    public event Action<Race>? RaceCreated;
 
     public void AddRace(Race race)
     {
         races.Add(race);
         raceParticipants[race.Id] = [];
+        if (RaceCreated is not null) RaceCreated(race);
     }
 
     public bool RemoveRace(Race race)

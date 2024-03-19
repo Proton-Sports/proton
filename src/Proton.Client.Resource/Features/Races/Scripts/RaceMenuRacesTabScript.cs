@@ -15,6 +15,7 @@ public sealed class RaceMenuRacesTabScript : IStartup
         Alt.OnServer<List<RaceDto>>("race-menu-races:getRaces", HandleServerGetRaces);
         Alt.OnServer<RaceDetailsDto>("race-menu-races:getDetails", HandleServerGetDetails);
         Alt.OnServer<long, string, RaceParticipantDto>("race-menu-races:participantChanged", HandleServerSetParticipants);
+        Alt.OnServer<string, RaceDto>("race-menu-races:raceChanged", HandleServerRaceChanged);
         uiView.On("race-menu-races:getRaces", HandleUIGetRaces);
         uiView.On<long>("race-menu-races:getDetails", HandleUIGetDetails);
         uiView.On<long>("race-menu-races:join", HandleUIJoin);
@@ -32,7 +33,10 @@ public sealed class RaceMenuRacesTabScript : IStartup
 
     private void HandleServerSetParticipants(long raceId, string type, RaceParticipantDto dto)
     {
-        uiView.Emit("race-menu-races:participantChanged", raceId, type, dto);
+        if (uiView.IsMounted(Route.RaceMainMenuList))
+        {
+            uiView.Emit("race-menu-races:participantChanged", raceId, type, dto);
+        }
     }
 
     private void HandleUIGetRaces()
@@ -48,5 +52,13 @@ public sealed class RaceMenuRacesTabScript : IStartup
     private void HandleUIJoin(long id)
     {
         Alt.EmitServer("race-menu-races:join", id);
+    }
+
+    private void HandleServerRaceChanged(string type, RaceDto dto)
+    {
+        if (uiView.IsMounted(Route.RaceMainMenuList))
+        {
+            uiView.Emit("race-menu-races:raceChanged", type, dto);
+        }
     }
 }

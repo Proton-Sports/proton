@@ -2,6 +2,7 @@ using System.Globalization;
 using AltV.Net;
 using AltV.Net.Async;
 using AltV.Net.Elements.Entities;
+using AsyncAwaitBestPractices;
 using Microsoft.EntityFrameworkCore;
 using Proton.Server.Core.Interfaces;
 using Proton.Server.Resource.Features.Races.Models;
@@ -22,6 +23,10 @@ public sealed class RaceMenuRacesTabScript : IStartup
 
         raceService.ParticipantJoined += HandleParticipantJoined;
         raceService.ParticipantLeft += HandleParticipantLeft;
+        raceService.RaceCreated += (race) =>
+        {
+            HandleRaceCreated(race).SafeFireAndForget(exception => Alt.LogError(exception.ToString()));
+        };
         AltAsync.OnClient<IPlayer, Task>("race-menu-races:getRaces", HandleGetRacesAsync);
         Alt.OnClient<IPlayer, long>("race-menu-races:getDetails", HandleGetDetails);
         Alt.OnClient<IPlayer, long>("race-menu-races:join", HandleJoin);
@@ -105,5 +110,23 @@ public sealed class RaceMenuRacesTabScript : IStartup
     private void HandleParticipantLeft(Race race, IPlayer player)
     {
         Alt.EmitAllClients("race-menu-races:participantChanged", race.Id, "left", new RaceParticipantDto { Id = player.Id, Name = player.Name });
+    }
+
+    private async Task HandleRaceCreated(Race race)
+    {
+        await using var context = await dbContextFactory.CreateDbContextAsync().ConfigureAwait(false);
+        var mapName = await context.RaceMaps
+            .Where(x => x.Id == race.MapId)
+            .Select(x => x.Name)
+            .FirstOrDefaultAsync()
+            .ConfigureAwait(false);
+        Alt.EmitAllClients("race-menu-races:raceChanged", "created", new RaceDto
+        {
+            Id = race.Id,
+            MaxParticipants = race.MaxParticipants,
+            Participants = 1,
+            Name = mapName ?? string.Empty,
+            Status = (byte)race.Status
+        });
     }
 }
