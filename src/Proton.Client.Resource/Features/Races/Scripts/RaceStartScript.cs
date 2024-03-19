@@ -22,6 +22,7 @@ public sealed class RaceStartScript : IStartup
 
     private void HandleServerStart(RaceStartDto dto)
     {
+        Alt.GameControlsEnabled = true;
         if (dto.Ghosting)
         {
             Alt.Natives.SetLocalPlayerAsGhost(true, true);
