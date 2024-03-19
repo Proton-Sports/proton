@@ -71,7 +71,6 @@ public sealed class RacePrepareScript : IStartup
                 _ => WeatherType.Clear
             });
             participant.Player.SetIntoVehicle(participant.Vehicle, 1);
-            vehicle.Frozen = true;
         }
 
         Alt.EmitClients

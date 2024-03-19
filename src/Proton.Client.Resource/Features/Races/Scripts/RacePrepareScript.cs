@@ -31,6 +31,7 @@ public sealed class RacePrepareScript : IStartup
 	{
 		var task = uiView.TryMountAsync(Route.RacePrepare);
 
+		Alt.GameControlsEnabled = false;
 		raceService.RaceType = (RaceType)dto.RaceType;
 		raceService.Dimension = dto.Dimension;
 		raceService.EnsureRacePointsCapacity(dto.RacePoints.Count);
