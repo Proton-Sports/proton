@@ -48,7 +48,9 @@ public sealed class RaceStartScript : IStartup
 
 		if (finishedCount == participants.Count)
 		{
+			var players = participants.Select(x => x.Player).ToArray();
 			raceService.DestroyRace(race);
+			Alt.EmitClients(players, "race:destroy");
 		}
 		else if (finishedCount == 1)
 		{

@@ -18,6 +18,8 @@ public sealed class RaceStartScript : IStartup
         this.raceService = raceService;
         this.uiView = uiView;
         Alt.OnServer<RaceStartDto>("race-start:start", HandleServerStart);
+        Alt.OnServer("race:destroy", RemoveRacePointHit);
+        Alt.OnServer("race:leave", RemoveRacePointHit);
     }
 
     private void HandleServerStart(RaceStartDto dto)
@@ -36,8 +38,8 @@ public sealed class RaceStartScript : IStartup
         }
         raceService.Laps = dto.Laps;
         raceService.CurrentLap = 0;
-        raceService.RacePointHit += HandleRacePointHit;
         raceService.Start();
+        raceService.RacePointHit += HandleRacePointHit;
         uiView.Unmount(Route.RacePrepare);
     }
 
@@ -68,5 +70,10 @@ public sealed class RaceStartScript : IStartup
             output.Index,
             output.NextIndex
         );
+    }
+
+    private void RemoveRacePointHit()
+    {
+        raceService.RacePointHit -= HandleRacePointHit;
     }
 }

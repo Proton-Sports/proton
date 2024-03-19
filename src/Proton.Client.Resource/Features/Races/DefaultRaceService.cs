@@ -17,20 +17,30 @@ public sealed class DefaultRaceService : IRaceService
     private readonly List<RacePointDto> racePoints = new();
     private readonly Dictionary<int, Data> indexToDataDictionary = new();
     private readonly Dictionary<RaceType, IRacePointResolver> raceTypeToResolverDictionary;
-    private uint tickHandle;
+    private readonly HashSet<Action<object>> hitEventHandlers = new();
+    private bool started;
 
-    public event Action<object>? RacePointHit;
+    public event Action<object> RacePointHit
+    {
+        add => hitEventHandlers.Add(value);
+        remove => hitEventHandlers.Remove(value);
+    }
 
     public int Dimension { get; set; }
     public int Laps { get; set; }
     public int CurrentLap { get; set; }
     public IReadOnlyList<RacePointDto> RacePoints => racePoints;
-    public bool IsStarted => tickHandle != 0;
+    public bool IsStarted => started;
     public RaceType RaceType { get; set; }
 
     public DefaultRaceService(IEnumerable<IRacePointResolver> resolvers)
     {
         raceTypeToResolverDictionary = resolvers.ToDictionary(x => x.SupportedRaceType);
+    }
+
+    public void ClearRacePoints()
+    {
+        racePoints.Clear();
     }
 
     public int EnsureRacePointsCapacity(int capacity)
@@ -100,13 +110,14 @@ public sealed class DefaultRaceService : IRaceService
 
     public void Start()
     {
-        tickHandle = Alt.EveryTick(HandleEveryTick);
+        started = true;
+        Alt.OnTick += HandleTick;
     }
 
     public void Stop()
     {
-        Alt.ClearEveryTick(tickHandle);
-        tickHandle = 0;
+        started = false;
+        Alt.OnTick -= HandleTick;
     }
 
     public bool TryGetPointResolver(out IRacePointResolver resolver)
@@ -114,10 +125,10 @@ public sealed class DefaultRaceService : IRaceService
         return raceTypeToResolverDictionary.TryGetValue(RaceType, out resolver!);
     }
 
-    private void HandleEveryTick()
+    private void HandleTick()
     {
         var vehicle = Alt.LocalPlayer.Vehicle;
-        if (vehicle is null || RacePointHit is null) return;
+        if (vehicle is null || hitEventHandlers.Count == 0) return;
 
         const float offset = 32f;
         var vehiclePosition = vehicle.Position;
@@ -127,7 +138,10 @@ public sealed class DefaultRaceService : IRaceService
             var radiusSquared = checkpoint.Radius * checkpoint.Radius;
             if (DistanceSquared(vehiclePosition, checkpoint.Position) <= radiusSquared + offset)
             {
-                RacePointHit(pair.Key);
+                foreach (var handler in hitEventHandlers)
+                {
+                    handler(pair.Key);
+                }
                 break;
             }
         }
