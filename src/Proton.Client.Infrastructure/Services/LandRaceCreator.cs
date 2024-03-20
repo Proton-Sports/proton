@@ -58,24 +58,37 @@ public class LandRaceCreator : IRaceCreator
         racePointDatas.AddLast(CreateRacePositionData(CheckpointType.CylinderCheckerboard, BlipSpriteRadarRaceLand, position, position, radius));
     }
 
-    public void RemoveRacePoint()
+    public void RemoveRacePoint(Position position)
     {
-        var lastNode = racePointDatas.Last;
-        if (lastNode is null)
+        var closestDistance = float.MaxValue;
+        LinkedListNode<RacePointData>? closestNode = default;
+        for (var node = racePointDatas.First; node is not null; node = node.Next)
         {
-            return;
+            var dist = position.GetDistanceSquaredTo(node.Value.Position);
+            if (dist <= node.Value.Checkpoint.Radius && dist < closestDistance)
+            {
+                closestDistance = dist;
+                closestNode = node;
+            }
         }
+        if (closestNode is null) return;
 
-        lastNode.Value.Destroy();
-        racePointDatas.RemoveLast();
-
-        var newLastData = racePointDatas.Last?.Value;
-        if (newLastData is not null)
+        closestNode.Value.Destroy();
+        if (closestNode.Previous is not null)
         {
-            newLastData.Checkpoint.CheckpointType = (byte)CheckpointType.CylinderCheckerboard;
-            newLastData.Blip.Sprite = BlipSpriteRadarRaceLand;
-            newLastData.Blip.Color = BlipColorPrimary;
+            if (closestNode.Next is not null)
+            {
+                closestNode.Previous.Value.Checkpoint.NextPosition = closestNode.Next.Value.Checkpoint.Position;
+            }
+            else
+            {
+                var data = closestNode.Previous.Value;
+                data.Checkpoint.CheckpointType = (byte)CheckpointType.CylinderCheckerboard;
+                data.Blip.Sprite = BlipSpriteRadarRaceLand;
+                data.Blip.Color = BlipColorPrimary;
+            }
         }
+        racePointDatas.Remove(closestNode);
     }
 
     public bool TryGetClosestRaceCheckpointTo(Position position, out ICheckpoint checkpoint)
@@ -119,16 +132,28 @@ public class LandRaceCreator : IRaceCreator
         startPointDatas.AddLast(CreateStartPositionData(startPointDatas.Count, position, rotation));
     }
 
-    public void RemoveStartPoint()
+    public void RemoveStartPoint(Position position)
     {
-        var lastNode = startPointDatas.Last;
-        if (lastNode is null)
+        var closestDistance = float.MaxValue;
+        LinkedListNode<StartPositionData>? closestNode = default;
+        for (var node = startPointDatas.First; node is not null; node = node.Next)
         {
-            return;
+            var dist = position.GetDistanceSquaredTo(node.Value.Position);
+            if (dist < 4f && dist < closestDistance)
+            {
+                closestDistance = dist;
+                closestNode = node;
+            }
         }
+        if (closestNode is null) return;
 
-        lastNode.Value.Destroy();
-        startPointDatas.RemoveLast();
+        MarkerType previousMarkerType = closestNode.Value.NumberMarker.MarkerType;
+        for (var node = closestNode.Next; node is not null; node = node.Next)
+        {
+            (previousMarkerType, node.Value.NumberMarker.MarkerType) = (node.Value.NumberMarker.MarkerType, previousMarkerType);
+        }
+        closestNode.Value.Destroy();
+        startPointDatas.Remove(closestNode);
     }
 
     private RacePointData CreateRacePositionData(CheckpointType checkpointType, uint blipSprite, Position position, Position nextPosition, float radius)

@@ -136,7 +136,7 @@ public sealed class DefaultRaceService : IRaceService
         {
             var checkpoint = pair.Value.Checkpoint;
             var radiusSquared = checkpoint.Radius * checkpoint.Radius;
-            if (DistanceSquared(vehiclePosition, checkpoint.Position) <= radiusSquared + offset)
+            if (vehiclePosition.GetDistanceSquaredTo(checkpoint.Position) <= radiusSquared + offset)
             {
                 foreach (var handler in hitEventHandlers)
                 {
@@ -145,14 +145,6 @@ public sealed class DefaultRaceService : IRaceService
                 break;
             }
         }
-    }
-
-    private static float DistanceSquared(Position a, Position b)
-    {
-        var dx = a.X - b.X;
-        var dy = a.Y - b.Y;
-        var dz = a.Z - b.Z;
-        return dx * dx + dy * dy + dz * dz;
     }
 
     private class Data

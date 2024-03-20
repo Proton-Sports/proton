@@ -13,11 +13,11 @@ public interface IRaceCreator
     void ClearStartPoints();
     void ImportStartPoints(IEnumerable<SharedRaceStartPoint> points);
     void AddStartPoint(Position position, Rotation rotation);
-    void RemoveStartPoint();
+    void RemoveStartPoint(Position position);
     void ClearRacePoints();
     void ImportRacePoints(IEnumerable<SharedRacePoint> points);
     void AddRacePoint(Position position, float radius);
-    void RemoveRacePoint();
+    void RemoveRacePoint(Position position);
     bool TryGetClosestRaceCheckpointTo(Position position, out ICheckpoint checkpoint);
     bool UpdateRacePointPosition(ICheckpoint checkpoint, Position position);
     // https://github.com/FabianTerhorst/coreclr-module/issues/840

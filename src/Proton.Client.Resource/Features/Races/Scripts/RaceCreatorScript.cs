@@ -135,14 +135,18 @@ public sealed class RaceCreatorScript : IStartup
                 }
             case Key.RButton:
                 {
-                    if (!noClip.IsStarted || focusing) break;
+                    if (!noClip.IsStarted
+                        || focusing
+                        || !noClip.TryGetRaycastData(out var data)
+                        || data is not { IsHit: true }) break;
+
                     switch (pointType)
                     {
                         case PointType.Start:
-                            raceCreator.RemoveStartPoint();
+                            raceCreator.RemoveStartPoint(data.EndPosition);
                             break;
                         case PointType.Race:
-                            raceCreator.RemoveRacePoint();
+                            raceCreator.RemoveRacePoint(data.EndPosition);
                             break;
                     }
                     break;
@@ -173,10 +177,10 @@ public sealed class RaceCreatorScript : IStartup
                     switch (pointType)
                     {
                         case PointType.Start:
-                            raceCreator.RemoveStartPoint();
+                            raceCreator.RemoveStartPoint(Alt.LocalPlayer.Position);
                             break;
                         case PointType.Race:
-                            raceCreator.RemoveRacePoint();
+                            raceCreator.RemoveRacePoint(Alt.LocalPlayer.Position);
                             break;
                     }
                     break;
