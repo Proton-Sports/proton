@@ -14,6 +14,8 @@ public sealed class RaceMenuScript : IStartup
         this.uiView = uiView;
         Alt.OnKeyUp += HandleKeyUp;
         Alt.OnServer<long>("race:prepare", HandleServerPrepare);
+        uiView.OnMount(Route.RaceMainMenuList, HandleOnMount);
+        uiView.OnUnmount(Route.RaceMainMenuList, HandleOnUnmount);
     }
 
     private void HandleKeyUp(Key key)
@@ -22,11 +24,11 @@ public sealed class RaceMenuScript : IStartup
         {
             case Key.Tab:
                 if (uiView.IsMounted(Route.RaceMainMenuList)) break;
-                Mount();
+                uiView.Mount(Route.RaceMainMenuList);
                 break;
             case Key.Escape:
                 if (!uiView.IsMounted(Route.RaceMainMenuList)) break;
-                Unmount();
+                uiView.Unmount(Route.RaceMainMenuList);
                 break;
         }
     }
@@ -35,23 +37,21 @@ public sealed class RaceMenuScript : IStartup
     {
         if (uiView.IsMounted(Route.RaceMainMenuList))
         {
-            Unmount();
+            uiView.Unmount(Route.RaceMainMenuList);
         }
     }
 
-    private void Mount()
+    private void HandleOnMount()
     {
         Alt.GameControlsEnabled = false;
         Alt.ShowCursor(true);
         uiView.Focus();
-        uiView.Mount(Route.RaceMainMenuList);
     }
 
-    private void Unmount()
+    private void HandleOnUnmount()
     {
         Alt.GameControlsEnabled = true;
         Alt.ShowCursor(false);
         uiView.Unfocus();
-        uiView.Unmount(Route.RaceMainMenuList);
     }
 }
