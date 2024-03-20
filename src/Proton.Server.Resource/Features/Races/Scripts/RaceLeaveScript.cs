@@ -1,5 +1,6 @@
 using AltV.Net;
 using AltV.Net.Elements.Entities;
+using Proton.Server.Resource.Features.Races.Models;
 using Proton.Shared.Interfaces;
 
 namespace Proton.Server.Resource.Features.Races.Scripts;
@@ -11,10 +12,16 @@ public sealed class RaceLeaveScript : IStartup
     public RaceLeaveScript(IRaceService raceService)
     {
         this.raceService = raceService;
-        Alt.OnClient<IPlayer>("race-leave:leave", HandleLeave);
+        raceService.ParticipantLeft += HandleParticipantLeft;
+        Alt.OnClient<IPlayer>("race-leave:leave", HandleClientLeave);
     }
 
-    private void HandleLeave(IPlayer player)
+    private void HandleParticipantLeft(Race _, IPlayer player)
+    {
+        player.Dimension = 0;
+    }
+
+    private void HandleClientLeave(IPlayer player)
     {
         raceService.RemoveParticipantByPlayer(player);
     }

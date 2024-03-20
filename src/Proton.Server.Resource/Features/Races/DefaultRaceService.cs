@@ -41,9 +41,11 @@ public sealed class DefaultRaceService : IRaceService
             participants.Clear();
             foreach (var participant in cloned)
             {
+                playerRace.Remove(participant.Player);
                 participant.Vehicle?.Destroy();
                 if (ParticipantLeft is not null) ParticipantLeft(race, participant.Player);
             }
+            raceParticipants.Remove(race.Id);
         }
         return ret;
     }

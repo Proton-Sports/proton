@@ -71,7 +71,6 @@ public sealed class RaceCreatorScript : IStartup
 
     private void HandleEditMap(long id, string type)
     {
-        this.id = id;
         pointType = type switch
         {
             "start" => PointType.Start,
@@ -314,6 +313,7 @@ public sealed class RaceCreatorScript : IStartup
     private void HandleServerEditMap(RaceMapDto map)
     {
         canSwitch = false;
+        id = map.Id;
         name = map.Name;
         Start();
         raceCreator.ImportStartPoints(map.StartPoints);
@@ -324,16 +324,11 @@ public sealed class RaceCreatorScript : IStartup
     {
         if (uiView.IsMounted(Route.RaceMainMenuList))
         {
-            Alt.GameControlsEnabled = true;
             uiView.Unmount(Route.RaceMainMenuList);
-            Alt.ShowCursor(false);
         }
         raceCreator.ClearStartPoints();
         raceCreator.ClearRacePoints();
-        uiView.Unmount(Route.RaceMainMenu);
         uiView.Mount(Route.RaceCreator);
-        uiView.Unfocus();
-        Alt.ShowCursor(false);
         Alt.OnKeyUp += HandleKeyUp;
         Alt.OnKeyDown += HandleKeyDown;
         Alt.GameControlsEnabled = true;
