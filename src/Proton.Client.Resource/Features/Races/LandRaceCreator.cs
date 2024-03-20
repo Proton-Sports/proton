@@ -79,6 +79,7 @@ public class LandRaceCreator : IRaceCreator
             removed = default!;
             return false;
         }
+        if (closestNode is null) return;
 
         closestNode.Value.Destroy();
         if (closestNode.Previous is not null)
@@ -159,6 +160,7 @@ public class LandRaceCreator : IRaceCreator
             removed = default!;
             return false;
         }
+        if (closestNode is null) return;
 
         MarkerType previousMarkerType = closestNode.Value.NumberMarker.MarkerType;
         for (var node = closestNode.Next; node is not null; node = node.Next)
