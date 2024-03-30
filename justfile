@@ -11,7 +11,7 @@ build-client:
     dotnet build ./src/Proton.Client.Resource/Proton.Client.Resource.csproj
 
 run: publish
-    dotnet run --project ./src/Proton.Server.Resource/Proton.Server.Resource.csproj
+    altv-server
 
 publish: publish-client publish-server
 
