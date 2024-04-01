@@ -10,7 +10,6 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddInfrastructure(this IServiceCollection serviceCollection)
     {
         serviceCollection
-            .AddSingleton<IRaceCreator, LandRaceCreator>()
             .AddSingleton<IGameplayCamera, DefaultGameplayCamera>()
             .AddSingleton<IScriptCameraFactory, DefaultScriptCameraFactory>()
             .AddSingleton<IRaycastService, DefaultRaycastService>()

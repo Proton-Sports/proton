@@ -5,6 +5,7 @@ using AltV.Net.Data;
 using AltV.Net.Elements.Entities;
 using AltV.Net.Shared.Enums;
 using Proton.Client.Core.Interfaces;
+using Proton.Client.Resource.Features.Races.Abstractions;
 using Proton.Shared.Models;
 
 namespace Proton.Client.Infrastructure.Services;
@@ -58,7 +59,7 @@ public class LandRaceCreator : IRaceCreator
         racePointDatas.AddLast(CreateRacePositionData(CheckpointType.CylinderCheckerboard, BlipSpriteRadarRaceLand, position, position, radius));
     }
 
-    public void RemoveRacePoint(Position position)
+    public bool TryRemoveRacePoint(Position position, out RacePointData removed)
     {
         var closestDistance = float.MaxValue;
         LinkedListNode<RacePointData>? closestNode = default;
@@ -71,7 +72,11 @@ public class LandRaceCreator : IRaceCreator
                 closestNode = node;
             }
         }
-        if (closestNode is null) return;
+        if (closestNode is null)
+        {
+            removed = default!;
+            return false;
+        }
 
         closestNode.Value.Destroy();
         if (closestNode.Previous is not null)
@@ -89,6 +94,8 @@ public class LandRaceCreator : IRaceCreator
             }
         }
         racePointDatas.Remove(closestNode);
+        removed = closestNode.Value;
+        return true;
     }
 
     public bool TryGetClosestRaceCheckpointTo(Position position, out ICheckpoint checkpoint)
@@ -132,7 +139,7 @@ public class LandRaceCreator : IRaceCreator
         startPointDatas.AddLast(CreateStartPositionData(startPointDatas.Count, position, rotation));
     }
 
-    public void RemoveStartPoint(Position position)
+    public bool TryRemoveStartPoint(Position position, out StartPositionData removed)
     {
         var closestDistance = float.MaxValue;
         LinkedListNode<StartPositionData>? closestNode = default;
@@ -145,7 +152,11 @@ public class LandRaceCreator : IRaceCreator
                 closestNode = node;
             }
         }
-        if (closestNode is null) return;
+        if (closestNode is null)
+        {
+            removed = default!;
+            return false;
+        }
 
         MarkerType previousMarkerType = closestNode.Value.NumberMarker.MarkerType;
         for (var node = closestNode.Next; node is not null; node = node.Next)
@@ -154,6 +165,8 @@ public class LandRaceCreator : IRaceCreator
         }
         closestNode.Value.Destroy();
         startPointDatas.Remove(closestNode);
+        removed = closestNode.Value;
+        return true;
     }
 
     private RacePointData CreateRacePositionData(CheckpointType checkpointType, uint blipSprite, Position position, Position nextPosition, float radius)
@@ -199,60 +212,6 @@ public class LandRaceCreator : IRaceCreator
         foreach (var point in points)
         {
             AddRacePoint(point.Position, point.Radius);
-        }
-    }
-
-    private abstract class BasePositionData
-    {
-        public IBlip Blip { get; set; }
-        public Position Position { get; set; }
-
-        public BasePositionData(Position position, IBlip blip)
-        {
-            Position = position;
-            Blip = blip;
-        }
-
-        public virtual void Destroy()
-        {
-            Blip.Destroy();
-        }
-    }
-
-    private class RacePointData : BasePositionData
-    {
-        public ICheckpoint Checkpoint { get; set; }
-
-        public RacePointData(Position position, ICheckpoint checkpoint, IBlip blip) : base(position, blip)
-        {
-            Checkpoint = checkpoint;
-        }
-
-        public override void Destroy()
-        {
-            base.Destroy();
-            Checkpoint.Destroy();
-        }
-    }
-
-    private class StartPositionData : BasePositionData
-    {
-        public IMarker NumberMarker { get; set; }
-        public IMarker BoxMarker { get; set; }
-        public Rotation Rotation { get; set; }
-
-        public StartPositionData(Position position, Rotation rotation, IMarker numberMarker, IMarker boxMarker, IBlip blip) : base(position, blip)
-        {
-            Rotation = rotation;
-            NumberMarker = numberMarker;
-            BoxMarker = boxMarker;
-        }
-
-        public override void Destroy()
-        {
-            base.Destroy();
-            NumberMarker.Destroy();
-            BoxMarker.Destroy();
         }
     }
 }

@@ -143,10 +143,13 @@ public sealed class RaceCreatorScript : IStartup
                     switch (pointType)
                     {
                         case PointType.Start:
-                            raceCreator.RemoveStartPoint(data.EndPosition);
+                            raceCreator.TryRemoveStartPoint(data.EndPosition, out var _);
                             break;
                         case PointType.Race:
-                            raceCreator.RemoveRacePoint(data.EndPosition);
+                            if (raceCreator.TryRemoveRacePoint(data.EndPosition, out var removed) && removed.Checkpoint == movingRaceCheckpoint)
+                            {
+                                movingRaceCheckpoint = null;
+                            }
                             break;
                     }
                     break;
@@ -177,10 +180,13 @@ public sealed class RaceCreatorScript : IStartup
                     switch (pointType)
                     {
                         case PointType.Start:
-                            raceCreator.RemoveStartPoint(Alt.LocalPlayer.Position);
+                            raceCreator.TryRemoveStartPoint(Alt.LocalPlayer.Position, out var _);
                             break;
                         case PointType.Race:
-                            raceCreator.RemoveRacePoint(Alt.LocalPlayer.Position);
+                            if (raceCreator.TryRemoveRacePoint(Alt.LocalPlayer.Position, out var removed) && removed.Checkpoint == movingRaceCheckpoint)
+                            {
+                                movingRaceCheckpoint = null;
+                            }
                             break;
                     }
                     break;

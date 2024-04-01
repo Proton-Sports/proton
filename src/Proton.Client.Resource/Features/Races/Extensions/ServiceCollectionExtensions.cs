@@ -1,3 +1,5 @@
+using Proton.Client.Core.Interfaces;
+using Proton.Client.Infrastructure.Services;
 using Proton.Client.Resource.Features.Races;
 using Proton.Client.Resource.Features.Races.Scripts;
 
@@ -8,6 +10,7 @@ public static partial class ServiceCollectionExtensions
     public static IServiceCollection AddRaceFeatures(this IServiceCollection serviceCollection)
     {
         serviceCollection
+            .AddSingleton<IRaceCreator, LandRaceCreator>()
             .AddSingleton<IRaceService, DefaultRaceService>()
             .AddSingleton<IRacePointResolver, RacePointLapResolver>()
             .AddSingleton<IRacePointResolver, RacePointRallyResolver>()
