@@ -66,7 +66,9 @@ public class LandRaceCreator : IRaceCreator
         for (var node = racePointDatas.First; node is not null; node = node.Next)
         {
             var dist = position.GetDistanceSquaredTo(node.Value.Position);
-            if (dist <= node.Value.Checkpoint.Radius && dist < closestDistance)
+            var radiusSquared = node.Value.Checkpoint.Radius;
+            radiusSquared *= radiusSquared;
+            if (dist <= radiusSquared && dist < closestDistance)
             {
                 closestDistance = dist;
                 closestNode = node;
