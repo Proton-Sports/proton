@@ -13,5 +13,5 @@ public class DefaultGameplayCamera : IGameplayCamera
 
     public Vector3 Position => Alt.Natives.GetGameplayCamCoord();
     public Vector3 Rotation => Alt.Natives.GetGameplayCamRot(RotationOrder);
-    public Vector3 ForwardVector => VectorHelper.ConvertRotationToForwardVector(Rotation * MathF.PI / 180);
+    public Vector3 ForwardVector => VectorHelper.ConvertRotationToForwardVector(Rotation, isRadian: false);
 }
