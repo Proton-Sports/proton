@@ -7,7 +7,6 @@ using AltV.Net.Client.Elements.Interfaces;
 using AltV.Net.Data;
 using AltV.Net.Enums;
 using Proton.Client.Infrastructure.Interfaces;
-using Proton.Client.Resource.CharacterCreator.Models;
 using Proton.Server.Resource.CharacterCreator.Models;
 using Proton.Shared.Contants;
 using Proton.Shared.Interfaces;
