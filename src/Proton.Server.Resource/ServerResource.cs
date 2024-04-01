@@ -8,6 +8,7 @@ using AltV.Net.Elements.Entities;
 using Proton.Server.Infrastructure.Factorys;
 using Proton.Shared.Extensions;
 using AltV.Net;
+using Proton.Server.Resource.CharacterCreator.Extensions;
 
 namespace Proton.Server.Resource;
 
@@ -29,6 +30,7 @@ public sealed class ServerResource : AsyncResource
             .AddSingleton<IConfiguration>(configuration)
             .AddAuthentication()
             .AddRaceFeatures()
+            .AddCharacterCreator()
             .BuildServiceProvider();
     }
 

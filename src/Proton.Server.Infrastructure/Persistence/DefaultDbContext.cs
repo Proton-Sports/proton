@@ -1,3 +1,5 @@
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Proton.Server.Core.Interfaces;
@@ -9,6 +11,7 @@ namespace Proton.Server.Infrastructure.Persistence;
 public class DefaultDbContext : DbContext, IDbContext
 {
     public DbSet<User> Users => Set<User>();
+    public DbSet<Character> Characters => Set<Character>();
     public DbSet<Session> Sessions => Set<Session>();
     public DbSet<RaceMap> RaceMaps => Set<RaceMap>();
     public DbSet<RaceStartPoint> RaceStartPoints => Set<RaceStartPoint>();

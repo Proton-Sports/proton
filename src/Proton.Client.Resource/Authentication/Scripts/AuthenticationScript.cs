@@ -35,8 +35,8 @@ public sealed class AuthenticationScript : IStartup
     /// </summary>
     public async Task OnAuthenticationCheck(string AppId)
     {
-        uiView.Mount(Route.Auth);
-        uiView.Focus();
+        // uiView.Mount(Route.Auth);
+        // uiView.Focus();
 
         Alt.LogInfo($"[AUTH] Player Request OAuth2Token, AppId: {AppId}");
         try

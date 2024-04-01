@@ -9,6 +9,7 @@ public interface IDbContext : IDisposable, IAsyncDisposable
     DbSet<RaceMap> RaceMaps { get; }
     DbSet<RaceStartPoint> RaceStartPoints { get; }
     DbSet<RacePoint> RacePoints { get; }
+    DbSet<Character> Characters { get; }
 
     EntityEntry<TEntity> Add<TEntity>(TEntity entity) where TEntity : class, IAggregateRoot;
     ValueTask<EntityEntry<TEntity>> AddAsync<TEntity>(TEntity entity, CancellationToken cancellationToken = default) where TEntity : class, IAggregateRoot;

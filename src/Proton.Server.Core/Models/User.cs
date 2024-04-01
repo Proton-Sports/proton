@@ -15,6 +15,7 @@ namespace Proton.Server.Core.Models
         public string Username { get; set; } = "";
         public ulong DiscordId { get; set; } = 0;
         public int Money { get; set; } = 0;
+        public Character? Character { get; set; }
 
         public ICollection<OwnedVehicle> OwnedVehicles { get; set; } = new List<OwnedVehicle>();
         public ICollection<Session> Sessions { get; set; } = new List<Session>();
