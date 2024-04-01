@@ -8,6 +8,7 @@ using Proton.Server.Core.Factorys;
 using Proton.Server.Core.Models;
 using Proton.Server.Infrastructure.Interfaces;
 using Proton.Server.Infrastructure.Persistence;
+using Proton.Shared;
 using Proton.Shared.Models;
 using System;
 using System.Collections.Generic;
@@ -34,7 +35,7 @@ namespace Proton.Server.Infrastructure.Services
             Alt.OnPlayerConnect += Alt_OnPlayerConnect;
         }
 
-        private void Alt_OnPlayerConnect(IPlayer player, string reason)
+        private void Alt_OnPlayerConnect(IPlayer player, string reason) //TODO: Replace
         {
             player.Spawn(new AltV.Net.Data.Position(-365.425f, -131.809f, 37.873f));
             player.Model = (uint)PedModel.FreemodeMale01;

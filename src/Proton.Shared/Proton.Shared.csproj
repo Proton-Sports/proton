@@ -11,7 +11,10 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
     <PackageReference Include="AsyncAwaitBestPractices" />
     <PackageReference Include="AltV.Net.Shared" />
-    <PackageReference Include="AltV.Community.MValueAdapters.Generators" />
+    <PackageReference Include="AltV.Community.MValueAdapters.Generators" PrivateAssets="all" ExcludeAssets="runtime"  />
   </ItemGroup>
 
+	<PropertyGroup>
+		<EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+	</PropertyGroup>
 </Project>

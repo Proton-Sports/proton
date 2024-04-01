@@ -32,7 +32,7 @@ public sealed class ServerResource : AsyncResource
             .AddInfrastructure(configuration)
             //.AddRaces()
             .AddSingleton<IConfiguration>(configuration)
-            //.AddAuthentication()
+            .AddAuthentication()
             .AddShops()
             .BuildServiceProvider();
     }
@@ -42,7 +42,6 @@ public sealed class ServerResource : AsyncResource
         //Alt.RegisterMValueAdapter(SharedRaceCreatorDataMValueAdapter.Instance);
         //Alt.RegisterMValueAdapter(RaceMapDto.Adapter.Instance);
         //Alt.RegisterMValueAdapter(DefaultMValueAdapters.GetArrayAdapter(RaceMapDto.Adapter.Instance));
-        Alt.RegisterMValueAdapter(MValueListAdapter<SharedShopItem, SharedShopItemAdapter>.Instance);
 
         AltExtensions.RegisterAdapters(true, true);
         // TODO: Add logging for startup

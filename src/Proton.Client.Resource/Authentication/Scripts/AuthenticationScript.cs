@@ -73,7 +73,6 @@ public sealed class AuthenticationScript : IStartup
         Alt.GameControlsEnabled = true;
         uiView.Unfocus();
         uiView.Unmount(Route.Auth);
-        uiView.Visible = false;
         return Task.CompletedTask;
     }
 }

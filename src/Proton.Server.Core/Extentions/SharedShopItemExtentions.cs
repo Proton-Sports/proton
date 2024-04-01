@@ -30,12 +30,12 @@ namespace Proton.Server.Core.Extentions
 
         public static SharedShopItem ToShopItem(this Vehicle v)
         {
-            return new SharedShopItem { Id= v.Id, Displayname= v.DisplayName, Vehiclename= v.AltVHash, Price= v.Price, Category = v.Category };
+            return new SharedShopItem { Id= v.Id, Displayname= v.DisplayName, ItemName= v.AltVHash, Price= v.Price, Category = v.Category };
         }
 
         public static SharedShopItem ToShopItem(this OwnedVehicle v)
         {
-            return new SharedShopItem { Id = v.Id, Displayname = v.DisplayName, Vehiclename = v.AltVHash, Price = v.Price, Category = v.Category };
+            return new SharedShopItem { Id = v.Id, Displayname = v.DisplayName, ItemName = v.AltVHash, Price = v.Price, Category = v.Category };
         }
     }
 }

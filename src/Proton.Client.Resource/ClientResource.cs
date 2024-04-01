@@ -22,7 +22,7 @@ public sealed class ClientResource : AsyncResource
     {
         var serviceCollection = new ServiceCollection()
             .AddInfrastructure()
-            .AddNoClips()
+            //.AddNoClips()
             .AddAuthentication()
             .AddShop()
             .AddRaces();
@@ -35,7 +35,6 @@ public sealed class ClientResource : AsyncResource
         //Alt.RegisterMValueAdapter(RaceMapDto.Adapter.Instance);
         //Alt.RegisterMValueAdapter(DefaultMValueAdapters.GetArrayAdapter(RaceMapDto.Adapter.Instance));
         //Alt.RegisterMValueAdapter(SharedShopItemAdapter.Instance);
-        Alt.RegisterMValueAdapter(MValueListAdapter<SharedShopItem, SharedShopItemAdapter>.Instance);
 
         AltExtensions.RegisterAdapters(true, true);
 

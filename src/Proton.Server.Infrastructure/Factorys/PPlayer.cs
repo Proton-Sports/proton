@@ -1,6 +1,7 @@
 ﻿using AltV.Net;
 using AltV.Net.Async.Elements.Entities;
 using AltV.Net.Elements.Entities;
+using Proton.Server.Core.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,9 +14,10 @@ namespace Proton.Server.Core.Factorys
     {
         //If -1 Player not Loggedin
         public long ProtonId { get; set; } = -1;
+        public List<OwnedVehicle> Garage { get; set; } = new List<OwnedVehicle>();
 
         public PPlayer(ICore core, nint nativePointer, uint id) : base(core, nativePointer, id)
-        {            
+        {
         }
     }
 }

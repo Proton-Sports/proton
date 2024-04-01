@@ -16,6 +16,7 @@ namespace Proton.Server.Resource.Shop.Extentions
         {           
             services.AddSingleton<IShop, VehicleShopService>();
             services.AddStartup<VehicleShopScript>();
+            services.AddStartup<VehicleManagerScript>();
             return services;
         }
     }

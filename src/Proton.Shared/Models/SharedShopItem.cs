@@ -5,18 +5,21 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace Proton.Shared.Models
 {
-    //[MValueAdapter]
-    public class SharedShopItem : IMValueConvertible
+    [MValueAdapter]
+    public class SharedShopItem
     {
-        public IMValueBaseAdapter GetAdapter() => Adapters.SharedShopItemAdapter.Instance;
-
+        [JsonPropertyName("displayname")]
         public string Displayname { get; set; } = string.Empty;
+        [JsonPropertyName("id")]
         public long Id { get; set; }
-        public string Vehiclename { get; set; } = string.Empty;
+        [JsonPropertyName("itemname")]
+        public string ItemName { get; set; } = string.Empty;
+        [JsonPropertyName("price")]
         public int Price { get; set; }
         public string Category { get; set; } = string.Empty;
 
@@ -25,7 +28,7 @@ namespace Proton.Shared.Models
         {
             Displayname = displayname;
             Id = id;
-            Vehiclename = vehicleName;
+            ItemName = vehicleName;
             Price = price;
             Category = category;
         }

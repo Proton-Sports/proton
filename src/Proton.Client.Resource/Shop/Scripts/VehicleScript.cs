@@ -1,4 +1,6 @@
 ﻿using AltV.Net.Client;
+using AltV.Net.Client.Elements.Data;
+using AltV.Net.Client.Elements.Entities;
 using AltV.Net.Client.Elements.Interfaces;
 using Proton.Client.Infrastructure.Interfaces;
 using Proton.Shared.Contants;
@@ -35,26 +37,70 @@ namespace Proton.Client.Resource.Shop.Scripts
             Alt.OnServer<int , List<SharedShopItem>>("shop:items:owned",
                 (state, items) => GetShopItems(state, items, ref ownedItems, "owned", ref ownedItemsSorted));
 
+            Alt.OnKeyDown += Alt_OnKeyDown;
+
             Alt.EmitServer("shop:items");
             Alt.EmitServer("shop:items:owned");
 
             Alt.OnConsoleCommand += Alt_OnConsoleCommand;
 
+            
             uiView.Mount(Route.VehicleShop);
+            //uiView.Visible = false;
+        }
+
+        private void Alt_OnKeyDown(Key key)
+        {
+            if(key == Key.Escape)
+            {
+                ToggleUi(false);
+            }
         }
 
         private void Alt_OnConsoleCommand(string name, string[] args)
         {
-            Console.WriteLine(name);
-            if (name != "vehtest") return;
-
-            Console.WriteLine($"NotOwned: {shopItems.Count}");
-            Console.WriteLine($"Owned: {ownedItems.Count}");
-            foreach (var item in shopItems)
-            {
-                Console.WriteLine(item.Displayname);
+            if (name == "vehtest"){
+                Console.WriteLine($"NotOwned: {shopItems.Count}");
+                Console.WriteLine($"Owned: {ownedItems.Count}");
+                foreach (var item in shopItems)
+                {
+                    Console.WriteLine(item.Displayname);
+                }
+                ToggleUi(To: true);
             }
-            MountUi();
+
+            if(name == "veh")
+            {
+                Alt.EmitServer("veh", "bati2");
+                Alt.OnServer("vehid", (int id) =>
+                {
+                    Console.WriteLine(id);
+                    var veh = Alt.GetAllVehicles().Where(x => x.ScriptId == id).FirstOrDefault();
+                    
+                    try
+                    {
+                        Console.WriteLine(veh.Model);
+                        var output = Alt.CreateAudioOutputAttached(Alt.Hash("frontend_radio"), Alt.LocalPlayer);
+                        var audio = Alt.CreateAudio("https://upload.wikimedia.org/wikipedia/commons/c/c8/Example.ogg", 100);
+                        audio.AddOutput(output);
+                        audio.Play();
+                    }catch(Exception ex)
+                    {
+                        Console.WriteLine(ex);
+                    }
+
+                    
+
+                    Alt.Natives.SetVehicleModColor1(veh, 1, 76, 0);
+                    Alt.Natives.SetVehicleModColor2(veh, 1, 5);
+
+                    Console.WriteLine(Alt.Natives.GetVehicleLiveryCount(veh));
+                    Console.WriteLine(Alt.Natives.GetVehicleLivery2Count(veh));
+                });
+                
+            }
+
+            
         }
 
         private void GetShopItems(int state, List<SharedShopItem> items, 
@@ -80,39 +126,24 @@ namespace Proton.Client.Resource.Shop.Scripts
                 shop.Add(u.Key, u.ToList());
         }
 
-        private void MountUi()
-        {   
+        /// <param name="To">TRUE = Show UI, FALSE = Hide UI</param>
+        private void ToggleUi(bool To)
+        {
+            //uiView.Mount(Route.VehicleShop);
             uiView.Focus();
-            Alt.GameControlsEnabled = false;
-            Alt.ShowCursor(true);
-            uiView.Emit("shop:vehicles:menuStatus", false);
-            uiView.Emit($"shop:vehicles:owned", JsonSerializer.Serialize(shopItemsSorted));
-            uiView.Emit($"shop:vehicles:notOwned", JsonSerializer.Serialize(ownedItemsSorted));
-            uiView.Visible = true;
+            Alt.GameControlsEnabled = !To;
+            Alt.ShowCursor(To);
+            uiView.Emit("shop:vehicles:menuStatus", To);
+            uiView.Emit("shop:vehicles:notOwnedVehicles", JsonSerializer.Serialize(shopItemsSorted));
+            uiView.Emit("shop:vehicles:ownedVehicles", JsonSerializer.Serialize(ownedItemsSorted));
+            //uiView.Visible = To;
+            Alt.SetConfigFlag("DISABLE_IDLE_CAMERA", To);
         }
 
         private void SetVehiclePreview(string name)
         {
-            var vehicle = shopItems.Where(x => x.Displayname == name).FirstOrDefault();
-            if(vehicle == null)
-            {
-                //Todo: Print Error
-                return;
-            }
-
-            if(previewVehicle != null)
-            {
-                previewVehicle.Destroy();
-                previewVehicle = null;
-            }
-
-            previewVehicle = Alt.CreateLocalVehicle(Alt.Hash(vehicle.Vehiclename),
-                Alt.LocalPlayer.Dimension, 
-                Alt.LocalPlayer.AimPosition, 
-                new AltV.Net.Data.Rotation(0,0,0),
-                true, 10);
-
-            Alt.Natives.SetVehicleEngineOn(previewVehicle, true, false, false);
+            Console.WriteLine(name);
+            Alt.EmitServer("shop:vehicle:showroom", name);
         }
 
         private void ChangeVehicleColor(string color)
