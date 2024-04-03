@@ -11,6 +11,18 @@ public class CharacterHandler(IDbContextFactory<DefaultDbContext> defaultDbFacto
         var defaultDb = await defaultDbFactory.CreateDbContextAsync();
         return await defaultDb.Characters.AnyAsync(x => x.Id == characterId);
     }
+
+    public async Task<bool> HasCharacter(long userId)
+    {
+        var defaultDb = await defaultDbFactory.CreateDbContextAsync();
+        return await defaultDb.Characters.AnyAsync(x => x.Id == userId);
+    }
+    
+    public async Task<Character?> GetByUserId(long userId)
+    {
+        var defaultDb = await defaultDbFactory.CreateDbContextAsync();
+        return await defaultDb.Characters.FirstOrDefaultAsync(x => x.Id == userId);
+    }
     
     public async Task Add(Character userCharacter)
     {

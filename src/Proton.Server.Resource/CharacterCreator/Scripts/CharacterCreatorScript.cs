@@ -5,6 +5,7 @@ using AltV.Net.Async;
 using AltV.Net.Data;
 using AltV.Net.Elements.Entities;
 using AltV.Net.Enums;
+using Proton.Server.Core.Factorys;
 using Proton.Server.Core.Models;
 using Proton.Server.Infrastructure.CharacterCreator;
 using Proton.Shared.Interfaces;
@@ -20,6 +21,26 @@ public class CharacterCreatorScript : IStartup
         
         AltAsync.OnClient<IPlayer>("server:testCharCreator", StartCharacterCreator);
         AltAsync.OnClient<IPlayer, string>("characterServer:setAppearance", SetAppearance);
+
+        AltAsync.OnServer<IPlayer>("auth:firstSignIn", CheckAppearance);
+    }
+
+    private async void CheckAppearance(IPlayer player)
+    {
+        if (player is not PPlayer protonPlayer) return;
+        if (!protonPlayer.Exists) return;
+        if (protonPlayer.ProtonId == -1) return;
+
+        var hasCharacter = await characterHandler.HasCharacter(protonPlayer.ProtonId);
+        if (hasCharacter)
+        {
+            var userCharacter = await characterHandler.GetByUserId(protonPlayer.ProtonId);
+            SetAppearance(player, JsonSerializer.Serialize(userCharacter));
+        }
+        else
+        {
+            StartCharacterCreator(player);
+        }
     }
 
     private async void SetAppearance(IPlayer player, string appearanceJson)
@@ -39,7 +60,9 @@ public class CharacterCreatorScript : IStartup
             return;
         }
 
-        characterAppearance.UserId = 0; // This will have to be changes with the actual User Id from the Database.
+        if (player is PPlayer protonPlayer)
+            characterAppearance.UserId =
+                protonPlayer.ProtonId;
 
         await characterHandler.Add(characterAppearance);
         
