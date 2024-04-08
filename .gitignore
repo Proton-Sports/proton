@@ -20,5 +20,6 @@ AltV.Net.Host.runtimeconfig.json
 .server-crashes-cache/
 cache/
 .vs/
+.idea/
 update.json
 *.exe
