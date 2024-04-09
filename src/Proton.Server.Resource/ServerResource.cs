@@ -1,7 +1,9 @@
 using System.Reflection;
 using AltV.Net;
 using AltV.Net.Async;
+using AltV.Net.Data;
 using AltV.Net.Elements.Entities;
+using AltV.Net.Enums;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -38,10 +40,11 @@ public sealed class ServerResource : AsyncResource
                 builder
                     .AddMemoryCache()
                     .AddSingleton<IHostLifetime, ResourceLifetime>()
-                    .AddInfrastructure(context.Configuration)
+                    .AddInfrastructure()
                     .AddAuthentication()
                     .AddRaceFeatures()
-                    .AddCharacterCreator();
+                    .AddCharacterCreator()
+                    .AddIplFeatures();
             }
         );
 

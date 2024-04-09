@@ -15,9 +15,13 @@ public static class ServiceCollectionExtensions
             .AddSingleton<IRaycastService, DefaultRaycastService>()
             .AddSingleton<INoClip, ClientOnlyNoClip>()
             .AddSingleton<IUiViewFactory, DefaultUiViewFactory>()
-            .AddSingleton<NotificationService>();//TODO: Add Interface
-         serviceCollection.AddSingleton(provider => (IUiView)Alt.CreateWebView("http://localhost:5173"));
-        //serviceCollection.AddSingleton(provider => (IUiView)Alt.CreateWebView("http://assets/proton-ui/dist/index.html"));
+            .AddSingleton<NotificationService>(); //TODO: Add Interface
+        serviceCollection.AddSingleton(provider =>
+            (IUiView)Alt.CreateWebView("http://localhost:5173")
+        );
+        // serviceCollection.AddSingleton(provider =>
+        //     (IUiView)Alt.CreateWebView("http://assets/proton-ui/dist/index.html")
+        // );
         return serviceCollection;
     }
 }
