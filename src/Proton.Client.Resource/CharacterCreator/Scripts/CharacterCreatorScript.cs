@@ -38,7 +38,15 @@ public class CharacterCreatorScript : IStartup
         this.uiView.On<int>("characterClient:setGender", SetGender);
         this.uiView.On<string>("characterClient:setAppearance", SetAppearance);
         this.uiView.On<string>("characterClient:submitAppearance", SubmitAppearance);
+
+        this.uiView.OnMount(Route.CharacterCreator, () =>
+        {
+            uiView.Focus();
         
+            Alt.Natives.DoScreenFadeIn(1000);
+            Alt.ShowCursor(true);    
+        });
+
         Alt.OnConsoleCommand += ConsoleCommand;
     }
 
@@ -210,14 +218,6 @@ public class CharacterCreatorScript : IStartup
                 SetCharacterClothes(currentModel);
 
                 uiView.Mount(Route.CharacterCreator);
-                
-                uiView.OnMount(Route.CharacterCreator, () =>
-                {
-                    uiView.Focus();
-                
-                    Alt.Natives.DoScreenFadeIn(1000);
-                    Alt.ShowCursor(true);    
-                });
             }, 1000);
         }
         catch (Exception ex)
