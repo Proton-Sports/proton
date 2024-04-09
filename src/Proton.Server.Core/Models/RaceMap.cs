@@ -8,4 +8,5 @@ public class RaceMap : IAggregateRoot
     public string Name { get; set; } = string.Empty;
     public IList<RacePoint> RacePoints { get; set; } = null!;
     public IList<RaceStartPoint> StartPoints { get; set; } = null!;
+    public string? IplName { get; set; }
 }

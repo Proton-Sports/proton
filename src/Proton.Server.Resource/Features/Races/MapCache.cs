@@ -18,9 +18,9 @@ public sealed class MapCache(IDbContextFactory dbContextFactory, IMemoryCache ca
         await using var ctx = await dbContextFactory.CreateDbContextAsync().ConfigureAwait(false);
         var map = await ctx
             .RaceMaps.Where(x => x.Id == id)
-            .Include(x => x.RacePoints)
+            .Include(x => x.RacePoints.OrderBy(x => x.Index).ToArray())
             .AsSplitQuery()
-            .Include(x => x.StartPoints)
+            .Include(x => x.StartPoints.OrderBy(x => x.Index).ToArray())
             .AsSplitQuery()
             .FirstOrDefaultAsync()
             .ConfigureAwait(false);

@@ -1,6 +1,7 @@
 using AltV.Net.Client;
 using AsyncAwaitBestPractices;
 using Proton.Client.Infrastructure.Interfaces;
+using Proton.Client.Resource.Features.Ipls.Abstractions;
 using Proton.Shared.Contants;
 using Proton.Shared.Dtos;
 using Proton.Shared.Interfaces;
@@ -11,16 +12,18 @@ public sealed class RaceEndScript : IStartup
 {
     private readonly IUiView uiView;
     private readonly IRaceService raceService;
+    private readonly IIplService iplService;
 
-    public RaceEndScript(IUiView uiView, IRaceService raceService)
+    public RaceEndScript(IUiView uiView, IRaceService raceService, IIplService iplService)
     {
         this.uiView = uiView;
         this.raceService = raceService;
+        this.iplService = iplService;
         Alt.OnServer<RaceEndCountdownDto>("race-end:countdown", (dto) =>
         {
             HandleServerCountdown(dto).SafeFireAndForget((exception) => Alt.LogError(exception.ToString()));
         });
-        Alt.OnServer("race:destroy", HandleServerRaceDestroy);
+        Alt.OnServer("race:destroy", HandleServerRaceDestroyAsync);
     }
 
     private async Task HandleServerCountdown(RaceEndCountdownDto dto)
@@ -30,7 +33,7 @@ public sealed class RaceEndScript : IStartup
         uiView.Emit("race-end-countdown:setData", dto);
     }
 
-    private void HandleServerRaceDestroy()
+    private async Task HandleServerRaceDestroyAsync()
     {
         if (raceService.IsStarted)
         {
@@ -39,5 +42,9 @@ public sealed class RaceEndScript : IStartup
         raceService.ClearRacePoints();
         uiView.Unmount(Route.RaceEndCountdown);
         Alt.Natives.SetLocalPlayerAsGhost(false, false);
+        if (raceService.IplName is not null && iplService.IsLoaded(raceService.IplName))
+        {
+            await iplService.UnloadAsync(raceService.IplName);
+        }
     }
 }
