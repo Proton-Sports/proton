@@ -11,4 +11,5 @@ public sealed class RacePrepareDto
 	public long EndTime { get; set; }
 	public byte RaceType { get; set; }
 	public List<RacePointDto> RacePoints { get; set; } = new();
+	public string? IplName { get; set; }
 }

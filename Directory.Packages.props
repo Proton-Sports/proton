@@ -4,7 +4,7 @@
   </PropertyGroup>
   <ItemGroup>
     <!-- Core -->
-    <PackageVersion Include="AltV.Community.MValueAdapters.Generators" Version="0.1.18" PrivateAssets="true" ExcludeAssets="runtime" />
+    <PackageVersion Include="AltV.Community.MValueAdapters.Generators" Version="0.2.0-dev.1" PrivateAssets="true" ExcludeAssets="runtime" />
     <PackageVersion Include="DisCatSharp" Version="10.6.1" />
     <PackageVersion Include="Discord.Net.Rest" Version="3.13.0" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.0" />
@@ -16,11 +16,11 @@
     <!-- Infrastructure -->
     <PackageVersion Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.0" />
     <!-- Resource -->
-    <PackageVersion Include="AltV.Net" Version="16.0.13" />
-    <PackageVersion Include="AltV.Net.Async" Version="16.0.13" />
-    <PackageVersion Include="AltV.Net.Client" Version="16.0.13" />
-    <PackageVersion Include="AltV.Net.Client.Async" Version="16.0.13" />
-    <PackageVersion Include="AltV.Net.Shared" Version="16.0.13" />
+    <PackageVersion Include="AltV.Net" Version="16.0.15" />
+    <PackageVersion Include="AltV.Net.Async" Version="16.0.15" />
+    <PackageVersion Include="AltV.Net.Client" Version="16.0.15" />
+    <PackageVersion Include="AltV.Net.Client.Async" Version="16.0.15" />
+    <PackageVersion Include="AltV.Net.Shared" Version="16.0.15" />
     <PackageVersion Include="Microsoft.Extensions.Options" Version="8.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Options.DataAnnotations" Version="8.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="8.0.0" />

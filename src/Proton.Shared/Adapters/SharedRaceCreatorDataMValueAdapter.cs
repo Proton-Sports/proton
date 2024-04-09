@@ -12,10 +12,7 @@ public sealed class SharedRaceCreatorDataMValueAdapter : IMValueAdapter<SharedRa
     {
         if (reader.Peek() == MValueReaderToken.Nil) return null!;
 
-        long id = default;
-        string name = string.Empty;
-        List<SharedRaceStartPoint> startPoints = default!;
-        List<SharedRacePoint> racePoints = default!;
+        var data = new SharedRaceCreatorData();
         reader.BeginObject();
         while (reader.HasNext())
         {
@@ -23,22 +20,27 @@ public sealed class SharedRaceCreatorDataMValueAdapter : IMValueAdapter<SharedRa
             {
                 case "id":
                     {
-                        id = reader.NextLong();
+                        data.Id = reader.NextLong();
                         break;
                     }
                 case "name":
                     {
-                        name = reader.NextString();
+                        data.Name = reader.NextString();
+                        break;
+                    }
+                case "iplName":
+                    {
+                        data.IplName = reader.NextString();
                         break;
                     }
                 case "startPoints":
                     {
-                        startPoints = DefaultMValueAdapters.GetArrayAdapter(SharedRaceStartPointMValueAdapter.Instance).FromMValue(reader);
+                        data.StartPoints = DefaultMValueAdapters.GetArrayAdapter(SharedRaceStartPointMValueAdapter.Instance).FromMValue(reader);
                         break;
                     }
                 case "racePoints":
                     {
-                        racePoints = DefaultMValueAdapters.GetArrayAdapter(SharedRacePointMValueAdapter.Instance).FromMValue(reader);
+                        data.RacePoints = DefaultMValueAdapters.GetArrayAdapter(SharedRacePointMValueAdapter.Instance).FromMValue(reader);
                         break;
                     }
                 default:
@@ -49,7 +51,7 @@ public sealed class SharedRaceCreatorDataMValueAdapter : IMValueAdapter<SharedRa
             }
         }
         reader.EndObject();
-        return new SharedRaceCreatorData(id, name, startPoints, racePoints);
+        return data;
     }
 
     public void ToMValue(SharedRaceCreatorData value, IMValueWriter writer)
@@ -59,6 +61,11 @@ public sealed class SharedRaceCreatorDataMValueAdapter : IMValueAdapter<SharedRa
         writer.Value(value.Id);
         writer.Name("name");
         writer.Value(value.Name);
+        if (value.IplName is not null)
+        {
+            writer.Name("iplName");
+            writer.Value(value.IplName);
+        }
         writer.Name("startPoints");
         DefaultMValueAdapters.GetArrayAdapter(SharedRaceStartPointMValueAdapter.Instance).ToMValue(value.StartPoints, writer);
         writer.Name("racePoints");

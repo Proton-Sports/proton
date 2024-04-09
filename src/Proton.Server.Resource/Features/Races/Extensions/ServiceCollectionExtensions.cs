@@ -3,7 +3,7 @@ using Proton.Server.Resource.Features.Races.Scripts;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
-public static class ServiceCollectionExtensions
+public static partial class ServiceCollectionExtensions
 {
     public static IServiceCollection AddRaceFeatures(this IServiceCollection serviceCollection)
     {

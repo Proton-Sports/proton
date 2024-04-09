@@ -25,7 +25,8 @@ public sealed class ClientResource : AsyncResource
             .AddNoClips()
             .AddAuthentication()
             .AddRaceFeatures()
-            .AddCharacterCreator();
+            .AddCharacterCreator()
+            .AddIplFeatures();
         serviceProvider = serviceCollection.BuildServiceProvider();
     }
 

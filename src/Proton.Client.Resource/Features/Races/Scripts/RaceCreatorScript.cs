@@ -5,6 +5,7 @@ using AltV.Net.Client.Elements.Interfaces;
 using AltV.Net.Data;
 using Proton.Client.Core.Interfaces;
 using Proton.Client.Infrastructure.Interfaces;
+using Proton.Client.Resource.Features.Ipls.Abstractions;
 using Proton.Shared.Contants;
 using Proton.Shared.Dtos;
 using Proton.Shared.Interfaces;
@@ -19,11 +20,13 @@ public sealed class RaceCreatorScript : IStartup
     private readonly IGameplayCamera gameplayCamera;
     private readonly IRaycastService raycastService;
     private readonly IUiView uiView;
+    private readonly IIplService iplService;
     private bool focusing = false;
     private bool canSwitch = true;
     private PointType pointType = PointType.Start;
     private long id;
     private string name = string.Empty;
+    private string? iplName;
     private ICheckpoint? movingRaceCheckpoint = default;
 
     public RaceCreatorScript(
@@ -31,21 +34,23 @@ public sealed class RaceCreatorScript : IStartup
         INoClip noClip,
         IGameplayCamera gameplayCamera,
         IRaycastService raycastService,
-        IUiView uiView)
+        IUiView uiView,
+        IIplService iplService)
     {
         this.raceCreator = raceCreator;
         this.noClip = noClip;
         this.gameplayCamera = gameplayCamera;
         this.raycastService = raycastService;
         this.uiView = uiView;
+        this.iplService = iplService;
 
         Alt.OnServer("race:creator:stop", HandleServerStop);
-        Alt.OnServer<List<RaceMapDto>>("race-menu-creator:map", HandleServerMap);
-        Alt.OnServer<RaceMapDto>("race-menu-creator:editMap", HandleServerEditMap);
+        Alt.OnServer<RaceCreatorDto>("race-menu-creator:data", HandleServerData);
+        Alt.OnServer<RaceMapDto, Task>("race-menu-creator:editMap", HandleServerEditMap);
         Alt.OnServer<int>("race-menu-creator:deleteMap", HandleServerDeleteMap);
-        uiView.On("race-menu-creator:map", HandleMap);
+        uiView.On("race-menu-creator:data", HandleData);
         uiView.On<string>("race:creator:changeMode", HandleChangeMode);
-        uiView.On<string>("race-menu-creator:createMap", HandleCreateMap);
+        uiView.On<string, string, Task>("race-menu-creator:createMap", HandleCreateMap);
         uiView.On<int>("race-menu-creator:deleteMap", HandleDeleteMap);
         uiView.On<long, string>("race-menu-creator:editMap", HandleEditMap);
         uiView.On("race:creator:submit", HandleSubmit);
@@ -53,10 +58,11 @@ public sealed class RaceCreatorScript : IStartup
         Alt.OnWindowFocusChange += HandleWindowFocusChange;
     }
 
-    private void HandleCreateMap(string mapName)
+    private async Task HandleCreateMap(string mapName, string iplName)
     {
         name = mapName;
-        Start();
+        this.iplName = iplName;
+        await StartAsync();
     }
 
     private void HandleDeleteMap(int id)
@@ -82,7 +88,14 @@ public sealed class RaceCreatorScript : IStartup
 
     private void HandleSubmit()
     {
-        Alt.EmitServer("race:creator:submit", new SharedRaceCreatorData(id, name, raceCreator.StartPoints.ToList(), raceCreator.RacePoints.ToList()));
+        Alt.EmitServer("race:creator:submit", new SharedRaceCreatorData
+        {
+            Id = id,
+            Name = name,
+            IplName = iplName,
+            StartPoints = raceCreator.StartPoints.ToList(),
+            RacePoints = raceCreator.RacePoints.ToList()
+        });
     }
 
     private void HandleStop()
@@ -90,7 +103,7 @@ public sealed class RaceCreatorScript : IStartup
         Alt.EmitServer("race:creator:stop");
     }
 
-    private void HandleServerStop()
+    private async Task HandleServerStop()
     {
         if (focusing)
         {
@@ -105,6 +118,10 @@ public sealed class RaceCreatorScript : IStartup
         pointType = PointType.Start;
         Alt.OnKeyUp -= HandleKeyUp;
         Alt.OnKeyDown -= HandleKeyDown;
+        if (!string.IsNullOrEmpty(iplName))
+        {
+            await iplService.UnloadAsync(iplName);
+        }
     }
 
     private async void HandleKeyUp(Key key)
@@ -305,9 +322,9 @@ public sealed class RaceCreatorScript : IStartup
         }
     }
 
-    private void HandleMap()
+    private void HandleData()
     {
-        Alt.EmitServer("race-menu-creator:map");
+        Alt.EmitServer("race-menu-creator:data");
     }
 
     private void HandleChangeMode(string mode)
@@ -315,22 +332,23 @@ public sealed class RaceCreatorScript : IStartup
         Alt.EmitServer("race:creator:changeMode", mode);
     }
 
-    private void HandleServerMap(List<RaceMapDto> maps)
+    private void HandleServerData(RaceCreatorDto dto)
     {
-        uiView.Emit("race-menu-creator:map", maps);
+        uiView.Emit("race-menu-creator:data", dto);
     }
 
-    private void HandleServerEditMap(RaceMapDto map)
+    private async Task HandleServerEditMap(RaceMapDto map)
     {
         canSwitch = false;
         id = map.Id;
         name = map.Name;
-        Start();
+        iplName = map.IplName;
         raceCreator.ImportStartPoints(map.StartPoints);
         raceCreator.ImportRacePoints(map.RacePoints);
+        await StartAsync();
     }
 
-    private void Start()
+    private async Task StartAsync()
     {
         if (uiView.IsMounted(Route.RaceMainMenuList))
         {
@@ -338,6 +356,11 @@ public sealed class RaceCreatorScript : IStartup
         }
         raceCreator.ClearStartPoints();
         raceCreator.ClearRacePoints();
+
+        if (!string.IsNullOrEmpty(iplName))
+        {
+            await iplService.LoadAsync(iplName);
+        }
         uiView.Mount(Route.RaceCreator);
         Alt.OnKeyUp += HandleKeyUp;
         Alt.OnKeyDown += HandleKeyDown;

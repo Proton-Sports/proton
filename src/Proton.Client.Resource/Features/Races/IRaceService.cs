@@ -15,6 +15,7 @@ public interface IRaceService
     int Laps { get; set; }
     int CurrentLap { get; set; }
     IReadOnlyList<RacePointDto> RacePoints { get; }
+    string? IplName { get; set; }
 
     void ClearRacePoints();
     int EnsureRacePointsCapacity(int capacity);

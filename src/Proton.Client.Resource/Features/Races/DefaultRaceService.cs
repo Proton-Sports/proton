@@ -32,6 +32,7 @@ public sealed class DefaultRaceService : IRaceService
     public IReadOnlyList<RacePointDto> RacePoints => racePoints;
     public bool IsStarted => started;
     public RaceType RaceType { get; set; }
+    public string? IplName { get; set; }
 
     public DefaultRaceService(IEnumerable<IRacePointResolver> resolvers)
     {
