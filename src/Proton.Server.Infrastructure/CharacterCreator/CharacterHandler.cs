@@ -1,4 +1,6 @@
+using AltV.Net;
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 using Proton.Server.Core.Models;
 using Proton.Server.Infrastructure.Persistence;
 
@@ -26,8 +28,14 @@ public class CharacterHandler(IDbContextFactory<DefaultDbContext> defaultDbFacto
     
     public async Task Add(Character userCharacter)
     {
-        await using var defaultDb = await defaultDbFactory.CreateDbContextAsync();
-        defaultDb.Characters.Add(userCharacter);
-        await defaultDb.SaveChangesAsync();
+        try
+        {
+            await using var defaultDb = await defaultDbFactory.CreateDbContextAsync();
+            defaultDb.Characters.Add(userCharacter);
+            await defaultDb.SaveChangesAsync();
+        } catch (DbUpdateException ex)
+        {
+            Alt.Log(ex.Message);
+        }
     }
 }
