@@ -33,28 +33,24 @@ public sealed class AuthenticationScript : IStartup
     /// <summary>
     /// Checking if the OAuth Token is still valid and offer to login as User
     /// </summary>
-    public Task OnAuthenticationCheck(string AppId)
+    public async Task OnAuthenticationCheck(string AppId)
     {
         uiView.Mount(Route.Auth);
-        uiView.OnMount(Route.Auth, async () =>
-        {
-            uiView.Focus();
+        uiView.Focus();
 
-            Alt.LogInfo($"[AUTH] Player Request OAuth2Token, AppId: {AppId}");
-            try
-            {
-                string token = await Alt.Discord.RequestOAuth2Token(AppId);
-                Alt.LogInfo($"[AUTH] Token: {token}");
-                Alt.EmitServer("authentication:token:exchange", token);
-            }
-            catch (Exception ex)
-            {
-                Alt.Log(ex.Message);
-                Alt.Log(ex.Source);
-                Alt.Log(ex.StackTrace);
-            }
-        });
-        return Task.CompletedTask;
+        Alt.LogInfo($"[AUTH] Player Request OAuth2Token, AppId: {AppId}");
+        try
+        {
+            string token = await Alt.Discord.RequestOAuth2Token(AppId);
+            Alt.LogInfo($"[AUTH] Token: {token}");
+            Alt.EmitServer("authentication:token:exchange", token);
+        }
+        catch (Exception ex)
+        {
+            Alt.Log(ex.Message);
+            Alt.Log(ex.Source);
+            Alt.Log(ex.StackTrace);
+        }
     }
 
     public Task OnProfileInformation(string AvatarUri, string Username)
