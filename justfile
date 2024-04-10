@@ -51,3 +51,6 @@ mig +rest:
 
 db +rest:
     dotnet ef database {{rest}} --project src/Proton.Server.Resource
+
+bundle:
+    dotnet ef migrations bundle -r linux-x64 --project src/Proton.Server.Resource
