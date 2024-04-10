@@ -28,29 +28,41 @@ public sealed class AuthenticationScript : IStartup
         this.uiView = uiView;
 
         this.uiView.On("authentication:login", SendLoginRequest);
+        this.uiView.On("webview:ready", () => uiView.Mount(Route.Auth));
+
+        Alt.OnConsoleCommand += Alt_OnConsoleCommand;
+    }
+
+    private void Alt_OnConsoleCommand(string name, string[] args)
+    {
+        uiView.Mount(Route.Auth);
     }
 
     /// <summary>
     /// Checking if the OAuth Token is still valid and offer to login as User
     /// </summary>
-    public async Task OnAuthenticationCheck(string AppId)
+    public Task OnAuthenticationCheck(string AppId)
     {
-        uiView.Mount(Route.Auth);
-        uiView.Focus();
+        uiView.OnMount(Route.Auth, async () =>
+        {
+            uiView.Focus();
+            uiView.Visible = true;
 
-        Alt.LogInfo($"[AUTH] Player Request OAuth2Token, AppId: {AppId}");
-        try
-        {
-            string token = await Alt.Discord.RequestOAuth2Token(AppId);
-            Alt.LogInfo($"[AUTH] Token: {token}");
-            Alt.EmitServer("authentication:token:exchange", token);
-        }
-        catch (Exception ex)
-        {
-            Alt.Log(ex.Message);
-            Alt.Log(ex.Source);
-            Alt.Log(ex.StackTrace);
-        }
+            Alt.LogInfo($"[AUTH] Player Request OAuth2Token, AppId: {AppId}");
+            try
+            {
+                string token = await Alt.Discord.RequestOAuth2Token(AppId);
+                Alt.LogInfo($"[AUTH] Token: {token}");
+                Alt.EmitServer("authentication:token:exchange", token);
+            }
+            catch (Exception ex)
+            {
+                Alt.Log(ex.Message);
+                Alt.Log(ex.Source);
+                Alt.Log(ex.StackTrace);
+            }
+        });
+        return Task.CompletedTask;
     }
 
     public Task OnProfileInformation(string AvatarUri, string Username)

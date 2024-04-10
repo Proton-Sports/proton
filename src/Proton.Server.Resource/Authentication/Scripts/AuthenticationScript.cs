@@ -33,8 +33,8 @@ public class AuthenticationScript : IStartup
         this.discord = discord;
         this.dbContextFactory = dbContextFactory;
         this.configuration = configuration;
-        AltAsync.OnPlayerSpawn += OnPlayerConnect;
-        //AltAsync.OnPlayerConnect += OnPlayerConnect;
+        //AltAsync.OnPlayerSpawn += OnPlayerConnect;
+        AltAsync.OnPlayerConnect += OnPlayerConnect;
         AltAsync.OnPlayerDisconnect += OnPlayerDisconnect;
         AltAsync.OnResourceStop += OnResourceStop;
         Alt.OnClient<string>("authentication:token:exchange",
@@ -45,7 +45,7 @@ public class AuthenticationScript : IStartup
     /// <summary>
     /// Checking if the OAuth Token is still valid and offer to login as User
     /// </summary>
-    public Task OnPlayerConnect(IPlayer p)
+    public Task OnPlayerConnect(IPlayer p, string reason)
     {
         string? appId = configuration["Discord:AppId"];
         p.Emit("authentication:token:check", appId);
