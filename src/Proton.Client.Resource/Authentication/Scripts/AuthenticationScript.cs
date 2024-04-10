@@ -18,9 +18,9 @@ public sealed class AuthenticationScript : IStartup
 
     public AuthenticationScript(IUiView uiView)
     {
-        Alt.OnServer<string>("authentication:token:check", 
+        Alt.OnServer<string>("authentication:token:check",
             (appId) => OnAuthenticationCheck(appId).GetAwaiter());
-        Alt.OnServer<string, string>("authentication:login:information", 
+        Alt.OnServer<string, string>("authentication:login:information",
             (avatar, name) => OnProfileInformation(avatar, name));
         Alt.OnServer("authentication:login:ok",
             () => LoginOk());
@@ -35,8 +35,8 @@ public sealed class AuthenticationScript : IStartup
     /// </summary>
     public async Task OnAuthenticationCheck(string AppId)
     {
-        // uiView.Mount(Route.Auth);
-        // uiView.Focus();
+        uiView.Mount(Route.Auth);
+        uiView.Focus();
 
         Alt.LogInfo($"[AUTH] Player Request OAuth2Token, AppId: {AppId}");
         try
