@@ -35,6 +35,7 @@ public sealed class AuthenticationScript : IStartup
     /// </summary>
     public Task OnAuthenticationCheck(string AppId)
     {
+        uiView.Mount(Route.Auth);
         uiView.OnMount(Route.Auth, async () =>
         {
             uiView.Focus();
