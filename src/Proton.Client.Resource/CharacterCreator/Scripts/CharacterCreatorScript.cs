@@ -46,14 +46,6 @@ public class CharacterCreatorScript : IStartup
             Alt.Natives.DoScreenFadeIn(1000);
             Alt.ShowCursor(true);    
         });
-
-        Alt.OnConsoleCommand += ConsoleCommand;
-    }
-
-    private void ConsoleCommand(string commandName, string[] args)
-    {
-        if (commandName != "character-creator") return;
-        Alt.EmitServer("server:testCharCreator");
     }
 
     private async void StopCharacterCreator()
