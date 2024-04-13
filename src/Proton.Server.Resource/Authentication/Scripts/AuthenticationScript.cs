@@ -33,6 +33,7 @@ public class AuthenticationScript : IStartup
         this.discord = discord;
         this.dbContextFactory = dbContextFactory;
         this.configuration = configuration;
+        //AltAsync.OnPlayerSpawn += OnPlayerConnect;
         AltAsync.OnPlayerConnect += OnPlayerConnect;
         AltAsync.OnPlayerDisconnect += OnPlayerDisconnect;
         AltAsync.OnResourceStop += OnResourceStop;
