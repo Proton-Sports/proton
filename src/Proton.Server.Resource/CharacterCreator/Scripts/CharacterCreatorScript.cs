@@ -92,12 +92,14 @@ public class CharacterCreatorScript : IStartup
                 player.SetClothes(11, 144, 3, 0);
                 player.SetClothes(6, 47, 3, 0);
                 player.SetClothes(3, 17, 0, 0);
+                player.SetClothes(8, 34, 0, 0);
                 break;
             case (uint)PedModel.FreemodeMale01:
                 player.SetClothes(4, 66, 3, 0);
-                player.SetClothes(11, 147, 0, 0);
+                player.SetClothes(11, 147, 3, 0);
                 player.SetClothes(6, 46, 3, 0);
                 player.SetClothes(3, 165, 16, 0);
+                player.SetClothes(8, 15, 0, 0);
                 break;
         }
         
