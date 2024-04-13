@@ -190,32 +190,18 @@ public class CharacterCreatorScript : IStartup
     
     private async void StartCharacterCreator()
     {
-        Alt.Natives.DoScreenFadeOut(1000);
-        
         locationInterior = Alt.Natives.GetInteriorAtCoords(locationPosition.X, locationPosition.Y, locationPosition.Z);
         
         Alt.Natives.PinInteriorInMemory(locationInterior);
         Alt.FocusData.OverrideFocusPosition(locationPosition, Vector3.Zero);
         
-        try
-        {
-            await AltAsync.WaitFor(() => Alt.Natives.IsScreenblurFadeRunning() == false, timeout: 10000, interval: 0);
-            
-            Alt.SetTimeout(() =>
-            {
-                var currentModel = Alt.LocalPlayer.Model;
-                
-                CreateCharacter(currentModel);
-                CreateCharacterCreatorCamera();
-                SetCharacterClothes(currentModel);
+        var currentModel = Alt.LocalPlayer.Model;
+        
+        CreateCharacter(currentModel);
+        CreateCharacterCreatorCamera();
+        SetCharacterClothes(currentModel);
 
-                uiView.Mount(Route.CharacterCreator);
-            }, 1000);
-        }
-        catch (Exception ex)
-        {
-            Alt.Log(ex.Message);
-        }
+        uiView.Mount(Route.CharacterCreator);
     }
     
     private static double GetOppositeDirection(double radian)
@@ -246,9 +232,8 @@ public class CharacterCreatorScript : IStartup
             return;
         } 
         
-        characterPed = Alt.CreateLocalPed(characterModel, Alt.LocalPlayer.Dimension, Alt.LocalPlayer.Position, Alt.LocalPlayer.Rotation, false, 0);
-        characterPed.Rotation = new Rotation(characterPed.Rotation.Pitch, characterPed.Rotation.Roll,
-            (float) GetOppositeDirection(characterPed.Rotation.Yaw));
+        characterPed = Alt.CreateLocalPed(characterModel, Alt.LocalPlayer.Dimension, locationPosition, Alt.LocalPlayer.Rotation, false, 0);
+        characterPed.Rotation = new Rotation(characterPed.Rotation.Pitch, characterPed.Rotation.Roll, 0);
         characterPed.Frozen = true;
         
         SetCharacterClothes(characterModel);
@@ -257,7 +242,7 @@ public class CharacterCreatorScript : IStartup
     
     private void CreateCharacterCreatorCamera()
     {
-        startPosition = Alt.LocalPlayer.Position;
+        startPosition = locationPosition;
         
         var doesCameraExists = Alt.Natives.DoesCamExist(characterCamera);
         if (doesCameraExists) return;
