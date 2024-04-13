@@ -108,6 +108,7 @@ public class CharacterCreatorScript : IStartup
         player.Position = new Position(486.417f, -3339.692f, 6.070f);
         player.Rotation = Rotation.Zero;
         player.Visible = true;
+        player.Invincible = true;
     }
 
     private async void CreateCharacter(IPlayer player, string appearanceJson)
