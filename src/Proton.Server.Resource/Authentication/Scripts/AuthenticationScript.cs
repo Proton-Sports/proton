@@ -88,6 +88,7 @@ public class AuthenticationScript : IStartup
         {
             p.ProtonId = id;
             p.Emit("authentication:login:ok");
+            Alt.Emit("auth:firstSignIn", p);
         }
         else
         {
