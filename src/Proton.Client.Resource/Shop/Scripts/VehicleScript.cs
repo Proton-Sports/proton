@@ -3,6 +3,7 @@ using AltV.Net.Client.Elements.Data;
 using AltV.Net.Client.Elements.Entities;
 using AltV.Net.Client.Elements.Interfaces;
 using Proton.Client.Infrastructure.Interfaces;
+using Proton.Client.Infrastructure.Services;
 using Proton.Shared.Contants;
 using Proton.Shared.Interfaces;
 using Proton.Shared.Models;
@@ -19,34 +20,43 @@ namespace Proton.Client.Resource.Shop.Scripts
     public class VehicleScript : IStartup
     {
         private readonly IUiView uiView;
+        private readonly NotificationService notificationService;
         private List<SharedShopItem> shopItems = new List<SharedShopItem>();
-        private Dictionary<string, List<SharedShopItem>> shopItemsSorted = new Dictionary<string, List<SharedShopItem>>();
-        private Dictionary<string, List<SharedShopItem>> ownedItemsSorted = new Dictionary<string, List<SharedShopItem>>();
         private List<SharedShopItem> ownedItems = new List<SharedShopItem>();
 
-        private ILocalVehicle? previewVehicle;
+        private Dictionary<string, List<SharedShopItem>> shopItemsSorted = new Dictionary<string, List<SharedShopItem>>();
+        private Dictionary<string, List<SharedShopItem>> ownedItemsSorted = new Dictionary<string, List<SharedShopItem>>();
 
-        public VehicleScript(IUiView uiView)
+        public VehicleScript(IUiView uiView, NotificationService notificationService)
         {
             this.uiView = uiView;
-
+            this.notificationService = notificationService;
             this.uiView.On<string>("shop:select:vehicle", 
                 (displayName) => SetVehiclePreview(displayName));
+            this.uiView.On<int>("shop:vehicles:choosenColor",
+                (color) => Alt.EmitServer("shop:vehicle:changeColor", color)); 
+
+            this.uiView.On<string, int>("shop:vehicles:buyVehicle",
+                (name, color) => Alt.EmitServer("shop:purchase", name, color));
+
             Alt.OnServer<int, List<SharedShopItem>>("shop:items",
-                (state, items) => GetShopItems(state, items, ref shopItems, "notOwned", ref shopItemsSorted));
+                (state, items) => SetShopItems(state, items, ref shopItems, "notOwnedVehicles", ref shopItemsSorted));
             Alt.OnServer<int , List<SharedShopItem>>("shop:items:owned",
-                (state, items) => GetShopItems(state, items, ref ownedItems, "owned", ref ownedItemsSorted));
+                (state, items) => SetShopItems(state, items, ref ownedItems, "ownedVehicles", ref ownedItemsSorted));
+
+            Alt.OnServer<int>("shop:purchase", (state) => PurchaseResponse((ShopStatus)state));
+            Alt.OnClient("authentication:done", Init);
 
             Alt.OnKeyDown += Alt_OnKeyDown;
-
-            Alt.EmitServer("shop:items");
-            Alt.EmitServer("shop:items:owned");
-
             Alt.OnConsoleCommand += Alt_OnConsoleCommand;
-
             
             uiView.Mount(Route.VehicleShop);
-            //uiView.Visible = false;
+        }
+
+        private void Init()
+        {
+            Alt.EmitServer("shop:items:owned");
+            Alt.EmitServer("shop:items");            
         }
 
         private void Alt_OnKeyDown(Key key)
@@ -54,6 +64,29 @@ namespace Proton.Client.Resource.Shop.Scripts
             if(key == Key.Escape)
             {
                 ToggleUi(false);
+            }
+        }
+
+        private void PurchaseResponse(ShopStatus state)
+        {
+            Console.WriteLine("Received State: " + state);
+            switch (state)
+            {
+                case ShopStatus.OK:
+                    Alt.EmitServer("shop:items");
+                    Alt.EmitServer("shop:items:owned");
+                    Alt.EmitServer("shop:vehicle:showroom:termiante");
+                    ToggleUi(false);
+
+                    notificationService.DrawNotification(Header: "Vehicle Shop", Details: "OK", Message: "Vehicle bought!");
+                    break;
+                case ShopStatus.NO_MONEY:
+                    notificationService.DrawNotification(Header: "Vehicle Shop", Details: "Error", Message: "You dont have enough money to buy this Vehicle!");
+                    break;
+                case ShopStatus.ITEM_NOT_FOUND:
+                default:
+                    notificationService.DrawNotification(Header: "Vehicle Shop", Details: "Error", Message:"The Requested vehicle was not found!");
+                    break;
             }
         }
 
@@ -103,18 +136,18 @@ namespace Proton.Client.Resource.Shop.Scripts
             
         }
 
-        private void GetShopItems(int state, List<SharedShopItem> items, 
+        private void SetShopItems(int state, List<SharedShopItem> items, 
             ref List<SharedShopItem> list,
             string type, ref Dictionary<string, List<SharedShopItem>> sortList)
         {
             
             list.Clear();
             list.AddRange(items);
+
             Sort(items, ref sortList);
 
             Console.WriteLine($"State: {state}, count: {items.Count}, type: {type}, path: 'shop:vehicles:{type}', Data: {JsonSerializer.Serialize(sortList)}");
-
-            uiView.Emit($"shop:vehicles:{type}", JsonSerializer.Serialize(sortList));
+            
         }
 
         private void Sort(List<SharedShopItem> items, ref Dictionary<string, List<SharedShopItem>> shop)
@@ -130,6 +163,7 @@ namespace Proton.Client.Resource.Shop.Scripts
         private void ToggleUi(bool To)
         {
             //uiView.Mount(Route.VehicleShop);
+            //Init();
             uiView.Focus();
             Alt.GameControlsEnabled = !To;
             Alt.ShowCursor(To);
@@ -138,22 +172,17 @@ namespace Proton.Client.Resource.Shop.Scripts
             uiView.Emit("shop:vehicles:ownedVehicles", JsonSerializer.Serialize(ownedItemsSorted));
             //uiView.Visible = To;
             Alt.SetConfigFlag("DISABLE_IDLE_CAMERA", To);
+
+            if (!To)
+            {
+                Alt.EmitServer("shop:vehicle:showroom:termiante");
+            }
         }
 
         private void SetVehiclePreview(string name)
         {
             Console.WriteLine(name);
             Alt.EmitServer("shop:vehicle:showroom", name);
-        }
-
-        private void ChangeVehicleColor(string color)
-        {
-            if (previewVehicle == null)
-            {
-                //Todo: Print Error
-                return;
-            }
-
         }
     }
 }

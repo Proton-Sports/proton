@@ -1,4 +1,5 @@
 ﻿using AltV.Net;
+using AltV.Net.Async;
 using AltV.Net.Elements.Entities;
 using Proton.Shared.Interfaces;
 using System;
@@ -16,6 +17,17 @@ namespace Proton.Server.Resource.Shop.Scripts
         public VehicleManagerScript()
         {
             Alt.OnClient<string>("shop:vehicle:showroom", SpawnCar);
+            Alt.OnClient<int>("shop:vehicle:changeColor", ChangeColor);
+            Alt.OnClient("shop:vehicle:showroom:termiante", TerminateCar);
+        }
+
+        private void TerminateCar(IPlayer p)
+        {
+            if (vehicles.ContainsKey(p))
+            {
+                vehicles[p].Destroy();
+                vehicles.Remove(p);
+            }
         }
 
         private void SpawnCar(IPlayer p, string veh)
@@ -37,6 +49,18 @@ namespace Proton.Server.Resource.Shop.Scripts
             vehicle.NumberplateText = "M0D7";
 
             vehicles[p] = vehicle;
+        }
+
+        private void ChangeColor(IPlayer p, int color)
+        {
+            if (vehicles.ContainsKey(p))
+            {
+                vehicles[p].PrimaryColor = Convert.ToByte(color);
+            }
+            else
+            {
+                Alt.LogWarning($"Player tried to change color with no vehicle");
+            }
         }
     }
 }

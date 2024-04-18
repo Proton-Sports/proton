@@ -10,7 +10,7 @@ namespace Proton.Server.Infrastructure.Interfaces
 {
     public interface IShop
     {
-        Task BuyItem(IPlayer Player, int Id, string Color);
+        Task BuyItem(IPlayer Player, string Name, int Color);
         Task<List<SharedShopItem>> GetAllItems(IPlayer player);
         Task GetOwnedItems(IPlayer Player);
     }
@@ -21,7 +21,7 @@ namespace Proton.Server.Infrastructure.Interfaces
         public const string ShopGetData = "shop:items";
         public const string ShopGetOwnData = "shop:items:owned";
 
-        public abstract Task BuyItem(IPlayer Player, int Id, string Color);
+        public abstract Task BuyItem(IPlayer Player, string Name, int Color);
         public abstract Task<List<SharedShopItem>> GetAllItems(IPlayer player);
         public abstract Task GetOwnedItems(IPlayer Player);
     }

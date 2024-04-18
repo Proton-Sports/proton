@@ -69,6 +69,7 @@ public sealed class AuthenticationScript : IStartup
 
     public Task LoginOk()
     {
+        Alt.EmitClient("authentication:done");
         Alt.ShowCursor(false);
         Alt.GameControlsEnabled = true;
         uiView.Unfocus();

@@ -2,6 +2,7 @@
 using AltV.Net.Async;
 using AltV.Net.Elements.Entities;
 using AltV.Net.Enums;
+using Discord;
 using Microsoft.EntityFrameworkCore;
 using Proton.Server.Core.Extentions;
 using Proton.Server.Core.Factorys;
@@ -28,7 +29,7 @@ namespace Proton.Server.Infrastructure.Services
             Console.WriteLine("Loading ShopService");
             this.defaultDbFactory = defaultDbFactory;
 
-            Alt.OnClient<int, string>(ShopPurchase,
+            Alt.OnClient<string, int>(ShopPurchase,
                 (p, id, color) => BuyItem(p, id, color).GetAwaiter());
             Alt.OnClient(ShopGetData, GetAllItems);
             Alt.OnClient(ShopGetOwnData, GetOwnedItems);
@@ -48,11 +49,11 @@ namespace Proton.Server.Infrastructure.Services
         /// <param name="Id"></param>
         /// <param name="Color"></param>
         /// <returns>True - Purchase ok, False - Purchase Failed</returns>
-        public override async Task BuyItem(IPlayer _Player, int Id, string Color)
+        public override async Task BuyItem(IPlayer _Player, string Name, int Color)
         {
             var Player = (PPlayer)_Player;
             var db = defaultDbFactory.CreateDbContext();
-            var vehicle = db.Vehicles.Where(x => x.Id == Id).FirstOrDefault();
+            var vehicle = db.Vehicles.Where(x => x.AltVHash == Name).FirstOrDefault();
             var dbUser = db.Users.Where(x => x.Id == Player.Id).FirstOrDefault();
             if (vehicle != null && dbUser != null)
             {
@@ -60,6 +61,7 @@ namespace Proton.Server.Infrastructure.Services
                     dbUser.Money -= vehicle.Price;
                 else
                 {
+                    await Console.Out.WriteLineAsync($"Player has not enough money Player: {dbUser.Money} Price: {vehicle.Price}");
                     Player.Emit(ShopPurchase, (int)ShopStatus.NO_MONEY);
                     return;
                 }
@@ -69,7 +71,8 @@ namespace Proton.Server.Infrastructure.Services
                     Price = vehicle.Price,
                     DisplayName = vehicle.DisplayName,
                     AltVHash = vehicle.AltVHash,
-                    AltVColor = Color
+                    AltVColor = Color.ToString(),
+                    Category = vehicle.Category,
                 });
 
                 db.Users.Update(dbUser);
@@ -82,20 +85,43 @@ namespace Proton.Server.Infrastructure.Services
             }
         }
 
-        public override Task<List<SharedShopItem>> GetAllItems(IPlayer player)
+        public override Task<List<SharedShopItem>> GetAllItems(IPlayer _Player)
         {
+            var Player = (PPlayer)_Player;
             var db = defaultDbFactory.CreateDbContext();
+            var user = db.Users.Where(x => x.Id == Player.ProtonId)
+                .Include(x => x.Garage)
+                .FirstOrDefault();
+
             var vehicles = db.Vehicles.ToList();
+
+            if (user != null)
+            {
+                var garageVehicles = user.Garage.ToShopItems();
+                foreach(var gv in garageVehicles)
+                {
+                    var alreadyOwned = vehicles.Where(x => x.AltVHash == gv.ItemName).FirstOrDefault();
+                    if (alreadyOwned != null)
+                    {
+                        vehicles.Remove(alreadyOwned);
+                        Console.WriteLine("Removed Already owned vehicle ID: " + gv.ItemName);
+                    }
+                }
+            }
+
             Console.WriteLine("Sending Vehicles: " + vehicles.Count);
-            player.Emit(ShopGetData, (int)ShopStatus.OK, vehicles.ToShopItems());
+            _Player.Emit(ShopGetData, (int)ShopStatus.OK, vehicles.ToShopItems());
             return Task.FromResult(vehicles.ToShopItems());
         }
 
         public override Task GetOwnedItems(IPlayer _Player)
         {
             var Player = (PPlayer)_Player;
+            Console.WriteLine(Player.ProtonId);
             var db = defaultDbFactory.CreateDbContext();
-            var user = db.Users.Where(x => x.Id == Player.ProtonId).FirstOrDefault();
+            var user = db.Users.Where(x => x.Id == Player.ProtonId)
+                .Include(x => x.Garage)
+                .FirstOrDefault();
 
             if (user != null)
             {
