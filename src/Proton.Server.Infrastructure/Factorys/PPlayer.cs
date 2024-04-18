@@ -1,5 +1,13 @@
 ﻿using AltV.Net;
 using AltV.Net.Async.Elements.Entities;
+using AltV.Net.Elements.Entities;
+using Proton.Server.Core.Models;
+using Proton.Shared.Models;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace Proton.Server.Core.Factorys
 {
@@ -11,5 +19,8 @@ namespace Proton.Server.Core.Factorys
         public PPlayer(ICore core, nint nativePointer, uint id) : base(core, nativePointer, id)
         {
         }
+
+        public void SendNotification(SharedNotification notify)
+            => Player.Emit("player:sendNotification", notify);
     }
 }
