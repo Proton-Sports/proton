@@ -10,6 +10,12 @@ public class HudScript : IStartup
     public HudScript()
     {
         DisableHudElements();
+        SetInfiniteStamina();
+    }
+
+    private void SetInfiniteStamina()
+    {
+        Alt.SetStat("stamina", 100);
     }
     
     private void DisableHudElements()
@@ -21,6 +27,7 @@ public class HudScript : IStartup
             
             Alt.Natives.DisablePlayerFiring(Alt.LocalPlayer, true);
             Alt.Natives.DisableControlAction(0, 106, true);
+            Alt.Natives.DisableControlAction(0, 140, true);
 
             var playerVehicle = Alt.LocalPlayer.Vehicle;
             if (playerVehicle == null) return;
