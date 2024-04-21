@@ -2,20 +2,15 @@ name: Build and Push | Handlers
 on: [push]
 jobs:
   build-server: # run this job on every push
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Build Server
-        uses: ./.github/workflows/infra.yml
-        with:
-          job: build-server
+    name: Build Server
+    uses: ./.github/workflows/infra.yml
+    with:
+      job: build-server
 
   upload-server: # only run this job when its pushed to main
-    runs-on: ubuntu-latest
     needs: build-server
     if: contains(github.ref_name, 'main')
-    steps:
-      - name: Deploy Server
-        uses: ./.github/workflows/infra.yml
-        with:
-          job: deploy-server
+    name: Deploy Server
+    uses: ./.github/workflows/infra.yml
+    with:
+      job: deploy-server
