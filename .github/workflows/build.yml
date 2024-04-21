@@ -1,4 +1,4 @@
-name: Build and Push Resources
+name: Build and Push | Handlers
 on: [push]
 jobs:
   build-server: # run this job on every push

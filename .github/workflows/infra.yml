@@ -1,4 +1,4 @@
-name: Build and Push Resources
+name: Build and Push | Jobs
 on:
   workflow_call:
     inputs:
