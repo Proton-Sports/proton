@@ -52,7 +52,6 @@ public class CharacterCreatorScript : IStartup
 
     private void MouseEntered(bool isMouseEntered)
     {
-        Alt.Log("aici " + isMouseEntered);
         mouseEntered = isMouseEntered;
     }
 
