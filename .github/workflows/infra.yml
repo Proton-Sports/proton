@@ -60,7 +60,7 @@ jobs:
           passphrase: ${{secrets.SERVER_PASSPHRASE}}
           port: 22
           uploads: |
-            ./bin/Server.Resource/Release/net8.0/ => ./altv/resources/proton-server/bin/
+            ./bin/Server.Resource/Release/net8.0/publish/ => ./altv/resources/proton-server/bin/
 
   deploy-client:
     runs-on: ubuntu-latest
@@ -79,4 +79,4 @@ jobs:
           passphrase: ${{secrets.SERVER_PASSPHRASE}}
           port: 22
           uploads: |
-            ./bin/Server.Client/Release/net6.0/ => ./altv/resources/proton-client/bin/
+            ./bin/Server.Client/Release/net6.0/publish/ => ./altv/resources/proton-client/bin/
