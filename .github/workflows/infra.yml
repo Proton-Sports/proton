@@ -59,6 +59,7 @@ jobs:
           key: ${{secrets.SERVER_KEY}}
           passphrase: ${{secrets.SERVER_PASSPHRASE}}
           port: 22
+          delete: true
           uploads: |
             ./bin/Server.Resource/Release/net8.0/publish/ => ./altv/resources/proton-server/bin/
 
@@ -78,5 +79,6 @@ jobs:
           key: ${{secrets.SERVER_KEY}}
           passphrase: ${{secrets.SERVER_PASSPHRASE}}
           port: 22
+          delete: true
           uploads: |
             ./bin/Server.Client/Release/net6.0/publish/ => ./altv/resources/proton-client/bin/
