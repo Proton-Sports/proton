@@ -1,38 +1,20 @@
 name: Build and Push Resources
 on: [push]
 jobs:
-  build-server:
+  build-server: # run this job on every push
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: extractions/setup-just@v2
-      - uses: actions/setup-dotnet@v4
+      - name: Build Server
+        uses: ./.github/workflows/infra.yml
         with:
-          dotnet-version: "8.x"
-      - run: |
-          cd src/Proton.Server.Resource/
-          dotnet build
-      - uses: actions/upload-artifact@v4
-        with:
-          name: dotnet_server_bin
-          path: src/Proton.Server.Resource/bin
-          retention-days: 2
+          job: build-server
 
-  upload-server:
+  upload-server: # only run this job when its pushed to main
     runs-on: ubuntu-latest
     needs: build-server
+    if: contains(github.ref_name, 'main')
     steps:
-      - uses: actions/download-artifact@v4
+      - name: Deploy Server
+        uses: ./.github/workflows/infra.yml
         with:
-          name: dotnet_server_bin
-          path: bin/Server.Resource/
-
-      - uses: Dylan700/sftp-upload-action@latest
-        with:
-          server: ${{ vars.SERVER_IP }}
-          username: ci_pipeline
-          key: ${{secrets.SERVER_KEY}}
-          passphrase: ${{secrets.SERVER_PASSPHRASE}}
-          port: 22
-          uploads: |
-            ./bin/Server.Resource/ => ./altv/
+          job: deploy-server

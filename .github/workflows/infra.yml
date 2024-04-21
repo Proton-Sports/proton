@@ -1,0 +1,44 @@
+name: Build and Push Resources
+on:
+  workflow_call:
+    inputs:
+      job:
+        required: true
+        type: string
+jobs:
+  build-server:
+    runs-on: ubuntu-latest
+    if: ${{ inputs.job == 'build-server' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: extractions/setup-just@v2
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.x"
+      - run: |
+          cd src/Proton.Server.Resource/
+          dotnet build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dotnet_server_bin
+          path: src/Proton.Server.Resource/bin
+          retention-days: 2
+
+  deploy-server:
+    runs-on: ubuntu-latest
+    if: ${{ inputs.job == 'deploy-server' }}
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: dotnet_server_bin
+          path: bin/Server.Resource/
+
+      - uses: Dylan700/sftp-upload-action@latest
+        with:
+          server: ${{ vars.SERVER_IP }}
+          username: ci_pipeline
+          key: ${{secrets.SERVER_KEY}}
+          passphrase: ${{secrets.SERVER_PASSPHRASE}}
+          port: 22
+          uploads: |
+            ./bin/Server.Resource/ => ./altv/
