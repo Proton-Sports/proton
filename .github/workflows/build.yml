@@ -1,5 +1,9 @@
 name: Build and Push | Handlers
 on: [push]
+
+env:
+  PRODUCTION_BRANCH: feat/ci
+
 jobs:
   build-server: # run this job on every push
     name: Build Server
@@ -10,7 +14,7 @@ jobs:
 
   upload-server: # only run this job when its pushed to main
     needs: build-server
-    if: contains(github.ref_name, 'feat/ci')
+    if: contains(github.ref_name, ${{github.env.PRODUCTION_BRANCH}})
     name: Deploy Server
     uses: ./.github/workflows/infra.yml
     secrets: inherit
