@@ -4,6 +4,7 @@ jobs:
   build-server: # run this job on every push
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
       - name: Build Server
         uses: ./.github/workflows/infra.yml
         with:
