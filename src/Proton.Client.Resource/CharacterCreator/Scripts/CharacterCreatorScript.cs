@@ -20,6 +20,7 @@ public class CharacterCreatorScript : IStartup
     private int cameraFov = 70;
     private uint controlsInterval;
     private float zPos = 0.5f;
+    private bool mouseEntered;
     private int locationInterior;
     private Position startCameraPosition;
     private Position startPosition;
@@ -38,6 +39,7 @@ public class CharacterCreatorScript : IStartup
         this.uiView.On<int>("characterClient:setGender", SetGender);
         this.uiView.On<string>("characterClient:setAppearance", SetAppearance);
         this.uiView.On<string>("characterClient:submitAppearance", SubmitAppearance);
+        this.uiView.On<bool>("characterClient:mouseEntered", MouseEntered);
 
         this.uiView.OnMount(Route.CharacterCreator, () =>
         {
@@ -46,6 +48,12 @@ public class CharacterCreatorScript : IStartup
             Alt.Natives.DoScreenFadeIn(1000);
             Alt.ShowCursor(true);    
         });
+    }
+
+    private void MouseEntered(bool isMouseEntered)
+    {
+        Alt.Log("aici " + isMouseEntered);
+        mouseEntered = isMouseEntered;
     }
 
     private async void StopCharacterCreator()
@@ -206,13 +214,6 @@ public class CharacterCreatorScript : IStartup
     
     private async void CreateCharacter(uint characterModel)
     {
-        var selectedGender = characterModel switch
-        {
-            (uint)PedModel.FreemodeMale01 => 1,
-            (uint)PedModel.FreemodeFemale01 => 0,
-            _ => 1
-        };
-        
         if (characterPed is { Exists: true })
         {
             characterPed.Model = characterModel;
@@ -299,7 +300,7 @@ public class CharacterCreatorScript : IStartup
         
         if (Alt.Natives.IsDisabledControlPressed(0, 17))
         {
-            if (cursorX > screenResolution.X / 2 - 180)
+            if (!mouseEntered)
             {
                 cameraFov -= 2;
 
@@ -316,7 +317,7 @@ public class CharacterCreatorScript : IStartup
 
         if (Alt.Natives.IsDisabledControlPressed(0, 16))
         {
-            if (cursorX > screenResolution.X / 2 - 180)
+            if (!mouseEntered)
             {
                 cameraFov += 2;
 
