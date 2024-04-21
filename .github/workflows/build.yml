@@ -35,4 +35,4 @@ jobs:
           passphrase: ${{secrets.SERVER_PASSPHRASE}}
           port: 22
           uploads: |
-            ./bin/Server.Resource/ => ~/altv/
+            ./bin/Server.Resource/ => ./altv/
