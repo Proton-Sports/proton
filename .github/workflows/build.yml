@@ -21,7 +21,7 @@ jobs:
 
   upload-server: # only run this job when its pushed to main
     needs: build-server
-    if: contains(github.ref_name, ${{github.env.PRODUCTION_BRANCH}})
+    if: ${{ github.ref_name == github.env.PRODUCTION_BRANCH}}
     name: Deploy Server
     uses: ./.github/workflows/infra.yml
     secrets: inherit
@@ -30,7 +30,7 @@ jobs:
 
   upload-client: # only run this job when its pushed to main
     needs: build-client
-    if: contains(github.ref_name, ${{github.env.PRODUCTION_BRANCH}})
+    if: ${{ github.ref_name == github.env.PRODUCTION_BRANCH}}
     name: Deploy Client
     uses: ./.github/workflows/infra.yml
     secrets: inherit
