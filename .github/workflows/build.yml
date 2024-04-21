@@ -2,7 +2,7 @@ name: Build and Push | Handlers
 on: [push]
 
 env:
-  PRODUCTION_BRANCH: feat/ci
+  PRODUCTION_BRANCH: main
 
 jobs:
   build-server: # run this job on every push
