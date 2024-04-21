@@ -12,6 +12,13 @@ jobs:
     with:
       job: build-server
 
+  build-client: # run this job on every push
+    name: Build Client
+    uses: ./.github/workflows/infra.yml
+    secrets: inherit
+    with:
+      job: build-client
+
   upload-server: # only run this job when its pushed to main
     needs: build-server
     if: contains(github.ref_name, ${{github.env.PRODUCTION_BRANCH}})
@@ -20,3 +27,12 @@ jobs:
     secrets: inherit
     with:
       job: deploy-server
+
+  upload-client: # only run this job when its pushed to main
+    needs: build-client
+    if: contains(github.ref_name, ${{github.env.PRODUCTION_BRANCH}})
+    name: Deploy Client
+    uses: ./.github/workflows/infra.yml
+    secrets: inherit
+    with:
+      job: deploy-client

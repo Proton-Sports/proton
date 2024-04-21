@@ -25,6 +25,24 @@ jobs:
           path: src/Proton.Server.Resource/bin
           retention-days: 2
 
+  build-client:
+    runs-on: ubuntu-latest
+    if: ${{ inputs.job == 'build-client' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: extractions/setup-just@v2
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "6.x"
+      - run: |
+          cd src/Proton.Client.Resource/
+          dotnet build
+          dotnet publish
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dotnet_client_bin
+          path: src/Proton.Client.Resource/bin
+          retention-days: 2
   deploy-server:
     runs-on: ubuntu-latest
     if: ${{ inputs.job == 'deploy-server' }}
@@ -42,4 +60,23 @@ jobs:
           passphrase: ${{secrets.SERVER_PASSPHRASE}}
           port: 22
           uploads: |
-            ./bin/Server.Resource/ => ./altv/
+            ./bin/Server.Resource/Release/net8.0/ => ./altv/resources/proton-server/bin/
+
+  deploy-client:
+    runs-on: ubuntu-latest
+    if: ${{ inputs.job == 'deploy-client' }}
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: dotnet_client_bin
+          path: bin/Client.Resource/
+
+      - uses: Dylan700/sftp-upload-action@latest
+        with:
+          server: ${{ vars.SERVER_IP }}
+          username: ci_pipeline
+          key: ${{secrets.SERVER_KEY}}
+          passphrase: ${{secrets.SERVER_PASSPHRASE}}
+          port: 22
+          uploads: |
+            ./bin/Server.Client/Release/net6.0/ => ./altv/resources/proton-client/bin/
