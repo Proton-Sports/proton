@@ -31,7 +31,7 @@ jobs:
     steps:
       - uses: actions/download-artifact@v4
         with:
-          name: bin
+          name: dotnet_server_bin
           path: bin/Server.Resource/
 
       - uses: Dylan700/sftp-upload-action@latest
