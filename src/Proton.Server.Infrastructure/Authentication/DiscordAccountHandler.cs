@@ -3,11 +3,6 @@ using Microsoft.EntityFrameworkCore;
 using Proton.Server.Core.Models;
 using Proton.Server.Core.Models.Log;
 using Proton.Server.Infrastructure.Persistence;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Proton.Server.Infrastructure.Authentication
 {
@@ -32,7 +27,7 @@ namespace Proton.Server.Infrastructure.Authentication
             var defaultDb = defaultDbFactory.CreateDbContext();
             string[] ipSplited = Ip.Split(':');
             var user = defaultDb.Users.Where(x => x.DiscordId == GetCurrentUser().Id).Single();
-            if(user is null)
+            if (user is null)
             {
                 await Console.Out.WriteLineAsync("user null");
                 return 0;
@@ -74,7 +69,7 @@ namespace Proton.Server.Infrastructure.Authentication
             }
             else
             {
-                var activeSession =  defaultDb.Sessions.Where(x => x.UserId == user.Id &&
+                var activeSession = defaultDb.Sessions.Where(x => x.UserId == user.Id &&
                     x.IsActive)
                     .OrderByDescending(x => x.Id)
                     .First();
@@ -89,7 +84,7 @@ namespace Proton.Server.Infrastructure.Authentication
                 {
                     await Console.Out.WriteLineAsync("no session found");
                 }
-                
+
             }
         }
     }

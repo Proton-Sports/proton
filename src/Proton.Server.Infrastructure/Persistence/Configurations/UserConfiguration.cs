@@ -1,11 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Proton.Server.Core.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Proton.Server.Infrastructure.Persistence.Configurations
 {
@@ -15,6 +10,10 @@ namespace Proton.Server.Infrastructure.Persistence.Configurations
         {
             builder.HasMany(x => x.Sessions);
             builder.HasMany(x => x.Garage);
+            builder.HasOne(p => p.Character)
+                .WithOne(e => e.User)
+                .HasForeignKey<Character>(e => e.UserId)
+                .IsRequired(false);
             builder.HasKey(x => x.Id);
         }
     }

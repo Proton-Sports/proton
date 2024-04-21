@@ -1,4 +1,4 @@
-﻿using Proton.Server.Core.Interfaces;
+using Proton.Server.Core.Interfaces;
 using Proton.Server.Core.Models.Log;
 using System;
 using System.Collections.Generic;
@@ -17,7 +17,7 @@ namespace Proton.Server.Core.Models
         public ulong DiscordId { get; set; } = 0;
         public int Money { get; set; } = 0;
 
-        //public ICollection<OwnedVehicle> OwnedVehicles { get; set; } = new List<OwnedVehicle>();
+        public Character? Character { get; set; }
         public ICollection<Session> Sessions { get; set; } = new List<Session>();
         public ICollection<OwnedVehicle> Garage { get; set; } = new List<OwnedVehicle>();
     }

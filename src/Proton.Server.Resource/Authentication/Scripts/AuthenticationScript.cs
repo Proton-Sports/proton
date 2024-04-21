@@ -26,20 +26,21 @@ public class AuthenticationScript : IStartup
 
     private Dictionary<IPlayer, DiscordAccountHandler> playerAuthenticationStore = new Dictionary<IPlayer, DiscordAccountHandler>();
 
-    public AuthenticationScript(DiscordHandler discord, 
+    public AuthenticationScript(DiscordHandler discord,
         IDbContextFactory<DefaultDbContext> dbContextFactory,
         IConfiguration configuration)
     {
         this.discord = discord;
         this.dbContextFactory = dbContextFactory;
         this.configuration = configuration;
+        //AltAsync.OnPlayerSpawn += OnPlayerConnect;
         AltAsync.OnPlayerConnect += OnPlayerConnect;
         AltAsync.OnPlayerDisconnect += OnPlayerDisconnect;
         AltAsync.OnResourceStop += OnResourceStop;
-        Alt.OnClient<string>("authentication:token:exchange", 
+        Alt.OnClient<string>("authentication:token:exchange",
             (player, token) => OnTokenExchange(player, token).GetAwaiter());
         Alt.OnClient("authentication:login", (p) => OnPlayerWantsLogin(p));
-    }    
+    }
 
     /// <summary>
     /// Checking if the OAuth Token is still valid and offer to login as User
@@ -83,7 +84,7 @@ public class AuthenticationScript : IStartup
         }
 
         long id = await account.Login(p.Ip);
-        if(id != 0)
+        if (id != 0)
         {
             p.ProtonId = id;
             p.Emit("authentication:login:ok");
@@ -91,7 +92,7 @@ public class AuthenticationScript : IStartup
         else
         {
             p.Kick("There was a mistake while logging in!");
-        }        
+        }
     }
 
     /// <summary>

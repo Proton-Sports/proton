@@ -1,0 +1,352 @@
+using AltV.Net.Client;
+using AltV.Net.Client.Async;
+using AltV.Net.Client.Elements.Data;
+using AltV.Net.Client.Elements.Interfaces;
+using AltV.Net.Data;
+using Proton.Client.Core.Interfaces;
+using Proton.Client.Infrastructure.Interfaces;
+using Proton.Shared.Contants;
+using Proton.Shared.Dtos;
+using Proton.Shared.Interfaces;
+using Proton.Shared.Models;
+
+namespace Proton.Client.Resource.Features.Races.Scripts;
+
+public sealed class RaceCreatorScript : IStartup
+{
+    private readonly IRaceCreator raceCreator;
+    private readonly INoClip noClip;
+    private readonly IGameplayCamera gameplayCamera;
+    private readonly IRaycastService raycastService;
+    private readonly IUiView uiView;
+    private bool focusing = false;
+    private bool canSwitch = true;
+    private PointType pointType = PointType.Start;
+    private long id;
+    private string name = string.Empty;
+    private ICheckpoint? movingRaceCheckpoint = default;
+
+    public RaceCreatorScript(
+        IRaceCreator raceCreator,
+        INoClip noClip,
+        IGameplayCamera gameplayCamera,
+        IRaycastService raycastService,
+        IUiView uiView)
+    {
+        this.raceCreator = raceCreator;
+        this.noClip = noClip;
+        this.gameplayCamera = gameplayCamera;
+        this.raycastService = raycastService;
+        this.uiView = uiView;
+
+        Alt.OnServer("race:creator:stop", HandleServerStop);
+        Alt.OnServer<List<RaceMapDto>>("race-menu-creator:map", HandleServerMap);
+        Alt.OnServer<RaceMapDto>("race-menu-creator:editMap", HandleServerEditMap);
+        Alt.OnServer<int>("race-menu-creator:deleteMap", HandleServerDeleteMap);
+        uiView.On("race-menu-creator:map", HandleMap);
+        uiView.On<string>("race:creator:changeMode", HandleChangeMode);
+        uiView.On<string>("race-menu-creator:createMap", HandleCreateMap);
+        uiView.On<int>("race-menu-creator:deleteMap", HandleDeleteMap);
+        uiView.On<long, string>("race-menu-creator:editMap", HandleEditMap);
+        uiView.On("race:creator:submit", HandleSubmit);
+        uiView.On("race:creator:stop", HandleStop);
+        Alt.OnWindowFocusChange += HandleWindowFocusChange;
+    }
+
+    private void HandleCreateMap(string mapName)
+    {
+        name = mapName;
+        Start();
+    }
+
+    private void HandleDeleteMap(int id)
+    {
+        Alt.EmitServer("race-menu-creator:deleteMap", id);
+    }
+
+    private void HandleServerDeleteMap(int id)
+    {
+        uiView.Emit("race-menu-creator:deleteMap", id);
+    }
+
+    private void HandleEditMap(long id, string type)
+    {
+        pointType = type switch
+        {
+            "start" => PointType.Start,
+            "race" => PointType.Race,
+            _ => PointType.Start
+        };
+        Alt.EmitServer("race-menu-creator:editMap", id, type);
+    }
+
+    private void HandleSubmit()
+    {
+        Alt.EmitServer("race:creator:submit", new SharedRaceCreatorData(id, name, raceCreator.StartPoints.ToList(), raceCreator.RacePoints.ToList()));
+    }
+
+    private void HandleStop()
+    {
+        Alt.EmitServer("race:creator:stop");
+    }
+
+    private void HandleServerStop()
+    {
+        if (focusing)
+        {
+            Unfocus();
+        }
+        canSwitch = true;
+        id = default;
+        name = string.Empty;
+        uiView.Unmount(Route.RaceCreator);
+        raceCreator.ClearStartPoints();
+        raceCreator.ClearRacePoints();
+        pointType = PointType.Start;
+        Alt.OnKeyUp -= HandleKeyUp;
+        Alt.OnKeyDown -= HandleKeyDown;
+    }
+
+    private async void HandleKeyUp(Key key)
+    {
+        switch (key)
+        {
+            case Key.LButton:
+                {
+                    if (!noClip.IsStarted || focusing) break;
+                    var position = gameplayCamera.Position;
+                    var data = await raycastService.RaycastAsync(position, position + gameplayCamera.ForwardVector * 1000).ConfigureAwait(false);
+                    if (data is { IsHit: true })
+                    {
+                        AltAsync.RunOnMainThread((state) =>
+                        {
+                            switch (pointType)
+                            {
+                                case PointType.Start:
+                                    raceCreator.AddStartPoint((Position)state, new Rotation(0, 0, gameplayCamera.Rotation.Z * MathF.PI / 180));
+                                    break;
+                                case PointType.Race:
+                                    raceCreator.AddRacePoint((Position)state, 4f);
+                                    break;
+                            }
+                        }, (Position)data.EndPosition);
+                    }
+                    break;
+                }
+            case Key.RButton:
+                {
+                    if (!noClip.IsStarted
+                        || focusing
+                        || !noClip.TryGetRaycastData(out var data)
+                        || data is not { IsHit: true }) break;
+
+                    switch (pointType)
+                    {
+                        case PointType.Start:
+                            raceCreator.TryRemoveStartPoint(data.EndPosition, out var _);
+                            break;
+                        case PointType.Race:
+                            if (raceCreator.TryRemoveRacePoint(data.EndPosition, out var removed) && removed.Checkpoint == movingRaceCheckpoint)
+                            {
+                                movingRaceCheckpoint = null;
+                            }
+                            break;
+                    }
+                    break;
+                }
+            case Key.Z:
+                {
+                    if (noClip.IsStarted) break;
+                    var player = Alt.LocalPlayer;
+                    var position = Alt.LocalPlayer.Position;
+                    if (!Alt.Natives.GetGroundZExcludingObjectsFor3dCoord(position.X, position.Y, position.Z, ref position.Z, true, true))
+                    {
+                        return;
+                    }
+                    switch (pointType)
+                    {
+                        case PointType.Start:
+                            raceCreator.AddStartPoint(position, player.Rotation);
+                            break;
+                        case PointType.Race:
+                            raceCreator.AddRacePoint(position, 4f);
+                            break;
+                    }
+                    break;
+                }
+            case Key.X:
+                {
+                    if (noClip.IsStarted) break;
+                    switch (pointType)
+                    {
+                        case PointType.Start:
+                            raceCreator.TryRemoveStartPoint(Alt.LocalPlayer.Position, out var _);
+                            break;
+                        case PointType.Race:
+                            if (raceCreator.TryRemoveRacePoint(Alt.LocalPlayer.Position, out var removed) && removed.Checkpoint == movingRaceCheckpoint)
+                            {
+                                movingRaceCheckpoint = null;
+                            }
+                            break;
+                    }
+                    break;
+                }
+            case Key.D1:
+                {
+                    if (!canSwitch || pointType == PointType.Start) return;
+                    pointType = PointType.Start;
+                    break;
+                }
+            case Key.D2:
+                {
+                    if (!canSwitch || pointType == PointType.Race) return;
+                    pointType = PointType.Race;
+                    break;
+                }
+            case Key.U:
+                {
+                    Position position = Alt.LocalPlayer.Position;
+                    if (!noClip.IsStarted)
+                    {
+                        position = Alt.LocalPlayer.Position;
+                        if (!Alt.Natives.GetGroundZExcludingObjectsFor3dCoord(position.X, position.Y, position.Z, ref position.Z, true, true)) return;
+                    }
+                    else if (noClip.TryGetRaycastData(out var data) && data is { IsHit: true }) position = data.EndPosition;
+                    else break;
+                    if (raceCreator.TryGetClosestRaceCheckpointTo(position, out var checkpoint))
+                    {
+                        checkpoint.Radius += 0.5f;
+                    }
+                    break;
+                }
+            case Key.N:
+                {
+                    Position position = Alt.LocalPlayer.Position;
+                    if (!noClip.IsStarted)
+                    {
+                        position = Alt.LocalPlayer.Position;
+                        if (!Alt.Natives.GetGroundZExcludingObjectsFor3dCoord(position.X, position.Y, position.Z, ref position.Z, true, true)) return;
+                    }
+                    else if (noClip.TryGetRaycastData(out var data) && data is { IsHit: true }) position = data.EndPosition;
+                    else break;
+                    if (raceCreator.TryGetClosestRaceCheckpointTo(position, out var checkpoint))
+                    {
+                        checkpoint.Radius = Math.Max(1, checkpoint.Radius - 0.5f);
+                    }
+                    break;
+                }
+            case Key.M:
+                {
+                    Position position = Alt.LocalPlayer.Position;
+                    if (!noClip.IsStarted)
+                    {
+                        position = Alt.LocalPlayer.Position;
+                        if (!Alt.Natives.GetGroundZExcludingObjectsFor3dCoord(position.X, position.Y, position.Z, ref position.Z, true, true)) return;
+                    }
+                    else if (noClip.TryGetRaycastData(out var data) && data is { IsHit: true }) position = data.EndPosition;
+                    else break;
+                    if (raceCreator.TryGetClosestRaceCheckpointTo(position, out var checkpoint))
+                    {
+                        if (movingRaceCheckpoint is not null)
+                        {
+                            movingRaceCheckpoint.Color = new Rgba(255, 255, 255, 255);
+                        }
+                        movingRaceCheckpoint = checkpoint;
+                        movingRaceCheckpoint.Color = new Rgba(0, 255, 0, 255);
+                    }
+                    else if (movingRaceCheckpoint is not null)
+                    {
+                        raceCreator.UpdateRacePointPosition(movingRaceCheckpoint, position);
+                        movingRaceCheckpoint.Color = new Rgba(255, 255, 255, 255);
+                        movingRaceCheckpoint = default;
+                    }
+                    break;
+                }
+            case Key.Menu:
+                {
+                    if (focusing)
+                    {
+                        Unfocus();
+                    }
+                    break;
+                }
+        }
+    }
+
+    private void Unfocus()
+    {
+        focusing = false;
+        uiView.Unfocus();
+        Alt.ShowCursor(false);
+        Alt.GameControlsEnabled = true;
+    }
+
+    private void Focus()
+    {
+        focusing = true;
+        uiView.Focus();
+        Alt.ShowCursor(true);
+        Alt.GameControlsEnabled = false;
+    }
+
+    private void HandleKeyDown(Key key)
+    {
+        if (key == Key.Menu)
+        {
+            Focus();
+        }
+    }
+
+    private void HandleWindowFocusChange(bool state)
+    {
+        if (!state && focusing)
+        {
+            Unfocus();
+        }
+    }
+
+    private void HandleMap()
+    {
+        Alt.EmitServer("race-menu-creator:map");
+    }
+
+    private void HandleChangeMode(string mode)
+    {
+        Alt.EmitServer("race:creator:changeMode", mode);
+    }
+
+    private void HandleServerMap(List<RaceMapDto> maps)
+    {
+        uiView.Emit("race-menu-creator:map", maps);
+    }
+
+    private void HandleServerEditMap(RaceMapDto map)
+    {
+        canSwitch = false;
+        id = map.Id;
+        name = map.Name;
+        Start();
+        raceCreator.ImportStartPoints(map.StartPoints);
+        raceCreator.ImportRacePoints(map.RacePoints);
+    }
+
+    private void Start()
+    {
+        if (uiView.IsMounted(Route.RaceMainMenuList))
+        {
+            uiView.Unmount(Route.RaceMainMenuList);
+        }
+        raceCreator.ClearStartPoints();
+        raceCreator.ClearRacePoints();
+        uiView.Mount(Route.RaceCreator);
+        Alt.OnKeyUp += HandleKeyUp;
+        Alt.OnKeyDown += HandleKeyDown;
+        Alt.GameControlsEnabled = true;
+    }
+
+    private enum PointType
+    {
+        Start,
+        Race
+    }
+}

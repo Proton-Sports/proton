@@ -1,4 +1,4 @@
-﻿using Proton.Server.Core.Interfaces;
+using Proton.Server.Core.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;

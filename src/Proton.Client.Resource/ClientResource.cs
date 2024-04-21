@@ -7,10 +7,11 @@ using Proton.Client.Infrastructure.Interfaces;
 using Proton.Shared.Adapters;
 using Proton.Shared.Dtos;
 using Proton.Client.Resource.Authentication.Extentions;
+using Proton.Client.Resource.CharacterCreator.Extensions;
 using Proton.Shared.Interfaces;
 using Proton.Shared.Models;
+using Proton.Shared.Extensions;
 using Proton.Client.Resource.Shop.Extentions;
-using AltV.Net;
 
 namespace Proton.Server.Resource;
 
@@ -24,19 +25,15 @@ public sealed class ClientResource : AsyncResource
             .AddInfrastructure()
             //.AddNoClips()
             .AddAuthentication()
+            .AddRaceFeatures()
             .AddShop()
-            .AddRaces();
+            .AddCharacterCreator();
         serviceProvider = serviceCollection.BuildServiceProvider();
     }
 
     public override void OnStart()
     {
-        //Alt.RegisterMValueAdapter(SharedRaceCreatorDataMValueAdapter.Instance);
-        //Alt.RegisterMValueAdapter(RaceMapDto.Adapter.Instance);
-        //Alt.RegisterMValueAdapter(DefaultMValueAdapters.GetArrayAdapter(RaceMapDto.Adapter.Instance));
-        //Alt.RegisterMValueAdapter(SharedShopItemAdapter.Instance);
-
-        AltExtensions.RegisterAdapters(true, true);
+        ResourceExtensions.RegisterMValueAdapters();
 
         // TODO: Add logging for startup
         serviceProvider.GetServices<IStartup>();

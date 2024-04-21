@@ -20,17 +20,17 @@ namespace Proton.Client.Resource.Shop.Scripts
     public class VehicleScript : IStartup
     {
         private readonly IUiView uiView;
-        private readonly NotificationService notificationService;
+        //private readonly NotificationService notificationService;
         private List<SharedShopItem> shopItems = new List<SharedShopItem>();
         private List<SharedShopItem> ownedItems = new List<SharedShopItem>();
 
         private Dictionary<string, List<SharedShopItem>> shopItemsSorted = new Dictionary<string, List<SharedShopItem>>();
         private Dictionary<string, List<SharedShopItem>> ownedItemsSorted = new Dictionary<string, List<SharedShopItem>>();
 
-        public VehicleScript(IUiView uiView, NotificationService notificationService)
+        public VehicleScript(IUiView uiView/*, NotificationService notificationService*/)
         {
             this.uiView = uiView;
-            this.notificationService = notificationService;
+            //this.notificationService = notificationService;
             this.uiView.On<string>("shop:select:vehicle", 
                 (displayName) => SetVehiclePreview(displayName));
             this.uiView.On<int>("shop:vehicles:choosenColor",
@@ -78,14 +78,14 @@ namespace Proton.Client.Resource.Shop.Scripts
                     Alt.EmitServer("shop:vehicle:showroom:termiante");
                     ToggleUi(false);
 
-                    notificationService.DrawNotification(Header: "Vehicle Shop", Details: "OK", Message: "Vehicle bought!");
+                    //notificationService.DrawNotification(Header: "Vehicle Shop", Details: "OK", Message: "Vehicle bought!");
                     break;
                 case ShopStatus.NO_MONEY:
-                    notificationService.DrawNotification(Header: "Vehicle Shop", Details: "Error", Message: "You dont have enough money to buy this Vehicle!");
+                    //notificationService.DrawNotification(Header: "Vehicle Shop", Details: "Error", Message: "You dont have enough money to buy this Vehicle!");
                     break;
                 case ShopStatus.ITEM_NOT_FOUND:
                 default:
-                    notificationService.DrawNotification(Header: "Vehicle Shop", Details: "Error", Message:"The Requested vehicle was not found!");
+                    //notificationService.DrawNotification(Header: "Vehicle Shop", Details: "Error", Message:"The Requested vehicle was not found!");
                     break;
             }
         }

@@ -23,6 +23,84 @@ namespace Proton.Server.Resource.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("Proton.Server.Core.Models.Character", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<int>("CharacterGender")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("EyeColor")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Eyebrows")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("EyebrowsColor")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("FaceFather")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("FaceFeatures")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<float>("FaceMix")
+                        .HasColumnType("real");
+
+                    b.Property<int>("FaceMother")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("FaceOverlays")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("FacialHair")
+                        .HasColumnType("integer");
+
+                    b.Property<float>("FacialHairOpacity")
+                        .HasColumnType("real");
+
+                    b.Property<int>("FirstFacialHairColor")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("FirstHairColor")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("HairDrawable")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("SecondFacialHairColor")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("SecondHairColor")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("SkinFather")
+                        .HasColumnType("integer");
+
+                    b.Property<float>("SkinMix")
+                        .HasColumnType("real");
+
+                    b.Property<int>("SkinMother")
+                        .HasColumnType("integer");
+
+                    b.Property<long>("UserId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId")
+                        .IsUnique();
+
+                    b.ToTable("Characters");
+                });
+
             modelBuilder.Entity("Proton.Server.Core.Models.Log.Session", b =>
                 {
                     b.Property<long>("Id")
@@ -224,9 +302,10 @@ namespace Proton.Server.Resource.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("Category")
+                    b.Property<string>("Discriminator")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(13)
+                        .HasColumnType("character varying(13)");
 
                     b.Property<string>("DisplayName")
                         .IsRequired()
@@ -238,6 +317,42 @@ namespace Proton.Server.Resource.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Vehicles");
+
+                    b.HasDiscriminator<string>("Discriminator").HasValue("Vehicle");
+
+                    b.UseTphMappingStrategy();
+                });
+
+            modelBuilder.Entity("Proton.Server.Core.Models.OwnedVehicle", b =>
+                {
+                    b.HasBaseType("Proton.Server.Core.Models.Vehicle");
+
+                    b.Property<string>("AltVColor")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("ColorDisplayname")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("PurchasedDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<long?>("UserId")
+                        .HasColumnType("bigint");
+
+                    b.HasIndex("UserId");
+
+                    b.HasDiscriminator().HasValue("OwnedVehicle");
+                });
+
+            modelBuilder.Entity("Proton.Server.Core.Models.Character", b =>
+                {
+                    b.HasOne("Proton.Server.Core.Models.User", "User")
+                        .WithOne("Character")
+                        .HasForeignKey("Proton.Server.Core.Models.Character", "UserId");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Proton.Server.Core.Models.Log.Session", b =>
@@ -280,6 +395,13 @@ namespace Proton.Server.Resource.Migrations
                     b.Navigation("Map");
                 });
 
+            modelBuilder.Entity("Proton.Server.Core.Models.OwnedVehicle", b =>
+                {
+                    b.HasOne("Proton.Server.Core.Models.User", null)
+                        .WithMany("OwnedVehicles")
+                        .HasForeignKey("UserId");
+                });
+
             modelBuilder.Entity("Proton.Server.Core.Models.RaceMap", b =>
                 {
                     b.Navigation("RacePoints");
@@ -290,7 +412,7 @@ namespace Proton.Server.Resource.Migrations
             modelBuilder.Entity("Proton.Server.Core.Models.User", b =>
                 {
                     b.Navigation("Garage");
-
+                    b.Navigation("Character");
                     b.Navigation("Sessions");
                 });
 #pragma warning restore 612, 618

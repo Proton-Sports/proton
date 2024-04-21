@@ -6,5 +6,9 @@ namespace Proton.Client.Infrastructure.Interfaces;
 public interface IUiView : IWebView
 {
     void Mount(Route route);
+    Task<bool> TryMountAsync(Route route);
     void Unmount(Route route);
+    bool IsMounted(Route route);
+    Action OnMount(Route route, Action callback);
+    Action OnUnmount(Route route, Action callback);
 }
