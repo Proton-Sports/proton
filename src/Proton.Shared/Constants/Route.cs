@@ -15,5 +15,6 @@ public sealed class Route
     public static readonly Route RaceCountdown = new("race-countdown");
     public static readonly Route RacePrepare = new("race-prepare");
     public static readonly Route RaceEndCountdown = new("race-end-countdown");
+    public static readonly Route VehicleShop = new("car_shop");
     public static readonly Route CharacterCreator = new("character-creator");
 }

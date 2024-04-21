@@ -14,7 +14,7 @@
     <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="8.0.0" />
     <PackageVersion Include="BCrypt.Net-Next" Version="4.0.3" />
     <!-- Infrastructure -->
-    <PackageVersion Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.0" />
+    <PackageVersion Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.2" />
     <!-- Resource -->
     <PackageVersion Include="AltV.Net" Version="16.0.13" />
     <PackageVersion Include="AltV.Net.Async" Version="16.0.13" />

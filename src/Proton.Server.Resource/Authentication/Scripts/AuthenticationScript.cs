@@ -83,7 +83,7 @@ public class AuthenticationScript : IStartup
             await account.Register(p.SocialClubName);
         }
 
-        var id = await account.Login(p.Ip);
+        long id = await account.Login(p.Ip);
         if (id != 0)
         {
             p.ProtonId = id;

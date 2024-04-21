@@ -9,7 +9,7 @@ namespace Proton.Server.Infrastructure.Persistence.Configurations
         public void Configure(EntityTypeBuilder<User> builder)
         {
             builder.HasMany(x => x.Sessions);
-            builder.HasMany(x => x.OwnedVehicles);
+            builder.HasMany(x => x.Garage);
             builder.HasOne(p => p.Character)
                 .WithOne(e => e.User)
                 .HasForeignKey<Character>(e => e.UserId)

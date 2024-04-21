@@ -1,0 +1,37 @@
+# name: Build and Push Resources
+# on: [push]
+# jobs:
+#   build-server:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - uses: actions/checkout@v4
+#       - uses: extractions/setup-just@v2
+#       - uses: actions/setup-dotnet@v4
+#         with:
+#           dotnet-version: "8.x"
+#       - run: |
+#           cd src/Proton.Server.Resource/
+#           dotnet build
+#       - uses: actions/upload-artifact@v4
+#         with:
+#           name: dotnet_server_bin
+#           path: src/Proton.Server.Resource/bin
+#           retention-days: 2
+
+#   upload-server:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - uses: actions/download-artifact@v4
+#         with:
+#           name: dotnet_server_bin
+#           path: bin/Server.Resource/
+
+#       - uses: Dylan700/sftp-upload-action@latest
+#         with:
+#           server: sftp.server.com
+#           username: github
+#           key: ${{secrets.SERVER_KEY}}
+#           passphrase: ${{secrets.SERVER_PASSPHRASE}}
+#           port: 22
+#           uploads: |
+#             ./bin/Server.Resource/ => ./www/public_html

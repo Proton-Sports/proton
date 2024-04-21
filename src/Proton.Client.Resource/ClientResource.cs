@@ -11,6 +11,7 @@ using Proton.Client.Resource.CharacterCreator.Extensions;
 using Proton.Shared.Interfaces;
 using Proton.Shared.Models;
 using Proton.Shared.Extensions;
+using Proton.Client.Resource.Shop.Extentions;
 
 namespace Proton.Server.Resource;
 
@@ -22,9 +23,10 @@ public sealed class ClientResource : AsyncResource
     {
         var serviceCollection = new ServiceCollection()
             .AddInfrastructure()
-            .AddNoClips()
+            //.AddNoClips()
             .AddAuthentication()
             .AddRaceFeatures()
+            .AddShop()
             .AddCharacterCreator();
         serviceProvider = serviceCollection.BuildServiceProvider();
     }
