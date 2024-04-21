@@ -29,10 +29,10 @@ jobs:
 
       - uses: Dylan700/sftp-upload-action@latest
         with:
-          server: sftp.server.com
-          username: github
+          server: ${{ vars.SERVER_IP }}
+          username: ci_pipeline
           key: ${{secrets.SERVER_KEY}}
           passphrase: ${{secrets.SERVER_PASSPHRASE}}
           port: 22
           uploads: |
-            ./bin/Server.Resource/ => ./www/public_html
+            ./bin/Server.Resource/ => ~/altv/
