@@ -9,7 +9,7 @@ jobs:
 
   upload-server: # only run this job when its pushed to main
     needs: build-server
-    if: contains(github.ref_name, 'main')
+    if: contains(github.ref_name, 'feat/ci')
     name: Deploy Server
     uses: ./.github/workflows/infra.yml
     with:
