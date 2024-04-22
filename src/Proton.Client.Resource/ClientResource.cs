@@ -10,6 +10,8 @@ using Proton.Client.Resource.Authentication.Extentions;
 using Proton.Client.Resource.CharacterCreator.Extensions;
 using Proton.Shared.Interfaces;
 using Proton.Shared.Models;
+using AltV.Net;
+using Proton.Client.Resource.Utils.Extentions;
 using Proton.Shared.Extensions;
 
 namespace Proton.Server.Resource;
@@ -25,6 +27,7 @@ public sealed class ClientResource : AsyncResource
             .AddNoClips()
             .AddAuthentication()
             .AddRaceFeatures()
+            .AddUtils()
             .AddCharacterCreator();
         serviceProvider = serviceCollection.BuildServiceProvider();
     }
