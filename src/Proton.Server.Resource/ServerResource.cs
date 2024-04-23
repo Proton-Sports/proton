@@ -8,6 +8,7 @@ using Microsoft.Extensions.Hosting;
 using Proton.Server.Infrastructure.Factorys;
 using Proton.Server.Resource.Authentication.Extentions;
 using Proton.Server.Resource.CharacterCreator.Extensions;
+using Proton.Server.Resource.Features.Shop;
 using Proton.Shared.Extensions;
 using Proton.Shared.Interfaces;
 
@@ -39,7 +40,8 @@ public sealed class ServerResource : AsyncResource
                     .AddPlayerFeatures()
                     .AddRaceFeatures()
                     .AddCharacterCreator()
-                    .AddIplFeatures();
+                    .AddIplFeatures()
+                    .AddShops();
             }
         );
 
