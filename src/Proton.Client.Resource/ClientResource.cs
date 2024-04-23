@@ -13,6 +13,7 @@ using Proton.Shared.Models;
 using AltV.Net;
 using Proton.Client.Resource.Utils.Extentions;
 using Proton.Shared.Extensions;
+using Proton.Client.Resource.Features.Shop.Extentions;
 
 namespace Proton.Server.Resource;
 
@@ -28,6 +29,7 @@ public sealed class ClientResource : AsyncResource
             .AddAuthentication()
             .AddRaceFeatures()
             .AddUtils()
+            .AddShops()
             .AddCharacterCreator();
         serviceProvider = serviceCollection.BuildServiceProvider();
     }

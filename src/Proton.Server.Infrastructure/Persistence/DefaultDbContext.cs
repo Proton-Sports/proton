@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Proton.Server.Core.Interfaces;
 using Proton.Server.Core.Models;
 using Proton.Server.Core.Models.Log;
+using Proton.Server.Core.Models.Shop;
 
 namespace Proton.Server.Infrastructure.Persistence;
 
@@ -17,6 +18,8 @@ public class DefaultDbContext : DbContext, IDbContext
     public DbSet<RaceStartPoint> RaceStartPoints => Set<RaceStartPoint>();
     public DbSet<RacePoint> RacePoints => Set<RacePoint>();
     public DbSet<Vehicle> Vehicles => Set<Vehicle>();
+    public DbSet<Garage> Garages => Set<Garage>();
+
 
     public DefaultDbContext() { }
     public DefaultDbContext(DbContextOptions options) : base(options) { }

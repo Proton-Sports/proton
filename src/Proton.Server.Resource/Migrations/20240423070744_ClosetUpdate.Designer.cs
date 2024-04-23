@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Proton.Server.Infrastructure.Persistence;
@@ -12,9 +13,11 @@ using Proton.Server.Infrastructure.Persistence;
 namespace Proton.Server.Resource.Migrations
 {
     [DbContext(typeof(DefaultDbContext))]
-    partial class DefaultDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240423070744_ClosetUpdate")]
+    partial class ClosetUpdate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -99,6 +102,35 @@ namespace Proton.Server.Resource.Migrations
                         .IsUnique();
 
                     b.ToTable("Characters");
+                });
+
+            modelBuilder.Entity("Proton.Server.Core.Models.Garage", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<int>("AltVColor")
+                        .HasColumnType("integer");
+
+                    b.Property<long>("OwnerId")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime>("PurchasedDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<long>("VehicleId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OwnerId");
+
+                    b.HasIndex("VehicleId");
+
+                    b.ToTable("Garages");
                 });
 
             modelBuilder.Entity("Proton.Server.Core.Models.Log.Session", b =>
@@ -290,7 +322,7 @@ namespace Proton.Server.Resource.Migrations
                     b.ToTable("Cloth");
                 });
 
-            modelBuilder.Entity("Proton.Server.Core.Models.Shop.Garage", b =>
+            modelBuilder.Entity("Proton.Server.Core.Models.User", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -298,28 +330,22 @@ namespace Proton.Server.Resource.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
-                    b.Property<int>("AltVColor")
+                    b.Property<decimal>("DiscordId")
+                        .HasColumnType("numeric(20,0)");
+
+                    b.Property<int>("Money")
                         .HasColumnType("integer");
 
-                    b.Property<long>("OwnerId")
-                        .HasColumnType("bigint");
-
-                    b.Property<DateTime>("PurchasedDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<long>("VehicleId")
-                        .HasColumnType("bigint");
+                    b.Property<string>("Username")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("OwnerId");
-
-                    b.HasIndex("VehicleId");
-
-                    b.ToTable("Garages");
+                    b.ToTable("Users");
                 });
 
-            modelBuilder.Entity("Proton.Server.Core.Models.Shop.Vehicle", b =>
+            modelBuilder.Entity("Proton.Server.Core.Models.Vehicle", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
@@ -347,29 +373,6 @@ namespace Proton.Server.Resource.Migrations
                     b.ToTable("Vehicles");
                 });
 
-            modelBuilder.Entity("Proton.Server.Core.Models.User", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
-
-                    b.Property<decimal>("DiscordId")
-                        .HasColumnType("numeric(20,0)");
-
-                    b.Property<int>("Money")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("Username")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Users");
-                });
-
             modelBuilder.Entity("Proton.Server.Core.Models.Character", b =>
                 {
                     b.HasOne("Proton.Server.Core.Models.User", "User")
@@ -377,6 +380,25 @@ namespace Proton.Server.Resource.Migrations
                         .HasForeignKey("Proton.Server.Core.Models.Character", "UserId");
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Proton.Server.Core.Models.Garage", b =>
+                {
+                    b.HasOne("Proton.Server.Core.Models.User", "Owner")
+                        .WithMany("Garages")
+                        .HasForeignKey("OwnerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Proton.Server.Core.Models.Vehicle", "VehicleItem")
+                        .WithMany("Garages")
+                        .HasForeignKey("VehicleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Owner");
+
+                    b.Navigation("VehicleItem");
                 });
 
             modelBuilder.Entity("Proton.Server.Core.Models.Log.Session", b =>
@@ -431,25 +453,6 @@ namespace Proton.Server.Resource.Migrations
                     b.Navigation("Owner");
                 });
 
-            modelBuilder.Entity("Proton.Server.Core.Models.Shop.Garage", b =>
-                {
-                    b.HasOne("Proton.Server.Core.Models.User", "Owner")
-                        .WithMany("Garages")
-                        .HasForeignKey("OwnerId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Proton.Server.Core.Models.Shop.Vehicle", "VehicleItem")
-                        .WithMany("Garages")
-                        .HasForeignKey("VehicleId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Owner");
-
-                    b.Navigation("VehicleItem");
-                });
-
             modelBuilder.Entity("Proton.Server.Core.Models.RaceMap", b =>
                 {
                     b.Navigation("RacePoints");
@@ -462,11 +465,6 @@ namespace Proton.Server.Resource.Migrations
                     b.Navigation("Closets");
                 });
 
-            modelBuilder.Entity("Proton.Server.Core.Models.Shop.Vehicle", b =>
-                {
-                    b.Navigation("Garages");
-                });
-
             modelBuilder.Entity("Proton.Server.Core.Models.User", b =>
                 {
                     b.Navigation("Character");
@@ -476,6 +474,11 @@ namespace Proton.Server.Resource.Migrations
                     b.Navigation("Garages");
 
                     b.Navigation("Sessions");
+                });
+
+            modelBuilder.Entity("Proton.Server.Core.Models.Vehicle", b =>
+                {
+                    b.Navigation("Garages");
                 });
 #pragma warning restore 612, 618
         }

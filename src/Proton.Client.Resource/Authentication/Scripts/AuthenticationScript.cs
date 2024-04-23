@@ -85,6 +85,7 @@ public sealed class AuthenticationScript : IStartup
         Alt.GameControlsEnabled = true;
         uiView.Unfocus();
         uiView.Unmount(Route.Auth);
+        Alt.EmitClient("authentication:done");
         return Task.CompletedTask;
     }
 }
