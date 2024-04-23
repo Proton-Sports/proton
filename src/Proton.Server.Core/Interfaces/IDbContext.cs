@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Proton.Server.Core.Models;
 using Proton.Server.Core.Models.Log;
+using Proton.Server.Core.Models.Shop;
 
 namespace Proton.Server.Core.Interfaces;
 

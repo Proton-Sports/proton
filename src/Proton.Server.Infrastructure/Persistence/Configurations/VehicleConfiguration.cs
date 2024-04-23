@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Proton.Server.Core.Models;
+using Proton.Server.Core.Models.Shop;
 using System;
 using System.Collections.Generic;
 using System.Linq;
