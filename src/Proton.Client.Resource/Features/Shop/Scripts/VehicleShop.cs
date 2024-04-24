@@ -127,12 +127,10 @@ namespace Proton.Client.Resource.Features.Shop
 
         private void PurchaseResponse(ShopStatus state)
         {
-            Alt.Log(state.ToString());
             switch (state)
             {
                 case ShopStatus.OK:
-                    Alt.EmitServer("shop:items");
-                    Alt.EmitServer("shop:items:owned");
+                    RequestShopData();
                     ToggleUi();
                     RemovePreview();
 

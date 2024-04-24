@@ -20,6 +20,6 @@ namespace Proton.Server.Core.Models
 
         public List<Garage> Garages { get; set; } = [];
         public ICollection<Session> Sessions { get; set; } = new List<Session>();
-        public ICollection<Closet> Closets { get; set; } = [];
+        public List<Closet> Closets { get; set; } = [];
     }
 }

@@ -18,6 +18,8 @@ public class DefaultDbContext : DbContext, IDbContext
     public DbSet<Vehicle> Vehicles => Set<Vehicle>();
     public DbSet<UserRaceRestoration> UserRaceRestorations => Set<UserRaceRestoration>();
     public DbSet<Garage> Garages => Set<Garage>();
+    public DbSet<Cloth> Cloths => Set<Cloth>();
+    public DbSet<Closet> Closets => Set<Closet>();
 
     public DefaultDbContext() { }
 

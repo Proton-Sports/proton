@@ -15,6 +15,7 @@ internal static class ServiceCollectionExtensions
     public static IServiceCollection AddShops(this IServiceCollection services)
     {
         services.AddStartup<VehicleShop>();
+        services.AddStartup<ClothShop>();
         return services;
     }
 }

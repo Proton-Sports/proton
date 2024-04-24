@@ -1,16 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.AccessControl;
-using System.Security.Principal;
-using System.Text;
-using System.Threading.Tasks;
-using AltV.Net;
+﻿using AltV.Net;
 using AltV.Net.Async;
 using AltV.Net.Elements.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-using Proton.Server.Core.Interfaces;
 using Proton.Server.Infrastructure.Authentication;
 using Proton.Server.Infrastructure.Factorys;
 using Proton.Server.Infrastructure.Persistence;
@@ -23,6 +15,9 @@ public class AuthenticationScript : IStartup
     private readonly DiscordHandler discord;
     private readonly IDbContextFactory<DefaultDbContext> dbContextFactory;
     private readonly IConfiguration configuration;
+
+    public delegate Task OnAuthenticationDone(IPlayer p);
+    public static event OnAuthenticationDone? OnAuthenticationDoneEvent;
 
     private Dictionary<IPlayer, DiscordAccountHandler> playerAuthenticationStore =
         new Dictionary<IPlayer, DiscordAccountHandler>();
@@ -93,9 +88,14 @@ public class AuthenticationScript : IStartup
         {
             p.ProtonId = id;
             p.Emit("authentication:login:ok");
-            p.SetStreamSyncedMetaData("playerName", p.SocialClubName);
 
+            // OLD: For compatible
+            p.SetStreamSyncedMetaData("playerName", p.SocialClubName);
             Alt.Emit("auth:firstSignIn", p);
+
+            // NEW
+            if (OnAuthenticationDoneEvent != null)
+                await OnAuthenticationDoneEvent(p);
         }
         else
         {
