@@ -15,6 +15,7 @@ public static class ServiceCollectionExtensions
     {
         AddPersistence(serviceCollection);
         serviceCollection.AddSingleton<INoClip, DefaultNoClip>();
+        serviceCollection.AddTransient<OutfitService>();
         return serviceCollection;
     }
 

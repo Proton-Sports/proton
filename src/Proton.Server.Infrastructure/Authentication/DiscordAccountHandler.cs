@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Proton.Server.Core.Models;
 using Proton.Server.Core.Models.Log;
+using Proton.Server.Core.Models.Shop;
 using Proton.Server.Infrastructure.Persistence;
 
 namespace Proton.Server.Infrastructure.Authentication
@@ -55,7 +56,19 @@ namespace Proton.Server.Infrastructure.Authentication
         public async Task Register(string Username)
         {
             var defaultDb = defaultDbFactory.CreateDbContext();
-            defaultDb.Users.Add(new User { DiscordId = GetCurrentUser().Id, Username = Username });
+            var defaultCloths = defaultDb.Cloths.Where(x => x.Price == 0).ToList();
+
+            var closets = new List<Closet>();
+            defaultCloths.ForEach(c => closets.Add(new Closet { ClothId = c.Id, IsEquiped = true }));
+
+            defaultDb.Users.Add(
+                new User
+                {
+                    DiscordId = GetCurrentUser().Id,
+                    Username = Username,
+                    Closets = closets,
+                }
+            );
 
             await defaultDb.SaveChangesAsync();
         }

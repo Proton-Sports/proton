@@ -94,7 +94,6 @@ namespace Proton.Server.Resource.Features.Shop.Scripts
         public Task GetOwnedItems(IPlayer _Player)
         {
             var Player = (PPlayer)_Player;
-            Console.WriteLine(Player.ProtonId);
             var db = dbContext.CreateDbContext();
             var user = db.Users.Where(x => x.Id == Player.ProtonId)
                 .Include(x => x.Garages)

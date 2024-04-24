@@ -16,6 +16,7 @@ namespace Proton.Server.Core.Models.Shop
 
         public User Owner { get; set; } = null!;
         public Cloth ClothItem { get; set; } = null!;
+        public bool IsEquiped { get; set; } = false;
 
         public DateTime PurchaseTimestamp {  get; set; } = DateTime.UtcNow;
     }
