@@ -22,5 +22,12 @@ namespace Proton.Server.Core.Factorys
 
         public void SendNotification(SharedNotification notify)
             => Player.Emit("player:sendNotification", notify);
+        
+        public void ClearClothing()
+        {
+            SetClothes(3, 15, 0, 0); // Torso
+            SetClothes(11, 15, 0, 0); // Shirt
+            SetClothes(8, 15, 0, 0); // Chest Part Of The Shirt
+        }
     }
 }

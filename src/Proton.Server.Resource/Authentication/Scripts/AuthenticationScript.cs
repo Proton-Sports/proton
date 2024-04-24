@@ -24,6 +24,9 @@ public class AuthenticationScript : IStartup
     private readonly IDbContextFactory<DefaultDbContext> dbContextFactory;
     private readonly IConfiguration configuration;
 
+    public delegate Task OnAuthenticationDone(IPlayer p);
+    public static event OnAuthenticationDone? OnAuthenticationDoneEvent;
+
     private Dictionary<IPlayer, DiscordAccountHandler> playerAuthenticationStore = new Dictionary<IPlayer, DiscordAccountHandler>();
 
     public AuthenticationScript(DiscordHandler discord,
@@ -88,6 +91,7 @@ public class AuthenticationScript : IStartup
         {
             p.ProtonId = id;
             p.Emit("authentication:login:ok");
+            if (OnAuthenticationDoneEvent != null) await OnAuthenticationDoneEvent(p);
         }
         else
         {

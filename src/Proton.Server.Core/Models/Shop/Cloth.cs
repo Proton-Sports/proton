@@ -14,19 +14,16 @@ namespace Proton.Server.Core.Models.Shop
         public bool IsDlc { get; set; }
         public bool IsProp { get; set; }
 
-        public int Component { get; set; }
+        public string DisplayName { get; set; } = string.Empty;
+
+        public int Component { get; set; } = 0;
         public int Drawable { get; set; }
         public int Texture { get; set; }
         public int Palette {  get; set; }
         public string DlcName { get; set; } = string.Empty;
 
         public int Price { get; set; }
-        public ClothType CurrentClothType { get; set; }
+        public string Category { get; set; } = string.Empty;
         public ICollection<Closet> Closets { get; set; } = [];
-
-        public enum ClothType
-        {
-            Head,Torso,Pants,Shoes
-        }
     }
 }

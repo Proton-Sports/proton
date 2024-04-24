@@ -9,6 +9,7 @@ public static class ServiceCollectionExtensions
     {
         serviceCollection
             .AddStartup<VehicleScript>()
+            .AddStartup<OutfitScript>()
             .AddStartup<ClothScript>();
         return serviceCollection;
     }
