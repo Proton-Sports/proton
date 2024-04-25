@@ -23,6 +23,10 @@ public class HudScript : IStartup
         everyTickEvent = Alt.EveryTick(() =>
         {
             Alt.Natives.HudSuppressWeaponWheelResultsThisFrame();
+            Alt.Natives.HideHudComponentThisFrame(6);
+            Alt.Natives.HideHudComponentThisFrame(7);
+            Alt.Natives.HideHudComponentThisFrame(8);
+            Alt.Natives.HideHudComponentThisFrame(9);
             Alt.Natives.DisableControlAction(2, 37, true);
             
             Alt.Natives.DisablePlayerFiring(Alt.LocalPlayer, true);
