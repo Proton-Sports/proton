@@ -46,6 +46,7 @@ public class CharacterCreatorScript : IStartup
             uiView.Focus();
         
             Alt.Natives.DoScreenFadeIn(1000);
+            Alt.Natives.DisplayRadar(false);
             Alt.ShowCursor(true);    
         });
     }
@@ -70,7 +71,7 @@ public class CharacterCreatorScript : IStartup
         Alt.FocusData.ClearFocusOverride();
         Alt.Natives.DoScreenFadeIn(1000);
         Alt.Natives.UnpinInterior(locationInterior);
-        
+        Alt.Natives.DisplayRadar(true);
         Alt.ShowCursor(false);
     }
     
