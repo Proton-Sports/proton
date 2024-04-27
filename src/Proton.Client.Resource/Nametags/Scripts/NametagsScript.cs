@@ -2,24 +2,84 @@ using AltV.Net.Client;
 using AltV.Net.Client.Elements.Entities;
 using AltV.Net.Client.Elements.Interfaces;
 using AltV.Net.Data;
+using Proton.Client.Infrastructure.Interfaces;
 using Proton.Shared.Interfaces;
 
 namespace Proton.Client.Resource.Nametags.Scripts;
 
 public class NametagsScript : IStartup
 {
-    private bool areNametagsShown = true;
+    private readonly IUiView uiView;
+    private bool areNametagsShown;
+    private bool clientSettingValue;
     private readonly Dictionary<IEntity, ITextLabel> nametagsElements = new();
     private int everyTickEvent = -1;
 
-    public NametagsScript()
+    public NametagsScript(IUiView uiView)
     {
+        this.uiView = uiView;
+        this.uiView.On("nametagsClient:getSetting", GetSetting);
+        this.uiView.On<bool>("nametagsClient:setSetting", SetSetting);
+        
         Alt.RegisterFont("/fonts/arialbd.ttf");
         
         Alt.OnGameEntityCreate += OnGameEntityCreate;
         Alt.OnGameEntityDestroy += OnGameEntityDestroy;
+        Alt.OnStreamSyncedMetaChange += OnStreamSyncedMetaChange;
         
         Alt.OnServer<bool>("clientNametags:showNametags", ShowNametags);
+        
+        var hasShowNametags = Alt.LocalStorage.Has("showNametags");
+        if (!hasShowNametags)
+        {
+            Alt.LocalStorage.Set("showNametags", true);
+            Alt.LocalStorage.Save();
+
+            clientSettingValue = true;
+        }
+        else
+        {
+            Alt.LocalStorage.Get("showNametags", out bool showNametags);
+            clientSettingValue = showNametags;
+        }
+    }
+
+    private void OnStreamSyncedMetaChange(IBaseObject target, string key, object value, object oldvalue)
+    {
+        if (target is not IEntity targetAsEntity) return;
+        if (key != "playerName") return;
+        
+        var containsKey = nametagsElements.ContainsKey(targetAsEntity);
+        if (!containsKey) return;
+
+        nametagsElements.TryGetValue(targetAsEntity, out var targetLabel);
+        if (targetLabel == null) return;
+        targetLabel.Text = value as string;
+    }
+
+    private void SetSetting(bool settingValue)
+    {
+        Alt.LocalStorage.Set("showNametags", settingValue);
+        Alt.LocalStorage.Save();
+
+        clientSettingValue = settingValue;
+    }
+
+    private void GetSetting()
+    {
+        var hasShowNametags = Alt.LocalStorage.Has("showNametags");
+        if (!hasShowNametags)
+        {
+            Alt.LocalStorage.Set("showNametags", true);
+            Alt.LocalStorage.Save();
+            
+            uiView.Emit("settings-nametags:setValue", true);
+        }
+        else
+        {
+            Alt.LocalStorage.Get("showNametags", out bool showNametags);
+            uiView.Emit("settings-nametags:setValue", showNametags);
+        }
     }
 
     private void ShowNametags(bool toggleValue)
@@ -54,7 +114,9 @@ public class NametagsScript : IStartup
     private void OnGameEntityCreate(IEntity entity)
     {
         if (entity is not Player) return;
-        var textLabel = Alt.CreateTextLabel("Test", "arial", 25, 1, entity.Position, entity.Rotation, new Rgba(255, 255, 255, 255), 0,
+        entity.GetStreamSyncedMetaData("playerName", out string playerName);
+        
+        var textLabel = Alt.CreateTextLabel(playerName, "arial", 25, 1, entity.Position, entity.Rotation, new Rgba(255, 255, 255, 255), 0,
             Rgba.Zero, false, 50);
         textLabel.IsFacingCamera = true;
         
@@ -66,10 +128,15 @@ public class NametagsScript : IStartup
 
     private void DrawNametags()
     {
-        if (!areNametagsShown) return;
-        
-        for (var index = 0; index < nametagsElements.Count; index++) {
-            var (nametagEntity, nametagTextLabel) = nametagsElements.ElementAt(index);
+        foreach (var (nametagEntity, nametagTextLabel) in nametagsElements)
+        {
+            if (!areNametagsShown || !clientSettingValue)
+            {
+                if (!nametagTextLabel.Visible) return;
+                
+                nametagTextLabel.Visible = false;
+                return;
+            }
 
             var distanceBetween = Alt.LocalPlayer.Position.Distance(nametagEntity.Position);
             if (distanceBetween > 15)
