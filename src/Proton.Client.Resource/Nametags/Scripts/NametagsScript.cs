@@ -19,7 +19,7 @@ public class NametagsScript : IStartup
     {
         this.uiView = uiView;
         this.uiView.On("nametagsClient:getSetting", GetSetting);
-        this.uiView.On<bool>("nametagsClient:setSetting", SetSetting);
+        this.uiView.On<bool, bool>("nametagsClient:setSetting", ShowNametags);
         
         Alt.RegisterFont("/fonts/arialbd.ttf");
         
@@ -27,21 +27,23 @@ public class NametagsScript : IStartup
         Alt.OnGameEntityDestroy += OnGameEntityDestroy;
         Alt.OnStreamSyncedMetaChange += OnStreamSyncedMetaChange;
         
-        Alt.OnServer<bool>("clientNametags:showNametags", ShowNametags);
-        
+        Alt.OnServer<bool, bool>("clientNametags:showNametags", ShowNametags);
+        clientSettingValue = GetLocalStorageValue();
+    }
+
+    private bool GetLocalStorageValue()
+    {
         var hasShowNametags = Alt.LocalStorage.Has("showNametags");
         if (!hasShowNametags)
         {
             Alt.LocalStorage.Set("showNametags", true);
             Alt.LocalStorage.Save();
 
-            clientSettingValue = true;
+            return true;
         }
-        else
-        {
-            Alt.LocalStorage.Get("showNametags", out bool showNametags);
-            clientSettingValue = showNametags;
-        }
+
+        Alt.LocalStorage.Get("showNametags", out bool showNametags);
+        return showNametags;
     }
 
     private void OnStreamSyncedMetaChange(IBaseObject target, string key, object value, object oldvalue)
@@ -56,35 +58,56 @@ public class NametagsScript : IStartup
         if (targetLabel == null) return;
         targetLabel.Text = value as string;
     }
-
-    private void SetSetting(bool settingValue)
-    {
-        Alt.LocalStorage.Set("showNametags", settingValue);
-        Alt.LocalStorage.Save();
-
-        clientSettingValue = settingValue;
-    }
-
+    
     private void GetSetting()
     {
-        var hasShowNametags = Alt.LocalStorage.Has("showNametags");
-        if (!hasShowNametags)
+        var localStorageNametags = GetLocalStorageValue();
+        uiView.Emit("settings-nametags:setValue", localStorageNametags);
+    }
+
+    private void ShowNametags(bool toggleValue, bool serverRequest = true)
+    {
+        if (serverRequest)
         {
-            Alt.LocalStorage.Set("showNametags", true);
-            Alt.LocalStorage.Save();
-            
-            uiView.Emit("settings-nametags:setValue", true);
+            areNametagsShown = toggleValue;
         }
         else
         {
-            Alt.LocalStorage.Get("showNametags", out bool showNametags);
-            uiView.Emit("settings-nametags:setValue", showNametags);
+            Alt.LocalStorage.Set("showNametags", toggleValue);
+            Alt.LocalStorage.Save();
+            
+            clientSettingValue = toggleValue;
+        }
+
+        if (toggleValue)
+        {
+            if (everyTickEvent != -1) return;
+            everyTickEvent = (int) Alt.EveryTick(DrawNametags);
+        }
+        else
+        {
+            StopDrawingNametags();
         }
     }
 
-    private void ShowNametags(bool toggleValue)
+    private void StopDrawingNametags()
     {
-        areNametagsShown = toggleValue;
+        if (everyTickEvent == -1) return;
+
+        try
+        {
+            Alt.ClearEveryTick((uint) everyTickEvent);
+            everyTickEvent = -1;
+            
+            foreach (var (_, nametagTextLabel) in nametagsElements)
+            {
+                nametagTextLabel.Visible = false;
+            }
+        }
+        catch (Exception exception)
+        {
+            Alt.LogError(exception.Message);
+        }
     }
     
     private void OnGameEntityDestroy(IEntity entity)
@@ -96,19 +119,6 @@ public class NametagsScript : IStartup
         entityTextLabel.Destroy();
         
         nametagsElements.Remove(entity);
-
-        if (nametagsElements.Count != 0) return;
-        if (everyTickEvent == -1) return;
-
-        try
-        {
-            Alt.ClearEveryTick((uint) everyTickEvent);
-            everyTickEvent = -1;
-        }
-        catch (Exception exception)
-        {
-            Alt.LogError(exception.Message);
-        }
     }
 
     private void OnGameEntityCreate(IEntity entity)
@@ -118,12 +128,10 @@ public class NametagsScript : IStartup
         
         var textLabel = Alt.CreateTextLabel(playerName, "arial", 25, 1, entity.Position, entity.Rotation, new Rgba(255, 255, 255, 255), 0,
             Rgba.Zero, false, 50);
+        textLabel.Visible = false;
         textLabel.IsFacingCamera = true;
         
         nametagsElements.Add(entity, textLabel);
-        
-        if (everyTickEvent != -1) return;
-        everyTickEvent = (int) Alt.EveryTick(DrawNametags);
     }
 
     private void DrawNametags()
