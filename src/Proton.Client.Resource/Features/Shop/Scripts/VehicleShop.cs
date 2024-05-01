@@ -1,8 +1,10 @@
 ﻿using AltV.Net.Client;
 using AltV.Net.Client.Elements.Data;
 using AltV.Net.Client.Elements.Interfaces;
+using AltV.Net.Shared.Enums;
 using Proton.Client.Infrastructure.Interfaces;
 using Proton.Client.Infrastructure.Services;
+using Proton.Client.Infrastructure.Utils;
 using Proton.Shared.Contants;
 using Proton.Shared.Helpers;
 using Proton.Shared.Interfaces;
@@ -46,6 +48,32 @@ namespace Proton.Client.Resource.Features.Shop
             this.uiView.On("shop:vehicles:ready", UiReady);
 
             Alt.OnKeyUp += Alt_OnKeyUp;
+
+            Alt.OnConsoleCommand += Alt_OnConsoleCommand;
+
+            var m = new Marker(new AltV.Net.Data.Position(443.94177f, 5605.972f, -80.677635f), MarkerType.MarkerMoney,
+                new AltV.Net.Data.Rgba(255, 0, 0, 100));
+
+            m.onEnter += M_onEnter;
+        }
+
+        private void M_onEnter(IWorldObject target)
+        {
+            ToggleUi();
+        }
+
+        private void Alt_OnConsoleCommand(string name, string[] args)
+        {
+            if(name == "req")
+            {
+                Alt.RequestIpl("sport_hangar_lobby_display");
+            }
+
+            if(name == "pos")
+            {
+                Alt.Log($"Position X: {Alt.LocalPlayer.Position.X} Y: {Alt.LocalPlayer.Position.Y} Z:{Alt.LocalPlayer.Position.Z}");
+                Alt.Log($"Rotation Roll:{Alt.LocalPlayer.Rotation.Roll} Yaw: {Alt.LocalPlayer.Rotation.Yaw} Pitch:{Alt.LocalPlayer.Rotation.Pitch}");
+            }
         }
 
         private void Alt_OnKeyUp(Key key)
@@ -152,13 +180,11 @@ namespace Proton.Client.Resource.Features.Shop
             if (previewVehicle != null)
                 RemovePreview();
 
-            var pos = Alt.LocalPlayer.Position;
-            pos.X += 2;
-            pos.Y += 2;
-            pos.Z -= 0.5f;
+            var pos = new AltV.Net.Data.Position(439f, 5611f, -80.04041f);
+            var rot = new AltV.Net.Data.Rotation(0, 0, -2f);
 
             previewVehicle = Alt.CreateLocalVehicle(Alt.Hash(Name),
-                Alt.LocalPlayer.Dimension, pos, Alt.LocalPlayer.Rotation, true, 20);
+                Alt.LocalPlayer.Dimension, pos, rot, true, 20);
         }
 
         private void SetPreviewVehicleColor(int Color)
