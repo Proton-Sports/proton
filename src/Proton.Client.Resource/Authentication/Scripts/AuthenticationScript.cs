@@ -30,12 +30,6 @@ public sealed class AuthenticationScript : IStartup
         this.uiView.On("authentication:login", SendLoginRequest);
         this.uiView.On("webview:ready", () => uiView.Mount(Route.Auth));
 
-        Alt.OnConsoleCommand += Alt_OnConsoleCommand;
-    }
-
-    private void Alt_OnConsoleCommand(string name, string[] args)
-    {
-        uiView.Mount(Route.Auth);
     }
 
     /// <summary>
@@ -85,6 +79,7 @@ public sealed class AuthenticationScript : IStartup
         Alt.GameControlsEnabled = true;
         uiView.Unfocus();
         uiView.Unmount(Route.Auth);
+        Alt.EmitClient("authentication:done");
         return Task.CompletedTask;
     }
 }

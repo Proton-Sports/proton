@@ -9,6 +9,7 @@ using Proton.Server.Infrastructure.Factorys;
 using Proton.Shared.Extensions;
 using AltV.Net;
 using Proton.Server.Resource.CharacterCreator.Extensions;
+using Proton.Server.Resource.Features.Shop;
 
 namespace Proton.Server.Resource;
 
@@ -31,6 +32,7 @@ public sealed class ServerResource : AsyncResource
             .AddAuthentication()
             .AddRaceFeatures()
             .AddCharacterCreator()
+            .AddShops()
             .BuildServiceProvider();
     }
 

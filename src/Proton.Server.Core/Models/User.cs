@@ -1,4 +1,5 @@
 ﻿using Proton.Server.Core.Models.Log;
+using Proton.Server.Core.Models.Shop;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -17,7 +18,8 @@ namespace Proton.Server.Core.Models
         public int Money { get; set; } = 0;
         public Character? Character { get; set; }
 
-        public ICollection<OwnedVehicle> OwnedVehicles { get; set; } = new List<OwnedVehicle>();
+        public List<Garage> Garages { get; set; } = [];
         public ICollection<Session> Sessions { get; set; } = new List<Session>();
+        public List<Closet> Closets { get; set; } = [];
     }
 }

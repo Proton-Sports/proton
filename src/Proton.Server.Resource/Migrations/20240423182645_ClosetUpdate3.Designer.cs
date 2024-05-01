@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Proton.Server.Infrastructure.Persistence;
@@ -12,9 +13,11 @@ using Proton.Server.Infrastructure.Persistence;
 namespace Proton.Server.Resource.Migrations
 {
     [DbContext(typeof(DefaultDbContext))]
-    partial class DefaultDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240423182645_ClosetUpdate3")]
+    partial class ClosetUpdate3
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -234,9 +237,6 @@ namespace Proton.Server.Resource.Migrations
                     b.Property<long>("ClothId")
                         .HasColumnType("bigint");
 
-                    b.Property<bool>("IsEquiped")
-                        .HasColumnType("boolean");
-
                     b.Property<long>("OwnerId")
                         .HasColumnType("bigint");
 
@@ -249,7 +249,7 @@ namespace Proton.Server.Resource.Migrations
 
                     b.HasIndex("OwnerId");
 
-                    b.ToTable("Closets");
+                    b.ToTable("Closet");
                 });
 
             modelBuilder.Entity("Proton.Server.Core.Models.Shop.Cloth", b =>
@@ -295,7 +295,7 @@ namespace Proton.Server.Resource.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Cloths");
+                    b.ToTable("Cloth");
                 });
 
             modelBuilder.Entity("Proton.Server.Core.Models.Shop.Garage", b =>
