@@ -16,8 +16,8 @@ public static class ServiceCollectionExtensions
             .AddSingleton<INoClip, ClientOnlyNoClip>()
             .AddSingleton<IUiViewFactory, DefaultUiViewFactory>()
             .AddSingleton<NotificationService>();//TODO: Add Interface
-        // serviceCollection.AddSingleton(provider => (IUiView)Alt.CreateWebView("http://localhost:5173"));
-        serviceCollection.AddSingleton(provider => (IUiView)Alt.CreateWebView("http://assets/proton-ui/dist/index.html"));
+         serviceCollection.AddSingleton(provider => (IUiView)Alt.CreateWebView("http://localhost:5173"));
+        //serviceCollection.AddSingleton(provider => (IUiView)Alt.CreateWebView("http://assets/proton-ui/dist/index.html"));
         return serviceCollection;
     }
 }

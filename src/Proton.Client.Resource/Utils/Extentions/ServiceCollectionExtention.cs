@@ -13,6 +13,7 @@ namespace Proton.Client.Resource.Utils.Extentions
         internal static IServiceCollection AddUtils(this IServiceCollection services)
         {
             services.AddStartup<NotificationScript>();
+            services.AddStartup<SpeedometerScript>();
 
             return services;
         }
