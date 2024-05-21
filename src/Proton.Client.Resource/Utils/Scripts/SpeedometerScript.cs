@@ -34,19 +34,16 @@ namespace Proton.Client.Resource.Utils.Scripts
             Alt.Natives.HideHudComponentThisFrame(8);
             Alt.Natives.HideHudComponentThisFrame(9);
 
-            Alt.Log("mounting Ui");
             uiView.Mount(Route.Speedometer);
             UpdateIntervalId = Alt.SetInterval(UpdateVehicleUi, 50);            
         }
 
         private void Alt_OnPlayerLeaveVehicle(AltV.Net.Client.Elements.Interfaces.IVehicle vehicle, byte seat)
         {
-            Alt.Log("unmounting Ui");
             uiView.Unmount(Route.Speedometer);
             Alt.ClearInterval(UpdateIntervalId);            
         }
 
-        private bool IsEngineRunning = false;
         private void UpdateVehicleUi()
         {
             if (Alt.LocalPlayer.Vehicle == null) return;
@@ -57,11 +54,17 @@ namespace Proton.Client.Resource.Utils.Scripts
             uiView.Emit("vehicle:speed", (int)Alt.Natives.GetEntitySpeed(vehicle) * 3,6);
             uiView.Emit("vehicle:rpm", vehicle.Rpm * 10_000);            
 
-            if(IsEngineRunning != Alt.Natives.GetIsVehicleEngineRunning(vehicle))
-            {
-                IsEngineRunning = !IsEngineRunning;
-                uiView.Emit("vehicle:engine", IsEngineRunning);
-            }
+            //if holding breaks
+            if(Alt.Natives.GetControlValue(2, 72) > 127 || Alt.Natives.GetControlValue(2, 76) > 127)
+                uiView.Emit("vehicle:red", true);
+            else
+                uiView.Emit("vehicle:red", false);
+
+            //if moving forward
+            if (Alt.Natives.GetControlValue(2, 71) > 127)
+                uiView.Emit("vehicle:green", true);
+            else
+                uiView.Emit("vehicle:green", false);
         }        
     }
 }
