@@ -22,8 +22,17 @@ public sealed class AuthenticationScript : IStartup
 
         this.uiView.On("authentication:login", SendLoginRequest);
         this.uiView.On("webview:ready", () => uiView.Mount(Route.Auth));
+        this.uiView.OnMounting += HandleMounting;
 
         Alt.OnConsoleCommand += Alt_OnConsoleCommand;
+    }
+
+    private void HandleMounting(Route route, MountingEventArgs e)
+    {
+        if (route == Route.RaceMainMenuList && uiView.IsMounted(Route.Auth))
+        {
+            e.Cancel = true;
+        }
     }
 
     private void Alt_OnConsoleCommand(string name, string[] args)

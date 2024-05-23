@@ -38,6 +38,7 @@ public class CharacterCreatorScript : IStartup
         this.uiView.On<int>("characterClient:setGender", SetGender);
         this.uiView.On<string>("characterClient:setAppearance", SetAppearance);
         this.uiView.On<string>("characterClient:submitAppearance", SubmitAppearance);
+        this.uiView.OnMounting += HandleMounting;
 
         this.uiView.OnMount(Route.CharacterCreator, () =>
         {
@@ -48,6 +49,14 @@ public class CharacterCreatorScript : IStartup
         });
 
         Alt.OnConsoleCommand += ConsoleCommand;
+    }
+
+    private void HandleMounting(Route route, MountingEventArgs e)
+    {
+        if (route == Route.RaceMainMenuList && uiView.IsMounted(Route.CharacterCreator))
+        {
+            e.Cancel = true;
+        }
     }
 
     private void ConsoleCommand(string commandName, string[] args)
