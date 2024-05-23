@@ -1,14 +1,7 @@
-﻿using AltV.Net;
-using AltV.Net.Client;
-using AltV.Net.Client.Async;
-using Proton.Client.Infrastructure.Interfaces;
+﻿using AltV.Net.Client;
+using Proton.Client.Resource.Features.UiViews.Abstractions;
 using Proton.Shared.Contants;
 using Proton.Shared.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Proton.Client.Resource.Authentication.Scripts;
 

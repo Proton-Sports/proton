@@ -4,7 +4,7 @@ using AltV.Net.Client.Elements.Data;
 using AltV.Net.Client.Elements.Interfaces;
 using AltV.Net.Data;
 using Proton.Client.Core.Interfaces;
-using Proton.Client.Infrastructure.Interfaces;
+using Proton.Client.Resource.Features.UiViews.Abstractions;
 using Proton.Shared.Contants;
 using Proton.Shared.Dtos;
 using Proton.Shared.Interfaces;

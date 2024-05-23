@@ -1,7 +1,7 @@
 using AltV.Net.Client;
 using AltV.Net.Elements.Entities;
 using AsyncAwaitBestPractices;
-using Proton.Client.Infrastructure.Interfaces;
+using Proton.Client.Resource.Features.UiViews.Abstractions;
 using Proton.Shared.Constants;
 using Proton.Shared.Contants;
 using Proton.Shared.Dtos;
