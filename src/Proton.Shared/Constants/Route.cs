@@ -1,6 +1,6 @@
 namespace Proton.Shared.Contants;
 
-public sealed class Route
+public sealed class Route : IEquatable<Route>
 {
     public string Value { get; }
 
@@ -18,4 +18,34 @@ public sealed class Route
     public static readonly Route CharacterCreator = new("character-creator");
     public static readonly Route Speedometer = new("speedometer");
     public static readonly Route RaceHud = new("race-hud");
+
+    public override bool Equals(object? obj) => Equals(obj as Route);
+
+    public bool Equals(Route? other)
+    {
+        if (other is null)
+        {
+            return false;
+        }
+
+        if (ReferenceEquals(this, other))
+        {
+            return true;
+        }
+
+        return Value == other.Value;
+    }
+
+    public override int GetHashCode() => Value.GetHashCode();
+
+    public static bool operator ==(Route lhs, Route rhs)
+    {
+        if (lhs is null)
+        {
+            return rhs is null;
+        }
+        return lhs.Equals(rhs);
+    }
+
+    public static bool operator !=(Route lhs, Route rhs) => !(lhs == rhs);
 }
