@@ -18,7 +18,7 @@ public class DefaultUiView : WebView, IUiView
         this.On<string, bool, bool>("webview.unmount", HandleUnmount);
     }
 
-    public event Action<Route, MountingEventArgs>? OnMounting;
+    public event Action<Route, MountingEventArgs>? Mounting;
 
     public bool IsMounted(Route route)
     {
@@ -27,10 +27,10 @@ public class DefaultUiView : WebView, IUiView
 
     public void Mount(Route route)
     {
-        if (OnMounting is not null)
+        if (Mounting is not null)
         {
             var eventArgs = new MountingEventArgs { Cancel = false };
-            OnMounting(route, eventArgs);
+            Mounting(route, eventArgs);
             if (eventArgs.Cancel)
             {
                 return;
@@ -75,10 +75,10 @@ public class DefaultUiView : WebView, IUiView
 
     public Task<bool> TryMountAsync(Route route)
     {
-        if (OnMounting is not null)
+        if (Mounting is not null)
         {
             var eventArgs = new MountingEventArgs { Cancel = false };
-            OnMounting(route, eventArgs);
+            Mounting(route, eventArgs);
             if (eventArgs.Cancel)
             {
                 return Task.FromResult(false);

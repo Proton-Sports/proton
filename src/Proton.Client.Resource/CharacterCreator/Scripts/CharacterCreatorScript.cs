@@ -38,7 +38,7 @@ public class CharacterCreatorScript : IStartup
         this.uiView.On<int>("characterClient:setGender", SetGender);
         this.uiView.On<string>("characterClient:setAppearance", SetAppearance);
         this.uiView.On<string>("characterClient:submitAppearance", SubmitAppearance);
-        this.uiView.OnMounting += HandleMounting;
+        this.uiView.Mounting += HandleMounting;
 
         this.uiView.OnMount(Route.CharacterCreator, () =>
         {

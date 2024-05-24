@@ -1,5 +1,5 @@
 using AltV.Net.Client;
-using Proton.Client.Infrastructure.Interfaces;
+using Proton.Client.Resource.Features.UiViews.Abstractions;
 using Proton.Shared.Contants;
 using Proton.Shared.Dtos;
 using Proton.Shared.Interfaces;
@@ -9,12 +9,10 @@ namespace Proton.Client.Resource.Features.Races.Scripts;
 public sealed class RaceHudScript : IStartup
 {
     private readonly IUiView uiView;
-    private readonly IRaceService raceService;
 
-    public RaceHudScript(IUiView uiView, IRaceService raceService)
+    public RaceHudScript(IUiView uiView)
     {
         this.uiView = uiView;
-        this.raceService = raceService;
         uiView.OnMount(Route.RaceHud, OnMount);
         Alt.OnServer<long>("race:prepare", OnServerRacePrepare);
         Alt.OnServer<long>("race-hud:startTime", OnServerStartTime);

@@ -22,7 +22,7 @@ public sealed class AuthenticationScript : IStartup
 
         this.uiView.On("authentication:login", SendLoginRequest);
         this.uiView.On("webview:ready", () => uiView.Mount(Route.Auth));
-        this.uiView.OnMounting += HandleMounting;
+        this.uiView.Mounting += HandleMounting;
 
         Alt.OnConsoleCommand += Alt_OnConsoleCommand;
     }
