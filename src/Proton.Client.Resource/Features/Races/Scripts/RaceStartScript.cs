@@ -16,28 +16,12 @@ public sealed class RaceStartScript : IStartup
         this.raceService = raceService;
         this.uiView = uiView;
         Alt.OnServer<RaceStartDto>("race-start:start", HandleServerStart);
-        Alt.OnConnectionComplete += HandleConnectionComplete;
-    }
-
-    private void HandleConnectionComplete()
-    {
-        Alt.Natives.SetLocalPlayerAsGhost(false, false);
     }
 
     private void HandleServerStart(RaceStartDto dto)
     {
         Alt.GameControlsEnabled = true;
-        if (dto.Ghosting)
-        {
-            Alt.Natives.SetLocalPlayerAsGhost(true, true);
-            foreach (var vehicle in Alt.GetAllVehicles())
-            {
-                if (vehicle != Alt.LocalPlayer.Vehicle && vehicle.Spawned)
-                {
-                    Alt.Natives.SetEntityGhostedForGhostPlayers(vehicle, true);
-                }
-            }
-        }
+        raceService.Ghosting = dto.Ghosting;
         raceService.Start();
         uiView.Unmount(Route.RacePrepare);
     }

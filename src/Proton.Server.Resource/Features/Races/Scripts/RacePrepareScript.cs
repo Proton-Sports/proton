@@ -1,5 +1,6 @@
 using AltV.Net;
 using AltV.Net.Async;
+using AltV.Net.Data;
 using AltV.Net.Elements.Entities;
 using AltV.Net.Enums;
 using Proton.Server.Resource.Features.Races.Abstractions;

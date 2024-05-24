@@ -8,8 +8,10 @@ namespace Proton.Client.Resource.Features.Races;
 public interface IRaceService
 {
     event Action<object> RacePointHit;
+    event Action Started;
+    event Action Stopped;
 
-    long RaceId { get; set; }
+    bool Ghosting { get; set; }
     bool IsStarted { get; }
     RaceType RaceType { get; set; }
     int Dimension { get; set; }
