@@ -116,6 +116,10 @@ public sealed class RaceCreatorScript : IStartup
                     if (!noClip.IsStarted || focusing) break;
                     var position = gameplayCamera.Position;
                     var data = await raycastService.RaycastAsync(position, position + gameplayCamera.ForwardVector * 1000).ConfigureAwait(false);
+                    if (data is not null)
+                    {
+                        Console.WriteLine($"LButton - data: {data}");
+                    }
                     if (data is { IsHit: true })
                     {
                         AltAsync.RunOnMainThread((state) =>

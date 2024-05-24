@@ -13,10 +13,17 @@ public class DefaultRaycastService : IRaycastService
 
     private Action<RaycastData>? onFinished = default;
     private Func<(Vector3 StartPosition, Vector3 EndPosition)?>? produce = default;
+    private RaycastData? lastRaycastData = default;
 
     public async Task<RaycastData?> RaycastAsync(Vector3 startPosition, Vector3 endPosition, CancellationToken ct = default)
     {
         if (ct.IsCancellationRequested) return null;
+
+        // If batch is running, return its last raycast data instead
+        if (lastRaycastData is not null)
+        {
+            return lastRaycastData;
+        }
 
         var handle = Alt.Natives.StartShapeTestLosProbe(startPosition.X, startPosition.Y, startPosition.Z, endPosition.X, endPosition.Y, endPosition.Z, 1, 0, 4);
         bool hit = default;
@@ -24,7 +31,7 @@ public class DefaultRaycastService : IRaycastService
         uint entityHit = default;
         var result = Alt.Natives.GetShapeTestResult(handle, ref hit, ref endCoords, ref surfaceNormal, ref entityHit);
         using var timer = new PeriodicTimer(TimeSpan.FromMilliseconds(5));
-        while (result != 0 && result != 2)
+        while (result == 1)
         {
             if (ct.IsCancellationRequested) return null;
 
@@ -47,8 +54,18 @@ public class DefaultRaycastService : IRaycastService
             shapeTestHandle = -1;
             this.onFinished = null;
             this.produce = null;
+            lastRaycastData = null;
             cts = null;
         }).Start(cts.Token);
+    }
+
+    private void HandleRaycastFinish(RaycastData data)
+    {
+        lastRaycastData = data;
+        if (onFinished is not null)
+        {
+            onFinished(data);
+        }
     }
 
     public void StopAsyncRaycastBatch()
@@ -71,19 +88,19 @@ public class DefaultRaycastService : IRaycastService
                 if (result != 1)
                 {
                     shapeTestHandle = -1;
+                    AltAsync.RunOnMainThread((state) => HandleRaycastFinish((RaycastData)state), new RaycastData(hit, entityHit, endCoords, surfaceNormal));
                 }
-                AltAsync.RunOnMainThread((state) => onFinished?.Invoke((RaycastData)state), new RaycastData(hit, entityHit, endCoords, surfaceNormal));
-            }
-            else
-            {
-                Thread.Sleep(10);
             }
         }
     }
 
+    private (Vector3, Vector3)? previousProduced;
     private void ProduceRaycast()
     {
         var tuple = produce!();
+        if (previousProduced == tuple) return;
+        previousProduced = tuple;
+
         if (!tuple.HasValue) return;
 
         var (start, end) = tuple.Value;
