@@ -9,6 +9,7 @@
     <PackageVersion Include="Discord.Net.Rest" Version="3.13.0" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.6" />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Hosting" Version="8.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Logging" Version="8.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Logging.Console" Version="8.0.0" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="8.0.6" />

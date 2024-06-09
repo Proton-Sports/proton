@@ -27,6 +27,7 @@ public static class ServiceCollectionExtensions
         serviceCollection.AddPooledDbContextFactory<DefaultDbContext>((provider, builder) =>
         {
             var persistenceOptions = provider.GetRequiredService<IOptions<PersistenceOptions>>().Value;
+            Console.WriteLine(persistenceOptions.ConnectionString);
             builder
                 .UseNpgsql(persistenceOptions.ConnectionString, x =>
                 {

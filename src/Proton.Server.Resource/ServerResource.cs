@@ -9,29 +9,34 @@ using Proton.Server.Infrastructure.Factorys;
 using Proton.Shared.Extensions;
 using AltV.Net;
 using Proton.Server.Resource.CharacterCreator.Extensions;
+using Microsoft.Extensions.Hosting;
 
 namespace Proton.Server.Resource;
 
 public sealed class ServerResource : AsyncResource
 {
-    private readonly IServiceProvider serviceProvider = null!;
+    private readonly IHost host;
+
     public ServerResource()
     {
-        var serviceCollection = new ServiceCollection();
-        var configuration = new ConfigurationBuilder()
-            .SetBasePath(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!)
-            .AddJsonFile("appsettings.json", true, true)
-            .AddJsonFile("appsettings.Local.json", false, true)
-            .AddEnvironmentVariables()
-            .Build();
+        var builder = Host.CreateDefaultBuilder();
 
-        serviceProvider = serviceCollection
-            .AddInfrastructure(configuration)
-            .AddSingleton<IConfiguration>(configuration)
-            .AddAuthentication()
-            .AddRaceFeatures()
-            .AddCharacterCreator()
-            .BuildServiceProvider();
+        builder.UseContentRoot(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!);
+        builder.ConfigureAppConfiguration((builder) =>
+        {
+            builder.AddJsonFile("appsettings.Local.json", optional: true, reloadOnChange: false);
+        });
+        builder.ConfigureServices((context, builder) =>
+        {
+            builder
+                .AddSingleton<IHostLifetime, ResourceLifetime>()
+                .AddInfrastructure(context.Configuration)
+                .AddAuthentication()
+                .AddRaceFeatures()
+                .AddCharacterCreator();
+        });
+
+        host = builder.Build();
     }
 
     public override void OnStart()
@@ -39,7 +44,14 @@ public sealed class ServerResource : AsyncResource
         ResourceExtensions.RegisterMValueAdapters();
 
         // TODO: Add logging for startup
-        var services = serviceProvider.GetServices<IStartup>();
+        _ = host.Services.GetServices<IStartup>();
+        host.StartAsync().Wait();
+    }
+
+    public override void OnStop()
+    {
+        host.StopAsync().Wait();
+        host.Dispose();
     }
 
     public override IEntityFactory<IPlayer> GetPlayerFactory()
@@ -47,5 +59,16 @@ public sealed class ServerResource : AsyncResource
         return new PPlayerFactory();
     }
 
-    public override void OnStop() { }
+    private class ResourceLifetime : IHostLifetime
+    {
+        public Task StopAsync(CancellationToken cancellationToken)
+        {
+            return Task.CompletedTask;
+        }
+
+        public Task WaitForStartAsync(CancellationToken cancellationToken)
+        {
+            return Task.CompletedTask;
+        }
+    }
 }
