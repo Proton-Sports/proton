@@ -4,12 +4,12 @@ namespace Proton.Server.Resource.SharedKernel;
 
 public abstract class HostedService : IHostedService
 {
-    public Task StartAsync(CancellationToken ct)
+    public virtual Task StartAsync(CancellationToken ct)
     {
         return Task.CompletedTask;
     }
 
-    public Task StopAsync(CancellationToken ct)
+    public virtual Task StopAsync(CancellationToken ct)
     {
         return Task.CompletedTask;
     }
