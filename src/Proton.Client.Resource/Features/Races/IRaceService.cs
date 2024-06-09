@@ -9,11 +9,10 @@ public interface IRaceService
 {
     event Action<object> RacePointHit;
 
+    long RaceId { get; set; }
     bool IsStarted { get; }
     RaceType RaceType { get; set; }
     int Dimension { get; set; }
-    int Laps { get; set; }
-    int CurrentLap { get; set; }
     IReadOnlyList<RacePointDto> RacePoints { get; }
 
     void ClearRacePoints();

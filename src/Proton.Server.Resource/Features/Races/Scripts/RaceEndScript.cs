@@ -1,18 +1,25 @@
 using AltV.Net;
 using Proton.Server.Resource.Features.Races.Constants;
-using Proton.Shared.Interfaces;
+using Proton.Server.Resource.SharedKernel;
 
 namespace Proton.Server.Resource.Features.Races.Scripts;
 
-public sealed class RaceEndScript : IStartup
+public sealed class RaceEndScript(IRaceService raceService) : HostedService
 {
-    private readonly IRaceService raceService;
-    private readonly Timer timer;
+    private Timer? timer;
 
-    public RaceEndScript(IRaceService raceService)
+    public override Task StartAsync(CancellationToken ct)
     {
-        this.raceService = raceService;
-        timer = new Timer((state) => HandleTimerTick(), null, 1000, Timeout.Infinite);
+        timer = new Timer((state) => HandleTimerTick(), null, 1000, 1000);
+        return Task.CompletedTask;
+    }
+
+    public override async Task StopAsync(CancellationToken ct)
+    {
+        if (timer is not null)
+        {
+            await timer.DisposeAsync().ConfigureAwait(false);
+        }
     }
 
     private void HandleTimerTick()
@@ -20,24 +27,28 @@ public sealed class RaceEndScript : IStartup
         var now = DateTimeOffset.UtcNow;
         foreach (var race in raceService.Races.Where(x => x.Status == RaceStatus.Started))
         {
-            var participants = raceService.GetParticipants(race.Id);
+            var participants = race.Participants;
             var earlistFinishTime = long.MaxValue;
             foreach (var participant in participants)
             {
-                if (participant.FinishTime == 0 || participant.FinishTime > earlistFinishTime) continue;
+                if (participant.FinishTime == 0 || participant.FinishTime > earlistFinishTime)
+                    continue;
                 earlistFinishTime = participant.FinishTime;
             }
-            if (earlistFinishTime == long.MaxValue) continue;
+            if (earlistFinishTime == long.MaxValue)
+                continue;
 
-
-            if (now >= DateTimeOffset.FromUnixTimeMilliseconds(earlistFinishTime).AddSeconds(race.Duration))
+            if (
+                now
+                >= DateTimeOffset
+                    .FromUnixTimeMilliseconds(earlistFinishTime)
+                    .AddSeconds(race.Duration)
+            )
             {
-                var players = participants.Select(x => x.Player).ToArray();
+                Alt.EmitClients([.. participants.Select(x => x.Player)], "race:destroy");
                 race.Status = RaceStatus.Ended;
                 raceService.DestroyRace(race);
-                Alt.EmitClients(players, "race:destroy");
             }
         }
-        timer.Change(1000, Timeout.Infinite);
     }
 }

@@ -30,14 +30,14 @@ public sealed class RaceScript : IStartup
 
     private Task HandleRacePrepared(Race race)
     {
-        var participants = raceService.GetParticipants(race.Id);
+        var participants = race.Participants;
         Alt.EmitClients([.. participants.Select(x => x.Player)], "race:prepare", race.Id);
         return Task.CompletedTask;
     }
 
     private Task HandleRaceStarted(Race race)
     {
-        var participants = raceService.GetParticipants(race.Id);
+        var participants = race.Participants;
         Alt.EmitClients([.. participants.Select(x => x.Player)], "race:start", race.Id);
         return Task.CompletedTask;
     }

@@ -1,15 +1,15 @@
 using System.Reflection;
+using AltV.Net;
 using AltV.Net.Async;
+using AltV.Net.Elements.Entities;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Proton.Server.Resource.Authentication.Extentions;
-using Proton.Shared.Interfaces;
-using AltV.Net.Elements.Entities;
-using Proton.Server.Infrastructure.Factorys;
-using Proton.Shared.Extensions;
-using AltV.Net;
-using Proton.Server.Resource.CharacterCreator.Extensions;
 using Microsoft.Extensions.Hosting;
+using Proton.Server.Infrastructure.Factorys;
+using Proton.Server.Resource.Authentication.Extentions;
+using Proton.Server.Resource.CharacterCreator.Extensions;
+using Proton.Shared.Extensions;
+using Proton.Shared.Interfaces;
 
 namespace Proton.Server.Resource;
 
@@ -22,19 +22,28 @@ public sealed class ServerResource : AsyncResource
         var builder = Host.CreateDefaultBuilder();
 
         builder.UseContentRoot(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!);
-        builder.ConfigureAppConfiguration((builder) =>
-        {
-            builder.AddJsonFile("appsettings.Local.json", optional: true, reloadOnChange: false);
-        });
-        builder.ConfigureServices((context, builder) =>
-        {
-            builder
-                .AddSingleton<IHostLifetime, ResourceLifetime>()
-                .AddInfrastructure(context.Configuration)
-                .AddAuthentication()
-                .AddRaceFeatures()
-                .AddCharacterCreator();
-        });
+        builder.ConfigureAppConfiguration(
+            (builder) =>
+            {
+                builder.AddJsonFile(
+                    "appsettings.Local.json",
+                    optional: true,
+                    reloadOnChange: false
+                );
+            }
+        );
+        builder.ConfigureServices(
+            (context, builder) =>
+            {
+                builder
+                    .AddMemoryCache()
+                    .AddSingleton<IHostLifetime, ResourceLifetime>()
+                    .AddInfrastructure(context.Configuration)
+                    .AddAuthentication()
+                    .AddRaceFeatures()
+                    .AddCharacterCreator();
+            }
+        );
 
         host = builder.Build();
     }
