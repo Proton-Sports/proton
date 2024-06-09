@@ -9,4 +9,9 @@ public static class PositionExtensions
         var dz = a.Z - b.Z;
         return dx * dx + dy * dy + dz * dz;
     }
+
+    public static float GetDistanceTo(this Position a, Position b)
+    {
+        return MathF.Sqrt(GetDistanceSquaredTo(a, b));
+    }
 }

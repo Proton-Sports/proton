@@ -4,8 +4,12 @@ namespace Proton.Server.Resource.Features.Races.Models;
 
 public class RaceParticipant
 {
-	public required IPlayer Player { get; set; }
-	public IVehicle? Vehicle { get; set; }
-	public long FinishTime { get; set; }
+    public required IPlayer Player { get; set; }
+    public IVehicle? Vehicle { get; set; }
+    public int Lap { get; set; }
+    public float AccumulatedDistance { get; set; }
+    public float PartialDistance { get; set; }
+    public int? NextRacePointIndex { get; set; }
+    public LinkedList<RacePointLog> PointLogs { get; set; } = new();
+    public long FinishTime { get; set; }
 }
-

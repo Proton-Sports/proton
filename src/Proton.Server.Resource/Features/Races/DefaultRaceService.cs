@@ -8,7 +8,6 @@ namespace Proton.Server.Resource.Features.Races;
 public sealed class DefaultRaceService : IRaceService
 {
     private readonly List<Race> races = [];
-    private readonly Dictionary<long, List<RaceParticipant>> raceParticipants = [];
     private readonly Dictionary<IPlayer, Race> playerRace = [];
 
     public IReadOnlyCollection<Race> Races => new List<Race>(races);
@@ -18,12 +17,13 @@ public sealed class DefaultRaceService : IRaceService
     public event Func<Race, Task>? RacePrepared;
     public event Func<Race, Task>? RaceStarted;
     public event Action<Race>? RaceCreated;
+    public event Action<RaceParticipant>? ParticipantFinished;
 
     public void AddRace(Race race)
     {
         races.Add(race);
-        raceParticipants[race.Id] = [];
-        if (RaceCreated is not null) RaceCreated(race);
+        if (RaceCreated is not null)
+            RaceCreated(race);
     }
 
     public bool RemoveRace(Race race)
@@ -35,17 +35,14 @@ public sealed class DefaultRaceService : IRaceService
     public bool DestroyRace(Race race)
     {
         var ret = races.Remove(race);
-        if (raceParticipants.TryGetValue(race.Id, out var participants))
+        var cloned = race.Participants.ToArray();
+        race.Participants.Clear();
+        foreach (var participant in cloned)
         {
-            var cloned = participants.ToArray();
-            participants.Clear();
-            foreach (var participant in cloned)
-            {
-                playerRace.Remove(participant.Player);
-                participant.Vehicle?.Destroy();
-                if (ParticipantLeft is not null) ParticipantLeft(race, participant.Player);
-            }
-            raceParticipants.Remove(race.Id);
+            playerRace.Remove(participant.Player);
+            participant.Vehicle?.Destroy();
+            if (ParticipantLeft is not null)
+                ParticipantLeft(race, participant.Player);
         }
         return ret;
     }
@@ -57,55 +54,46 @@ public sealed class DefaultRaceService : IRaceService
 
     public bool AddParticipant(long raceId, RaceParticipant participant)
     {
-        if (!raceParticipants.TryGetValue(raceId, out var participants)) return false;
-
         var race = races.Find(x => x.Id == raceId);
-        if (race is null) return false;
+        if (race is null)
+            return false;
 
-        participants.Add(participant);
+        race.Participants.Add(participant);
         playerRace[participant.Player] = race;
-        if (ParticipantJoined is not null) ParticipantJoined(race, participant.Player);
+        if (ParticipantJoined is not null)
+            ParticipantJoined(race, participant.Player);
         return true;
     }
 
     public bool RemoveParticipant(RaceParticipant participant)
     {
-        if (!playerRace.TryGetValue(participant.Player, out var race)) return false;
-        if (!raceParticipants.TryGetValue(race.Id, out var participants))
-        {
+        if (!playerRace.TryGetValue(participant.Player, out var race))
             return false;
-        }
         playerRace.Remove(participant.Player);
-        participants.Remove(participant);
+        bool removed = race.Participants.Remove(participant);
         participant.Vehicle?.Destroy();
-        if (ParticipantLeft is not null) ParticipantLeft(race, participant.Player);
-        return false;
+        if (ParticipantLeft is not null)
+            ParticipantLeft(race, participant.Player);
+        return removed;
     }
 
     public bool RemoveParticipantByPlayer(IPlayer player)
     {
-        if (!playerRace.TryGetValue(player, out var race)) return false;
-        if (!raceParticipants.TryGetValue(race.Id, out var participants))
-        {
+        if (!playerRace.TryGetValue(player, out var race))
             return false;
-        }
         playerRace.Remove(player);
-        for (var i = 0; i != participants.Count; ++i)
+        for (var i = 0; i != race.Participants.Count; ++i)
         {
-            var participant = participants[i];
-            if (participant.Player != player) continue;
-            participants.RemoveAt(i);
+            var participant = race.Participants[i];
+            if (participant.Player != player)
+                continue;
+            race.Participants.RemoveAt(i);
             participant.Vehicle?.Destroy();
-            if (ParticipantLeft is not null) ParticipantLeft(race, participant.Player);
+            if (ParticipantLeft is not null)
+                ParticipantLeft(race, participant.Player);
             return true;
         }
         return false;
-    }
-
-    public IReadOnlyCollection<RaceParticipant> GetParticipants(long raceId)
-    {
-        var race = races.Find(x => x.Id == raceId);
-        return raceParticipants.TryGetValue(raceId, out var participants) ? participants : [];
     }
 
     public void Prepare(Race race)
@@ -129,6 +117,14 @@ public sealed class DefaultRaceService : IRaceService
             {
                 handler(race).SafeFireAndForget(Console.WriteLine);
             }
+        }
+    }
+
+    public void Finish(RaceParticipant participant)
+    {
+        if (ParticipantFinished is not null)
+        {
+            ParticipantFinished(participant);
         }
     }
 }

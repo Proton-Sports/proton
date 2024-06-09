@@ -1,4 +1,5 @@
 using Proton.Server.Resource.Features.Races;
+using Proton.Server.Resource.Features.Races.Abstractions;
 using Proton.Server.Resource.Features.Races.Scripts;
 
 namespace Microsoft.Extensions.DependencyInjection;
@@ -9,16 +10,21 @@ public static class ServiceCollectionExtensions
     {
         serviceCollection
             .AddSingleton<IRaceService, DefaultRaceService>()
+            .AddSingleton<IRacePointResolver, RacePointLapResolver>()
+            .AddSingleton<IRacePointResolver, RacePointRallyResolver>()
+            .AddSingleton<IMapCache, MapCache>()
             .AddStartup<RaceScript>()
             .AddStartup<RaceCreatorScript>()
             .AddStartup<RaceHostScript>()
             .AddStartup<RaceMenuRacesTabScript>()
-            .AddStartup<RaceCountdownScript>()
-            .AddStartup<RacePrepareScript>()
+            .AddHostedService<RaceCountdownScript>()
+            .AddHostedService<RacePrepareScript>()
             .AddStartup<RaceStartScript>()
             .AddStartup<RaceDestroyScript>()
-            .AddStartup<RaceEndScript>()
-            .AddStartup<RaceLeaveScript>();
+            .AddHostedService<RaceEndScript>()
+            .AddStartup<RaceLeaveScript>()
+            .AddHostedService<RaceHudScript>()
+            .AddHostedService<RaceHitScript>();
         return serviceCollection;
     }
 }

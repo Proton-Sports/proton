@@ -1,53 +1,52 @@
-using System.Numerics;
 using AltV.Net;
 using AltV.Net.Async;
 using AltV.Net.Elements.Entities;
 using AltV.Net.Enums;
-using Microsoft.EntityFrameworkCore;
-using Proton.Server.Core.Interfaces;
+using Proton.Server.Resource.Features.Races.Abstractions;
 using Proton.Server.Resource.Features.Races.Constants;
 using Proton.Server.Resource.Features.Races.Models;
+using Proton.Server.Resource.SharedKernel;
 using Proton.Shared.Dtos;
-using Proton.Shared.Interfaces;
 using Proton.Shared.Models;
 
 namespace Proton.Server.Resource.Features.Races.Scripts;
 
-public sealed class RacePrepareScript : IStartup
+public sealed class RacePrepareScript(IRaceService raceService, IMapCache mapCache) : HostedService
 {
-    private readonly IRaceService raceService;
-    private readonly IDbContextFactory dbContextFactory;
-    private readonly Timer timer;
+    private Timer? timer;
 
-    public RacePrepareScript(IRaceService raceService, IDbContextFactory dbContextFactory)
+    public override Task StartAsync(CancellationToken ct)
     {
-        this.raceService = raceService;
-        this.dbContextFactory = dbContextFactory;
-
         raceService.RacePrepared += HandleRacePrepared;
-        timer = new Timer((state) => HandleTimerTick(), null, 1000, Timeout.Infinite);
+        timer = new Timer((state) => HandleTimerTick(), null, 1000, 1000);
+        return Task.CompletedTask;
+    }
+
+    public override async Task StopAsync(CancellationToken ct)
+    {
+        if (timer is not null)
+        {
+            await timer.DisposeAsync().ConfigureAwait(false);
+        }
     }
 
     private async Task HandleRacePrepared(Race race)
     {
-        await using var ctx = await dbContextFactory.CreateDbContextAsync().ConfigureAwait(false);
-        var map = await ctx.RaceMaps
-            .Where(x => x.Id == race.MapId)
-            .Select(x => new { StartPoints = x.StartPoints.OrderBy(x => x.Index).ToArray(), RacePoints = x.RacePoints.OrderBy(x => x.Index).ToArray() })
-            .FirstOrDefaultAsync()
-            .ConfigureAwait(false);
+        var map = await mapCache.GetAsync(race.MapId).ConfigureAwait(false);
         if (map is null)
         {
             raceService.DestroyRace(race);
             return;
         }
 
-        var participants = raceService.GetParticipants(race.Id);
+        var participants = race.Participants;
         var createTasks = new LinkedList<Task<IVehicle>>();
 
         foreach (var (point, participant) in map.StartPoints.Zip(participants))
         {
-            createTasks.AddLast(AltAsync.CreateVehicle(race.VehicleModel, point.Position, point.Rotation, 256));
+            createTasks.AddLast(
+                AltAsync.CreateVehicle(race.VehicleModel, point.Position, point.Rotation, 256)
+            );
         }
 
         await Task.Delay(1000).ConfigureAwait(false);
@@ -60,19 +59,27 @@ public sealed class RacePrepareScript : IStartup
             vehicle.Dimension = (int)race.Id;
 
             var now = DateTimeOffset.UtcNow;
-            participant.Player.SetDateTime(now.Day - 1, now.Month - 1, now.Year, race.Time.Hour, race.Time.Minute, race.Time.Second);
-            participant.Player.SetWeather(race.Weather switch
-            {
-                "clear" => WeatherType.Clear,
-                "foggy" => WeatherType.Foggy,
-                "rainy" => WeatherType.Rain,
-                _ => WeatherType.Clear
-            });
+            participant.Player.SetDateTime(
+                now.Day - 1,
+                now.Month - 1,
+                now.Year,
+                race.Time.Hour,
+                race.Time.Minute,
+                race.Time.Second
+            );
+            participant.Player.SetWeather(
+                race.Weather switch
+                {
+                    "clear" => WeatherType.Clear,
+                    "foggy" => WeatherType.Foggy,
+                    "rainy" => WeatherType.Rain,
+                    _ => WeatherType.Clear
+                }
+            );
             participant.Player.SetIntoVehicle(participant.Vehicle, 1);
         }
 
-        Alt.EmitClients
-        (
+        Alt.EmitClients(
             [.. participants.Select(x => x.Player)],
             "race-prepare:mount",
             new RacePrepareDto
@@ -80,7 +87,13 @@ public sealed class RacePrepareScript : IStartup
                 EndTime = race.PreparationEndTime.ToUnixTimeMilliseconds(),
                 RaceType = (byte)race.Type,
                 Dimension = (int)race.Id,
-                RacePoints = map.RacePoints.Select(x => new RacePointDto { Position = x.Position, Radius = x.Radius }).ToList(),
+                RacePoints = map
+                    .RacePoints.Select(x => new RacePointDto
+                    {
+                        Position = x.Position,
+                        Radius = x.Radius
+                    })
+                    .ToList(),
             }
         );
     }
@@ -88,10 +101,13 @@ public sealed class RacePrepareScript : IStartup
     private void HandleTimerTick()
     {
         var now = DateTimeOffset.UtcNow;
-        foreach (var race in raceService.Races.Where(x => x.Status == RaceStatus.Preparing && now >= x.PreparationEndTime))
+        foreach (
+            var race in raceService.Races.Where(x =>
+                x.Status == RaceStatus.Preparing && now >= x.PreparationEndTime
+            )
+        )
         {
             raceService.Start(race);
         }
-        timer.Change(1000, Timeout.Infinite);
     }
 }

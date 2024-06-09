@@ -57,7 +57,7 @@ public sealed class RaceMenuRacesTabScript : IStartup
                 Id = race.Id,
                 MaxParticipants = race.MaxParticipants,
                 Name = name,
-                Participants = raceService.GetParticipants(race.Id).Count,
+                Participants = race.Participants.Count,
                 Status = (byte)race.Status,
             };
         }).ToList());
@@ -77,7 +77,7 @@ public sealed class RaceMenuRacesTabScript : IStartup
             Ghosting = race.Ghosting,
             Host = race.Host.Name,
             Laps = race.Laps,
-            Participants = raceService.GetParticipants(id).Select(x => new RaceParticipantDto { Id = x.Player.Id, Name = x.Player.Name }).ToList(),
+            Participants = race.Participants.Select(x => new RaceParticipantDto { Id = x.Player.Id, Name = x.Player.Name }).ToList(),
             Time = race.Time.ToString("h:mm", CultureInfo.InvariantCulture),
             Type = (byte)race.Type,
             VehicleModel = race.VehicleModel.ToString(),
@@ -90,7 +90,7 @@ public sealed class RaceMenuRacesTabScript : IStartup
         var race = raceService.Races.FirstOrDefault(x => x.Id == id);
         if (race is null) return;
 
-        var participants = raceService.GetParticipants(id);
+        var participants = race.Participants;
         if (participants.Count == race.MaxParticipants) return;
 
         if (raceService.TryGetRaceByParticipant(player, out var oldRace))
