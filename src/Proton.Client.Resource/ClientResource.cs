@@ -4,12 +4,13 @@ using AltV.Net.Client.Elements.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 using Proton.Client.Resource.Authentication.Extentions;
 using Proton.Client.Resource.CharacterCreator.Extensions;
+using Proton.Client.Resource.Commons.Abstractions;
 using Proton.Client.Resource.Features.UiViews.Abstractions;
 using Proton.Client.Resource.Utils.Extentions;
 using Proton.Shared.Extensions;
 using Proton.Shared.Interfaces;
 
-namespace Proton.Server.Resource;
+namespace Proton.Client.Resource;
 
 public sealed class ClientResource : AsyncResource
 {
@@ -30,17 +31,36 @@ public sealed class ClientResource : AsyncResource
 
     public override void OnStart()
     {
-        ResourceExtensions.RegisterMValueAdapters();
-
-        // TODO: Add logging for startup
-        serviceProvider.GetServices<IStartup>();
-        Alt.Log("loaded!!!");
+        StartAsync().Wait();
     }
 
-    public override void OnStop() { }
+    public override void OnStop()
+    {
+        StopAsync().Wait();
+    }
 
     public override IBaseObjectFactory<IWebView> GetWebViewFactory()
     {
         return serviceProvider.GetRequiredService<IUiViewFactory>();
+    }
+
+    private Task StartAsync()
+    {
+        ResourceExtensions.RegisterMValueAdapters();
+        serviceProvider.GetServices<IStartup>();
+        return Task.WhenAll(
+            serviceProvider
+                .GetServices<IHostedService>()
+                .Select(x => x.StartAsync(CancellationToken.None))
+        );
+    }
+
+    private Task StopAsync()
+    {
+        return Task.WhenAll(
+            serviceProvider
+                .GetServices<IHostedService>()
+                .Select(x => x.StopAsync(CancellationToken.None))
+        );
     }
 }

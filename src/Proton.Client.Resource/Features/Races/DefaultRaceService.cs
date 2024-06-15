@@ -117,7 +117,6 @@ public sealed class DefaultRaceService : IRaceService
 
     public bool UnloadRacePoint(int index)
     {
-        Console.WriteLine("UnloadRacePoint " + index);
         if (!indexToDataDictionary.TryGetValue(index, out var data))
             return false;
         data.Destroy();

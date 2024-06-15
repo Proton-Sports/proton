@@ -14,7 +14,7 @@ public static partial class ServiceCollectionExtensions
             .AddSingleton<IRaceService, DefaultRaceService>()
             .AddSingleton<IRacePointResolver, RacePointLapResolver>()
             .AddSingleton<IRacePointResolver, RacePointRallyResolver>()
-            .AddStartup<RaceCreatorScript>()
+            .AddHostedService<RaceCreatorScript>()
             .AddStartup<RaceMenuScript>()
             .AddStartup<RaceMenuRacesTabScript>()
             .AddStartup<RaceHostScript>()
