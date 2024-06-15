@@ -23,7 +23,6 @@ public static partial class ServiceCollectionExtensions
             .AddStartup<RaceStartScript>()
             .AddStartup<RaceEndScript>()
             .AddStartup<RaceLeaveScript>()
-            .AddStartup<RaceJoinScript>()
             .AddStartup<RaceHudScript>()
             .AddStartup<RaceHitScript>()
             .AddStartup<RacePhasingScript>();
