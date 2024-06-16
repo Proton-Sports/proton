@@ -4,7 +4,9 @@
     <TargetFramework>net6.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <LangVersion>Preview</LangVersion>
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <AnalysisLevel>latest-Default</AnalysisLevel>
+    <LangVersion>default</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>
