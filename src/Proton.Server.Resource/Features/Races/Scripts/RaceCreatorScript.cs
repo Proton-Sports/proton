@@ -4,9 +4,11 @@ using AltV.Net.Data;
 using AltV.Net.Elements.Entities;
 using AltV.Net.Enums;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Proton.Server.Core.Interfaces;
 using Proton.Server.Core.Models;
 using Proton.Server.Infrastructure.Interfaces;
+using Proton.Server.Resource.Features.Ipls.Abstractions;
 using Proton.Shared.Dtos;
 using Proton.Shared.Interfaces;
 using Proton.Shared.Models;
@@ -17,11 +19,13 @@ public sealed class RaceCreatorScript : IStartup
 {
     private readonly INoClip noClip;
     private readonly IDbContextFactory dbContextFactory;
+    private readonly IOptionsMonitor<IplOptions> iplOptions;
 
-    public RaceCreatorScript(INoClip noClip, IDbContextFactory dbContextFactory)
+    public RaceCreatorScript(INoClip noClip, IDbContextFactory dbContextFactory, IOptionsMonitor<IplOptions> iplOptions)
     {
         this.noClip = noClip;
         this.dbContextFactory = dbContextFactory;
+        this.iplOptions = iplOptions;
 
         Alt.OnPlayerConnect += (player, reason) =>
         {
@@ -29,19 +33,12 @@ public sealed class RaceCreatorScript : IStartup
             player.Spawn(position);
             player.Emit("race:creator:start");
             player.Model = (uint)PedModel.FreemodeMale01;
-            Alt.CreateVehicle(VehicleModel.Adder, position + new Position(4, 4, 0), Rotation.Zero);
         };
         Alt.OnClient("race:creator:stop", HandleStop);
         Alt.OnClient<IPlayer, string>("race:creator:changeMode", HandleChangeMode);
-        AltAsync.OnClient<IPlayer, long, string, Task>(
-            "race-menu-creator:editMap",
-            HandleEditMapAsync
-        );
-        AltAsync.OnClient<IPlayer, Task>("race-menu-creator:map", HandleMapAsync);
-        AltAsync.OnClient<IPlayer, SharedRaceCreatorData, Task>(
-            "race:creator:submit",
-            HandleSubmitAsync
-        );
+        AltAsync.OnClient<IPlayer, long, string, Task>("race-menu-creator:editMap", HandleEditMapAsync);
+        AltAsync.OnClient<IPlayer, Task>("race-menu-creator:data", HandleDataAsync);
+        AltAsync.OnClient<IPlayer, SharedRaceCreatorData, Task>("race:creator:submit", HandleSubmitAsync);
         AltAsync.OnClient<IPlayer, int, Task>("race-menu-creator:deleteMap", HandleDeleteMapAsync);
     }
 
@@ -80,6 +77,7 @@ public sealed class RaceCreatorScript : IStartup
                 {
                     Id = data.Id,
                     Name = data.Name,
+                    IplName = data.IplName,
                     StartPoints = data
                         .StartPoints.Select(
                             (point, index) =>
@@ -110,10 +108,7 @@ public sealed class RaceCreatorScript : IStartup
         {
             if (data.StartPoints.Count > 0)
             {
-                await ctx
-                    .RaceStartPoints.Where(x => x.MapId == data.Id)
-                    .ExecuteDeleteAsync()
-                    .ConfigureAwait(false);
+                await ctx.RaceStartPoints.Where(x => x.MapId == data.Id).ExecuteDeleteAsync().ConfigureAwait(false);
                 ctx.AddRange(
                     data.StartPoints.Select(
                             (point, index) =>
@@ -130,10 +125,7 @@ public sealed class RaceCreatorScript : IStartup
             }
             if (data.RacePoints.Count > 0)
             {
-                await ctx
-                    .RacePoints.Where(x => x.MapId == data.Id)
-                    .ExecuteDeleteAsync()
-                    .ConfigureAwait(false);
+                await ctx.RacePoints.Where(x => x.MapId == data.Id).ExecuteDeleteAsync().ConfigureAwait(false);
                 ctx.AddRange(
                     data.RacePoints.Select(
                             (point, index) =>
@@ -170,13 +162,17 @@ public sealed class RaceCreatorScript : IStartup
         noClip.Stop(player);
     }
 
-    private async Task HandleMapAsync(IPlayer player)
+    private async Task HandleDataAsync(IPlayer player)
     {
         await using var ctx = await dbContextFactory.CreateDbContextAsync().ConfigureAwait(false);
         var maps = await ctx.RaceMaps.ToArrayAsync().ConfigureAwait(false);
         player.Emit(
-            "race-menu-creator:map",
-            maps.Select(x => new RaceMapDto { Id = x.Id, Name = x.Name }).ToList()
+            "race-menu-creator:data",
+            new RaceCreatorDto
+            {
+                Maps = maps.Select(x => new RaceCreatorMapDto { Id = x.Id, Name = x.Name }).ToList(),
+                Ipls = iplOptions.CurrentValue.Entries.Select(x => x.Name).ToArray()
+            }
         );
     }
 
@@ -204,11 +200,8 @@ public sealed class RaceCreatorScript : IStartup
                 Id = map.Id,
                 Name = map.Name,
                 StartPoints =
-                    map.StartPoints?.Select(x => new SharedRaceStartPoint(x.Position, x.Rotation))
-                        .ToList() ?? [],
-                RacePoints =
-                    map.RacePoints?.Select(x => new SharedRacePoint(x.Position, x.Radius)).ToList()
-                    ?? [],
+                    map.StartPoints?.Select(x => new SharedRaceStartPoint(x.Position, x.Rotation)).ToList() ?? [],
+                RacePoints = map.RacePoints?.Select(x => new SharedRacePoint(x.Position, x.Radius)).ToList() ?? [],
             }
         );
     }
@@ -216,10 +209,7 @@ public sealed class RaceCreatorScript : IStartup
     private async Task HandleDeleteMapAsync(IPlayer player, int id)
     {
         await using var ctx = await dbContextFactory.CreateDbContextAsync().ConfigureAwait(false);
-        var count = await ctx
-            .RaceMaps.Where(x => x.Id == id)
-            .ExecuteDeleteAsync()
-            .ConfigureAwait(false);
+        var count = await ctx.RaceMaps.Where(x => x.Id == id).ExecuteDeleteAsync().ConfigureAwait(false);
         if (count == 1)
         {
             player.Emit("race-menu-creator:deleteMap", id);

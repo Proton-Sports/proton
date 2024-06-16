@@ -25,11 +25,7 @@ public sealed class ServerResource : AsyncResource
         builder.ConfigureAppConfiguration(
             (builder) =>
             {
-                builder.AddJsonFile(
-                    "appsettings.Local.json",
-                    optional: true,
-                    reloadOnChange: false
-                );
+                builder.AddJsonFile("appsettings.Local.json", optional: true, reloadOnChange: false);
             }
         );
         builder.ConfigureServices(
@@ -38,10 +34,11 @@ public sealed class ServerResource : AsyncResource
                 builder
                     .AddMemoryCache()
                     .AddSingleton<IHostLifetime, ResourceLifetime>()
-                    .AddInfrastructure(context.Configuration)
+                    .AddInfrastructure()
                     .AddAuthentication()
                     .AddRaceFeatures()
-                    .AddCharacterCreator();
+                    .AddCharacterCreator()
+                    .AddIplFeatures();
             }
         );
 
@@ -68,7 +65,7 @@ public sealed class ServerResource : AsyncResource
         return new PPlayerFactory();
     }
 
-    private class ResourceLifetime : IHostLifetime
+    private sealed class ResourceLifetime : IHostLifetime
     {
         public Task StopAsync(CancellationToken cancellationToken)
         {

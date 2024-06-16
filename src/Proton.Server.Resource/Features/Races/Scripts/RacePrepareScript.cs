@@ -3,6 +3,7 @@ using AltV.Net.Async;
 using AltV.Net.Data;
 using AltV.Net.Elements.Entities;
 using AltV.Net.Enums;
+using Proton.Server.Resource.Features.Ipls.Abstractions;
 using Proton.Server.Resource.Features.Races.Abstractions;
 using Proton.Server.Resource.Features.Races.Constants;
 using Proton.Server.Resource.Features.Races.Models;
@@ -12,7 +13,11 @@ using Proton.Shared.Models;
 
 namespace Proton.Server.Resource.Features.Races.Scripts;
 
-public sealed class RacePrepareScript(IRaceService raceService, IMapCache mapCache) : HostedService
+public sealed class RacePrepareScript(
+    IRaceService raceService,
+    IMapCache mapCache,
+    IIplService iplService
+) : HostedService
 {
     private Timer? timer;
 
@@ -42,6 +47,15 @@ public sealed class RacePrepareScript(IRaceService raceService, IMapCache mapCac
 
         var participants = race.Participants;
         var createTasks = new LinkedList<Task<IVehicle>>();
+        var players = participants.Select(x => x.Player).ToArray();
+        if (!string.IsNullOrEmpty(map.IplName))
+        {
+            var ok = await iplService.LoadAsync(players, map.IplName).ConfigureAwait(false);
+            if (!ok)
+            {
+                Alt.LogWarning($"Could not load ipl {map.IplName}");
+            }
+        }
 
         foreach (var (point, participant) in map.StartPoints.Zip(participants))
         {
@@ -49,8 +63,8 @@ public sealed class RacePrepareScript(IRaceService raceService, IMapCache mapCac
                 AltAsync.CreateVehicle(race.VehicleModel, point.Position, point.Rotation, 256)
             );
         }
-
         await Task.Delay(1000).ConfigureAwait(false);
+
         foreach (var (participant, vehicle) in participants.Zip(await Task.WhenAll(createTasks)))
         {
             participant.Player.Position = vehicle.Position;
@@ -95,6 +109,7 @@ public sealed class RacePrepareScript(IRaceService raceService, IMapCache mapCac
                         Radius = x.Radius
                     })
                     .ToList(),
+                IplName = map.IplName,
             }
         );
     }

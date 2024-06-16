@@ -7,8 +7,13 @@ using Proton.Client.Resource.CharacterCreator.Extensions;
 using Proton.Client.Resource.Commons.Abstractions;
 using Proton.Client.Resource.Features.UiViews.Abstractions;
 using Proton.Client.Resource.Utils.Extentions;
+using Proton.Shared.Adapters;
+using Proton.Shared.Dtos;
+using Proton.Shared.Extensions;
 using Proton.Shared.Extensions;
 using Proton.Shared.Interfaces;
+using Proton.Shared.Interfaces;
+using Proton.Shared.Models;
 
 namespace Proton.Client.Resource;
 
@@ -25,7 +30,8 @@ public sealed class ClientResource : AsyncResource
             .AddAuthentication()
             .AddRaceFeatures()
             .AddUtils()
-            .AddCharacterCreator();
+            .AddCharacterCreator()
+            .AddIplFeatures();
         serviceProvider = serviceCollection.BuildServiceProvider();
     }
 
@@ -49,18 +55,14 @@ public sealed class ClientResource : AsyncResource
         ResourceExtensions.RegisterMValueAdapters();
         serviceProvider.GetServices<IStartup>();
         return Task.WhenAll(
-            serviceProvider
-                .GetServices<IHostedService>()
-                .Select(x => x.StartAsync(CancellationToken.None))
+            serviceProvider.GetServices<IHostedService>().Select(x => x.StartAsync(CancellationToken.None))
         );
     }
 
     private Task StopAsync()
     {
         return Task.WhenAll(
-            serviceProvider
-                .GetServices<IHostedService>()
-                .Select(x => x.StopAsync(CancellationToken.None))
+            serviceProvider.GetServices<IHostedService>().Select(x => x.StopAsync(CancellationToken.None))
         );
     }
 }
