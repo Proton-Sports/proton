@@ -29,11 +29,7 @@ public sealed class IplService : IIplService
         var id = counter.GetNext();
         var source = new TaskCompletionSource<bool>();
         var playersArr = players.ToArray();
-        loadAsyncTaskDictionary[id] = new LoadAsyncState
-        {
-            Source = source,
-            Count = playersArr.Length
-        };
+        loadAsyncTaskDictionary[id] = new LoadAsyncState { Source = source, Count = playersArr.Length };
         cts.Token.Register(() =>
         {
             if (loadAsyncTaskDictionary.TryRemove(id, out var state))
@@ -53,7 +49,11 @@ public sealed class IplService : IIplService
 
     private void HandleClientLoadAsync(IPlayer _, long id)
     {
-        if (!loadAsyncTaskDictionary.TryGetValue(id, out var state)) return;
+        if (!loadAsyncTaskDictionary.TryGetValue(id, out var state))
+        {
+            return;
+        }
+
         if (--state.Count == 0)
         {
             state.Source.SetResult(true);

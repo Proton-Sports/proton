@@ -1,9 +1,7 @@
 using System.Reflection;
 using AltV.Net;
 using AltV.Net.Async;
-using AltV.Net.Data;
 using AltV.Net.Elements.Entities;
-using AltV.Net.Enums;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -27,11 +25,7 @@ public sealed class ServerResource : AsyncResource
         builder.ConfigureAppConfiguration(
             (builder) =>
             {
-                builder.AddJsonFile(
-                    "appsettings.Local.json",
-                    optional: true,
-                    reloadOnChange: false
-                );
+                builder.AddJsonFile("appsettings.Local.json", optional: true, reloadOnChange: false);
             }
         );
         builder.ConfigureServices(
@@ -71,7 +65,7 @@ public sealed class ServerResource : AsyncResource
         return new PPlayerFactory();
     }
 
-    private class ResourceLifetime : IHostLifetime
+    private sealed class ResourceLifetime : IHostLifetime
     {
         public Task StopAsync(CancellationToken cancellationToken)
         {

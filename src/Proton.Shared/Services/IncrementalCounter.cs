@@ -4,7 +4,7 @@ namespace Proton.Shared.Services;
 
 public sealed class IncrementalCounter : IIncrementalCounter
 {
-    private long count = 0;
+    private long count;
 
     public long GetNext()
     {
