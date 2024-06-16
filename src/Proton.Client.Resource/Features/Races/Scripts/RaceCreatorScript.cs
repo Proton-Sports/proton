@@ -21,13 +21,13 @@ public sealed class RaceCreatorScript(
     IIplService iplService
 ) : HostedService
 {
-    private bool focusing = false;
+    private bool focusing;
     private bool canSwitch = true;
     private PointType pointType = PointType.Start;
     private long id;
     private string name = string.Empty;
     private string? iplName;
-    private ICheckpoint? movingRaceCheckpoint = default;
+    private ICheckpoint? movingRaceCheckpoint;
 
     public override Task StartAsync(CancellationToken ct)
     {
@@ -50,7 +50,7 @@ public sealed class RaceCreatorScript(
     {
         name = mapName;
         this.iplName = iplName;
-        await StartAsync();
+        await StartAsync().ConfigureAwait(false);
     }
 
     private void HandleDeleteMap(int id)
@@ -111,7 +111,8 @@ public sealed class RaceCreatorScript(
         Alt.OnKeyDown -= HandleKeyDown;
         if (!string.IsNullOrEmpty(iplName))
         {
-            await iplService.UnloadAsync(iplName);
+            await iplService.UnloadAsync(iplName).ConfigureAwait(false);
+            iplName = null;
         }
     }
 
@@ -122,7 +123,10 @@ public sealed class RaceCreatorScript(
             case Key.LButton:
             {
                 if (!noClip.IsStarted || focusing)
+                {
                     break;
+                }
+
                 var camera = noClip.Camera!;
                 var position = camera.Position;
                 var data = await raycastService
@@ -159,7 +163,9 @@ public sealed class RaceCreatorScript(
                     || !noClip.TryGetRaycastData(out var data)
                     || data is not { IsHit: true }
                 )
+                {
                     break;
+                }
 
                 switch (pointType)
                 {
@@ -181,7 +187,10 @@ public sealed class RaceCreatorScript(
             case Key.Z:
             {
                 if (noClip.IsStarted)
+                {
                     break;
+                }
+
                 var player = Alt.LocalPlayer;
                 var position = Alt.LocalPlayer.Position;
                 if (
@@ -211,7 +220,10 @@ public sealed class RaceCreatorScript(
             case Key.X:
             {
                 if (noClip.IsStarted)
+                {
                     break;
+                }
+
                 switch (pointType)
                 {
                     case PointType.Start:
@@ -232,14 +244,20 @@ public sealed class RaceCreatorScript(
             case Key.D1:
             {
                 if (!canSwitch || pointType == PointType.Start)
+                {
                     return;
+                }
+
                 pointType = PointType.Start;
                 break;
             }
             case Key.D2:
             {
                 if (!canSwitch || pointType == PointType.Race)
+                {
                     return;
+                }
+
                 pointType = PointType.Race;
                 break;
             }
@@ -259,12 +277,19 @@ public sealed class RaceCreatorScript(
                             true
                         )
                     )
+                    {
                         return;
+                    }
                 }
                 else if (noClip.TryGetRaycastData(out var data) && data is { IsHit: true })
+                {
                     position = data.EndPosition;
+                }
                 else
+                {
                     break;
+                }
+
                 if (raceCreator.TryGetClosestRaceCheckpointTo(position, out var checkpoint))
                 {
                     checkpoint.Radius += 0.5f;
@@ -287,12 +312,19 @@ public sealed class RaceCreatorScript(
                             true
                         )
                     )
+                    {
                         return;
+                    }
                 }
                 else if (noClip.TryGetRaycastData(out var data) && data is { IsHit: true })
+                {
                     position = data.EndPosition;
+                }
                 else
+                {
                     break;
+                }
+
                 if (raceCreator.TryGetClosestRaceCheckpointTo(position, out var checkpoint))
                 {
                     checkpoint.Radius = Math.Max(1, checkpoint.Radius - 0.5f);
@@ -301,7 +333,7 @@ public sealed class RaceCreatorScript(
             }
             case Key.M:
             {
-                Position position = Alt.LocalPlayer.Position;
+                var position = Alt.LocalPlayer.Position;
                 if (!noClip.IsStarted)
                 {
                     position = Alt.LocalPlayer.Position;
@@ -315,12 +347,19 @@ public sealed class RaceCreatorScript(
                             true
                         )
                     )
+                    {
                         return;
+                    }
                 }
                 else if (noClip.TryGetRaycastData(out var data) && data is { IsHit: true })
+                {
                     position = data.EndPosition;
+                }
                 else
+                {
                     break;
+                }
+
                 if (raceCreator.TryGetClosestRaceCheckpointTo(position, out var checkpoint))
                 {
                     if (movingRaceCheckpoint is not null)
@@ -404,7 +443,7 @@ public sealed class RaceCreatorScript(
         iplName = map.IplName;
         raceCreator.ImportStartPoints(map.StartPoints);
         raceCreator.ImportRacePoints(map.RacePoints);
-        await StartAsync();
+        await StartAsync().ConfigureAwait(false);
     }
 
     private async Task StartAsync()
@@ -418,7 +457,7 @@ public sealed class RaceCreatorScript(
 
         if (!string.IsNullOrEmpty(iplName))
         {
-            await iplService.LoadAsync(iplName);
+            await iplService.LoadAsync(iplName).ConfigureAwait(false);
         }
         uiView.Mount(Route.RaceCreator);
         Alt.OnKeyUp += HandleKeyUp;

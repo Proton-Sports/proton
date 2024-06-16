@@ -9,24 +9,20 @@ using Proton.Server.Core.Interfaces;
 using Proton.Server.Core.Models;
 using Proton.Server.Infrastructure.Interfaces;
 using Proton.Server.Resource.Features.Ipls.Abstractions;
+using Proton.Server.Resource.SharedKernel;
 using Proton.Shared.Dtos;
-using Proton.Shared.Interfaces;
 using Proton.Shared.Models;
 
 namespace Proton.Server.Resource.Features.Races.Scripts;
 
-public sealed class RaceCreatorScript : IStartup
+public sealed class RaceCreatorScript(
+    INoClip noClip,
+    IDbContextFactory dbContextFactory,
+    IOptionsMonitor<IplOptions> iplOptions
+) : HostedService
 {
-    private readonly INoClip noClip;
-    private readonly IDbContextFactory dbContextFactory;
-    private readonly IOptionsMonitor<IplOptions> iplOptions;
-
-    public RaceCreatorScript(INoClip noClip, IDbContextFactory dbContextFactory, IOptionsMonitor<IplOptions> iplOptions)
+    public override Task StartAsync(CancellationToken ct)
     {
-        this.noClip = noClip;
-        this.dbContextFactory = dbContextFactory;
-        this.iplOptions = iplOptions;
-
         Alt.OnPlayerConnect += (player, reason) =>
         {
             var position = new Position(486.417f, -3339.692f, 6.070f);
@@ -40,6 +36,7 @@ public sealed class RaceCreatorScript : IStartup
         AltAsync.OnClient<IPlayer, Task>("race-menu-creator:data", HandleDataAsync);
         AltAsync.OnClient<IPlayer, SharedRaceCreatorData, Task>("race:creator:submit", HandleSubmitAsync);
         AltAsync.OnClient<IPlayer, int, Task>("race-menu-creator:deleteMap", HandleDeleteMapAsync);
+        return Task.CompletedTask;
     }
 
     private void HandleStop(IPlayer player)
@@ -54,7 +51,10 @@ public sealed class RaceCreatorScript : IStartup
         {
             case "free":
                 if (noClip.IsStarted(player))
+                {
                     break;
+                }
+
                 player.Visible = false;
                 player.Invincible = true;
                 player.Frozen = true;
@@ -144,7 +144,7 @@ public sealed class RaceCreatorScript : IStartup
                 .RaceMaps.Where(x => x.Id == data.Id)
                 .ExecuteUpdateAsync(calls => calls.SetProperty(x => x.Name, data.Name))
                 .ConfigureAwait(false);
-            await ctx.SaveChangesAsync();
+            await ctx.SaveChangesAsync().ConfigureAwait(false);
         }
         player.Emit("race:creator:stop");
         TryStopNoClip(player);
@@ -153,7 +153,9 @@ public sealed class RaceCreatorScript : IStartup
     private void TryStopNoClip(IPlayer player)
     {
         if (!noClip.IsStarted(player))
+        {
             return;
+        }
 
         player.Visible = true;
         player.Invincible = false;
@@ -199,6 +201,7 @@ public sealed class RaceCreatorScript : IStartup
             {
                 Id = map.Id,
                 Name = map.Name,
+                IplName = map.IplName,
                 StartPoints =
                     map.StartPoints?.Select(x => new SharedRaceStartPoint(x.Position, x.Rotation)).ToList() ?? [],
                 RacePoints = map.RacePoints?.Select(x => new SharedRacePoint(x.Position, x.Radius)).ToList() ?? [],
