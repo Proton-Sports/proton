@@ -48,7 +48,7 @@ public sealed class RaceCountdownScript(IRaceService raceService, IMapCache mapC
         prepareTimers[race.Id] = new Timer(
             (state) => PrepareRace((Race)state!).SafeFireAndForget(exception => Alt.LogError(exception.ToString())),
             race,
-            race.CountdownSeconds,
+            race.CountdownSeconds * 1000,
             Timeout.Infinite
         );
         player.Emit(

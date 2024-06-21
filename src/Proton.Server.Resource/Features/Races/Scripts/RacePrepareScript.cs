@@ -93,8 +93,8 @@ public sealed class RacePrepareScript(IRaceService raceService, IMapCache mapCac
 
         race.StartTime = DateTimeOffset.UtcNow.AddSeconds(3);
         startTimers[race.Id] = new Timer(
-            (_) => StartRaceAsync(race).SafeFireAndForget(exception => Alt.LogError(exception.ToString())),
-            null,
+            (state) => StartRaceAsync((Race)race!).SafeFireAndForget(exception => Alt.LogError(exception.ToString())),
+            race,
             3000,
             Timeout.Infinite
         );
