@@ -1,8 +1,8 @@
 using AltV.Net;
 using AltV.Net.Async;
-using AltV.Net.Data;
 using AltV.Net.Elements.Entities;
 using AltV.Net.Enums;
+using AsyncAwaitBestPractices;
 using Proton.Server.Resource.Features.Ipls.Abstractions;
 using Proton.Server.Resource.Features.Races.Abstractions;
 using Proton.Server.Resource.Features.Races.Constants;
@@ -13,27 +13,24 @@ using Proton.Shared.Models;
 
 namespace Proton.Server.Resource.Features.Races.Scripts;
 
-public sealed class RacePrepareScript(
-    IRaceService raceService,
-    IMapCache mapCache,
-    IIplService iplService
-) : HostedService
+public sealed class RacePrepareScript(IRaceService raceService, IMapCache mapCache, IIplService iplService)
+    : HostedService
 {
-    private Timer? timer;
+    private readonly Dictionary<Race, Timer> startTimers = [];
 
     public override Task StartAsync(CancellationToken ct)
     {
         raceService.RacePrepared += HandleRacePrepared;
-        timer = new Timer((state) => HandleTimerTick(), null, 1000, 1000);
         return Task.CompletedTask;
     }
 
     public override async Task StopAsync(CancellationToken ct)
     {
-        if (timer is not null)
+        foreach (var (_, timer) in startTimers)
         {
             await timer.DisposeAsync().ConfigureAwait(false);
         }
+        startTimers.Clear();
     }
 
     private async Task HandleRacePrepared(Race race)
@@ -59,13 +56,13 @@ public sealed class RacePrepareScript(
 
         foreach (var (point, participant) in map.StartPoints.Zip(participants))
         {
-            createTasks.AddLast(
-                AltAsync.CreateVehicle(race.VehicleModel, point.Position, point.Rotation, 256)
-            );
+            createTasks.AddLast(AltAsync.CreateVehicle(race.VehicleModel, point.Position, point.Rotation, 256));
+            participant.Player.Emit("race-prepare:preloadWorld", point.Position, point.Rotation);
         }
-        await Task.Delay(1000).ConfigureAwait(false);
 
-        foreach (var (participant, vehicle) in participants.Zip(await Task.WhenAll(createTasks)))
+        await Task.Delay(3000).ConfigureAwait(false);
+
+        foreach (var (participant, vehicle) in participants.Zip(await Task.WhenAll(createTasks).ConfigureAwait(false)))
         {
             participant.Player.Position = vehicle.Position;
             participant.Player.Dimension = (int)race.Id;
@@ -94,36 +91,35 @@ public sealed class RacePrepareScript(
             participant.Player.SetIntoVehicle(participant.Vehicle, 1);
         }
 
+        race.StartTime = DateTimeOffset.UtcNow.AddSeconds(3);
+        startTimers[race] = new Timer(
+            (_) => StartRaceAsync(race).SafeFireAndForget(exception => Alt.LogError(exception.ToString())),
+            null,
+            3000,
+            Timeout.Infinite
+        );
         Alt.EmitClients(
             [.. participants.Select(x => x.Player)],
             "race-prepare:mount",
             new RacePrepareDto
             {
-                EndTime = race.PreparationEndTime.ToUnixTimeMilliseconds(),
+                EndTime = race.StartTime.ToUnixTimeMilliseconds(),
                 RaceType = (byte)race.Type,
                 Dimension = (int)race.Id,
                 RacePoints = map
-                    .RacePoints.Select(x => new RacePointDto
-                    {
-                        Position = x.Position,
-                        Radius = x.Radius
-                    })
+                    .RacePoints.Select(x => new RacePointDto { Position = x.Position, Radius = x.Radius })
                     .ToList(),
                 IplName = map.IplName,
             }
         );
     }
 
-    private void HandleTimerTick()
+    private async Task StartRaceAsync(Race race)
     {
-        var now = DateTimeOffset.UtcNow;
-        foreach (
-            var race in raceService.Races.Where(x =>
-                x.Status == RaceStatus.Preparing && now >= x.PreparationEndTime
-            )
-        )
+        if (startTimers.Remove(race, out var timer))
         {
             raceService.Start(race);
+            await timer.DisposeAsync().ConfigureAwait(false);
         }
     }
 }

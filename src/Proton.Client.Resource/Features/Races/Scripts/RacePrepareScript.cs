@@ -1,27 +1,30 @@
+using System.Numerics;
 using AltV.Net.Client;
+using AltV.Net.Data;
 using AltV.Net.Elements.Entities;
 using AsyncAwaitBestPractices;
+using Proton.Client.Core.Interfaces;
+using Proton.Client.Infrastructure.Constants;
+using Proton.Client.Resource.Commons;
 using Proton.Client.Resource.Features.Ipls.Abstractions;
 using Proton.Client.Resource.Features.UiViews.Abstractions;
 using Proton.Shared.Constants;
 using Proton.Shared.Contants;
 using Proton.Shared.Dtos;
-using Proton.Shared.Interfaces;
 
 namespace Proton.Client.Resource.Features.Races.Scripts;
 
-public sealed class RacePrepareScript : IStartup
+public sealed class RacePrepareScript(
+    IUiView uiView,
+    IRaceService raceService,
+    IIplService iplService,
+    IScriptCameraFactory scriptCameraFactory
+) : HostedService
 {
-    private readonly IUiView uiView;
-    private readonly IRaceService raceService;
-    private readonly IIplService iplService;
+    private IScriptCamera? preloadCamera;
 
-    public RacePrepareScript(IUiView uiView, IRaceService raceService, IIplService iplService)
+    public override Task StartAsync(CancellationToken ct)
     {
-        this.uiView = uiView;
-        this.raceService = raceService;
-        this.iplService = iplService;
-
         Alt.OnServer<RacePrepareDto>(
             "race-prepare:mount",
             (dto) =>
@@ -30,10 +33,26 @@ public sealed class RacePrepareScript : IStartup
             }
         );
         Alt.OnServer<long>("race:start", HandleOnStarted);
+        Alt.OnServer<Vector3, Vector3>("race-prepare:preloadWorld", OnPreloadWorld);
+        return Task.CompletedTask;
+    }
+
+    private void OnPreloadWorld(Vector3 position, Vector3 rotation)
+    {
+        Alt.FocusData.OverrideFocusPosition(position, Vector3.Zero);
+        preloadCamera = scriptCameraFactory.CreateScriptCamera(CameraHash.Scripted, true);
+        preloadCamera.Position = position;
+        preloadCamera.Rotation = rotation * 180 / MathF.PI;
+        preloadCamera.Render();
     }
 
     private async Task HandleServerMountAsync(RacePrepareDto dto)
     {
+        if (preloadCamera is not null)
+        {
+            preloadCamera.Dispose();
+            preloadCamera = null;
+        }
         var task = uiView.TryMountAsync(Route.RacePrepare);
         Task? loadIplTask = default;
         if (!string.IsNullOrEmpty(dto.IplName))
@@ -47,7 +66,8 @@ public sealed class RacePrepareScript : IStartup
         raceService.Dimension = dto.Dimension;
         raceService.EnsureRacePointsCapacity(dto.RacePoints.Count);
         raceService.AddRacePoints(dto.RacePoints);
-        int index = 0;
+
+        var index = 0;
         while (index + 1 < Math.Min(dto.RacePoints.Count, 2))
         {
             var nextIndex = index + 1;
@@ -58,18 +78,20 @@ public sealed class RacePrepareScript : IStartup
             );
             ++index;
         }
-        ;
 
         if (await task.ConfigureAwait(false))
         {
             uiView.Emit("race-prepare:setData", new RacePrepareDto { EndTime = dto.EndTime });
         }
         if (loadIplTask is not null)
-            await loadIplTask;
+        {
+            await loadIplTask.ConfigureAwait(false);
+        }
     }
 
     private void HandleOnStarted(long _)
     {
+        Alt.FocusData.ClearFocusOverride();
         Alt.OnTick -= DisableVehicleMovement;
     }
 

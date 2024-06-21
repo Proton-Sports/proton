@@ -46,7 +46,7 @@ public sealed class RaceHudScript(IRaceService raceService, IMapCache mapCache) 
             "race-hud:getData",
             new RaceHudDto
             {
-                StartTime = race.PreparationEndTime,
+                StartTime = race.StartTime,
                 MaxLaps = race.Laps ?? 1,
                 Participants = participants
                     .Select(x => new RaceHudParticipantDto
@@ -74,7 +74,7 @@ public sealed class RaceHudScript(IRaceService raceService, IMapCache mapCache) 
         Alt.EmitClients(
             [.. race.Participants.Select(x => x.Player)],
             "race-hud:startTime",
-            race.PreparationEndTime.ToUnixTimeMilliseconds()
+            race.StartTime.ToUnixTimeMilliseconds()
         );
         return Task.CompletedTask;
     }

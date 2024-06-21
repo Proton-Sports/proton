@@ -10,10 +10,7 @@ using Proton.Shared.Dtos;
 
 namespace Proton.Server.Resource.Features.Races.Scripts;
 
-public sealed class RaceCountdownScript(
-    IRaceService raceService,
-    IDbContextFactory dbContextFactory
-) : HostedService
+public sealed class RaceCountdownScript(IRaceService raceService, IDbContextFactory dbContextFactory) : HostedService
 {
     private Timer? timer;
 
@@ -55,9 +52,7 @@ public sealed class RaceCountdownScript(
             new RaceCountdownDataDto
             {
                 MapName = mapName,
-                EndTime = race
-                    .CreatedTime.AddSeconds(race.CountdownSeconds)
-                    .ToUnixTimeMilliseconds(),
+                EndTime = race.CreatedTime.AddSeconds(race.CountdownSeconds).ToUnixTimeMilliseconds(),
                 Participants = race.Participants.Count,
                 MaxParticipants = race.MaxParticipants
             }
@@ -114,7 +109,6 @@ public sealed class RaceCountdownScript(
         {
             AltAsync.Do(() =>
             {
-                race.PreparationEndTime = DateTimeOffset.UtcNow.AddSeconds(3);
                 raceService.Prepare(race);
             });
         }
