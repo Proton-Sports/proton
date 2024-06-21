@@ -1,3 +1,4 @@
+using System.Numerics;
 using AltV.Net;
 using AltV.Net.Async;
 using AltV.Net.Data;
@@ -21,6 +22,8 @@ public sealed class RaceCreatorScript(
     IOptionsMonitor<IplOptions> iplOptions
 ) : HostedService
 {
+    private readonly Dictionary<IPlayer, WorldState> playerWorldStates = [];
+
     public override Task StartAsync(CancellationToken ct)
     {
         Alt.OnPlayerConnect += (player, reason) =>
@@ -59,6 +62,7 @@ public sealed class RaceCreatorScript(
                 player.Invincible = true;
                 player.Frozen = true;
                 player.Collision = false;
+                playerWorldStates[player] = new() { Position = player.Position, Rotation = player.Rotation, };
                 noClip.Start(player);
                 break;
             case "normal":
@@ -161,6 +165,11 @@ public sealed class RaceCreatorScript(
         player.Invincible = false;
         player.Frozen = false;
         player.Collision = true;
+        if (playerWorldStates.Remove(player, out var state))
+        {
+            player.Position = state.Position;
+            player.Rotation = state.Rotation;
+        }
         noClip.Stop(player);
     }
 
@@ -217,5 +226,11 @@ public sealed class RaceCreatorScript(
         {
             player.Emit("race-menu-creator:deleteMap", id);
         }
+    }
+
+    private sealed class WorldState
+    {
+        public Position Position { get; set; }
+        public Rotation Rotation { get; set; }
     }
 }
