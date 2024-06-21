@@ -41,7 +41,7 @@ public sealed class RacePrepareScript(
     {
         Alt.FocusData.OverrideFocusPosition(position, Vector3.Zero);
         preloadCamera = scriptCameraFactory.CreateScriptCamera(CameraHash.Scripted, true);
-        preloadCamera.Position = position;
+        preloadCamera.Position = position + new Vector3(0f, 0f, 3f);
         preloadCamera.Rotation = rotation * 180 / MathF.PI;
         preloadCamera.Render();
     }
