@@ -105,14 +105,16 @@ public class DefaultScriptCamera(int cameraId) : IScriptCamera
     {
         if (!disposed)
         {
-            // if (disposing) { }
             IsActive = false;
-            if (IsRendering)
-            {
-                Unrender();
-            }
-            Alt.Natives.DestroyCam(Id, true);
             disposed = true;
+            if (disposing)
+            {
+                if (IsRendering)
+                {
+                    Unrender();
+                }
+                Alt.Natives.DestroyCam(Id, true);
+            }
         }
     }
 

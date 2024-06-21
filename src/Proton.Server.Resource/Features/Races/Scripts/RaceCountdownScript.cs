@@ -11,8 +11,6 @@ namespace Proton.Server.Resource.Features.Races.Scripts;
 
 public sealed class RaceCountdownScript(IRaceService raceService, IMapCache mapCache) : HostedService
 {
-    private readonly Dictionary<long, Timer> prepareTimers = [];
-
     public override Task StartAsync(CancellationToken ct)
     {
         raceService.ParticipantJoined += HandleParticipantJoined;
@@ -21,15 +19,6 @@ public sealed class RaceCountdownScript(IRaceService raceService, IMapCache mapC
         Alt.OnPlayerDisconnect += HandlePlayerDisconnect;
         AltAsync.OnClient<IPlayer, Task>("race-countdown:getData", HandleGetDataAsync);
         return Task.CompletedTask;
-    }
-
-    public override async Task StopAsync(CancellationToken ct)
-    {
-        foreach (var (_, timer) in prepareTimers)
-        {
-            await timer.DisposeAsync().ConfigureAwait(false);
-        }
-        prepareTimers.Clear();
     }
 
     private async Task HandleGetDataAsync(IPlayer player)
@@ -45,12 +34,6 @@ public sealed class RaceCountdownScript(IRaceService raceService, IMapCache mapC
             return;
         }
 
-        prepareTimers[race.Id] = new Timer(
-            (state) => PrepareRace((Race)state!).SafeFireAndForget(exception => Alt.LogError(exception.ToString())),
-            race,
-            race.CountdownSeconds * 1000,
-            Timeout.Infinite
-        );
         player.Emit(
             "race-countdown:getData",
             new RaceCountdownDataDto
@@ -99,20 +82,6 @@ public sealed class RaceCountdownScript(IRaceService raceService, IMapCache mapC
                     break;
                 }
             }
-        }
-    }
-
-    private async Task PrepareRace(Race race)
-    {
-        if (prepareTimers.Remove(race.Id, out var timer))
-        {
-            await AltAsync
-                .Do(() =>
-                {
-                    raceService.Prepare(race);
-                })
-                .ConfigureAwait(false);
-            await timer.DisposeAsync().ConfigureAwait(false);
         }
     }
 

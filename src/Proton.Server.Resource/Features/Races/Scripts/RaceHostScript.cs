@@ -1,5 +1,6 @@
 using AltV.Net;
 using AltV.Net.Elements.Entities;
+using AsyncAwaitBestPractices;
 using Proton.Shared.Interfaces;
 using Proton.Shared.Dtos;
 using AltV.Net.Enums;
@@ -10,23 +11,32 @@ using Proton.Server.Core.Interfaces;
 using AltV.Net.Async;
 using Microsoft.EntityFrameworkCore;
 using Proton.Shared.Constants;
+using Proton.Server.Resource.SharedKernel;
 
 namespace Proton.Server.Resource.Features.Races.Scripts;
 
-public sealed class RaceHostScript : IStartup
+public sealed class RaceHostScript(IRaceService raceService, IDbContextFactory dbContextFactory) : HostedService
 {
-	private readonly IRaceService raceService;
-	private readonly IDbContextFactory dbContextFactory;
 	private long counter;
+	private readonly Dictionary<long, Timer> prepareTimers = [];
 
-    public RaceHostScript(IRaceService raceService, IDbContextFactory dbContextFactory)
+	public override Task StartAsync(CancellationToken ct)
 	{
-		this.raceService = raceService;
-		this.dbContextFactory = dbContextFactory;
-		Alt.OnClient<IPlayer, RaceHostSubmitDto>("race-host:submit", HandleSubmit);
-		AltAsync.OnClient<IPlayer, Task>("race-host:availableMaps", HandleAvailableMapsAsync);
-		AltAsync.OnClient<IPlayer, long, Task>("race-host:getMaxRacers", HandleGetMaxRacersAsync);
+    	Alt.OnClient<IPlayer, RaceHostSubmitDto>("race-host:submit", HandleSubmit);
+    	AltAsync.OnClient<IPlayer, Task>("race-host:availableMaps", HandleAvailableMapsAsync);
+    	AltAsync.OnClient<IPlayer, long, Task>("race-host:getMaxRacers", HandleGetMaxRacersAsync);
+        raceService.RaceDestroyed += (race) => OnRaceDestroyedAsync(race).SafeFireAndForget(exception => Alt.LogError(exception.ToString()));
+    	return Task.CompletedTask;
 	}
+
+	public override async Task StopAsync(CancellationToken ct)
+    {
+        foreach (var (_, timer) in prepareTimers)
+        {
+            await timer.DisposeAsync().ConfigureAwait(false);
+        }
+        prepareTimers.Clear();
+    }
 
 	private void HandleSubmit(IPlayer player, RaceHostSubmitDto dto)
 	{
@@ -81,6 +91,12 @@ public sealed class RaceHostScript : IStartup
 		};
 		raceService.AddRace(race);
 		raceService.AddParticipant(race.Id, new RaceParticipant { Player = player });
+		prepareTimers[race.Id] = new Timer(
+            (state) => PrepareRace((Race)state!).SafeFireAndForget(exception => Alt.LogError(exception.ToString())),
+            race,
+            race.CountdownSeconds * 1000,
+            Timeout.Infinite
+        );
 		player.Emit("race-host:submit");
 	}
 
@@ -100,4 +116,26 @@ public sealed class RaceHostScript : IStartup
 		var racers = await ctx.RaceMaps.Where(x => x.Id == mapId).Select(x => x.StartPoints.Count).FirstOrDefaultAsync().ConfigureAwait(false);
 		player.Emit("race-host:getMaxRacers", Math.Max(racers, 1));
 	}
+
+	private async Task PrepareRace(Race race)
+    {
+        if (prepareTimers.Remove(race.Id, out var timer))
+        {
+            await AltAsync
+                .Do(() =>
+                {
+                    raceService.Prepare(race);
+                })
+                .ConfigureAwait(false);
+            await timer.DisposeAsync().ConfigureAwait(false);
+        }
+    }
+
+    private async Task OnRaceDestroyedAsync(Race race)
+    {
+        if (prepareTimers.Remove(race.Id, out var timer))
+        {
+            await timer.DisposeAsync().ConfigureAwait(false);
+        }
+    }
 }

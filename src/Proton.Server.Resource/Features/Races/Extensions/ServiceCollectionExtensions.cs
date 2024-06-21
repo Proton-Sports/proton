@@ -15,7 +15,7 @@ public static partial class ServiceCollectionExtensions
             .AddSingleton<IMapCache, MapCache>()
             .AddStartup<RaceScript>()
             .AddHostedService<RaceCreatorScript>()
-            .AddStartup<RaceHostScript>()
+            .AddHostedService<RaceHostScript>()
             .AddStartup<RaceMenuRacesTabScript>()
             .AddHostedService<RaceCountdownScript>()
             .AddHostedService<RacePrepareScript>()
