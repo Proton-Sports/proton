@@ -16,7 +16,7 @@ namespace Proton.Server.Resource.Features.Races.Scripts;
 public sealed class RacePrepareScript(IRaceService raceService, IMapCache mapCache, IIplService iplService)
     : HostedService
 {
-    private readonly Dictionary<Race, Timer> startTimers = [];
+    private readonly Dictionary<long, Timer> startTimers = [];
 
     public override Task StartAsync(CancellationToken ct)
     {
@@ -92,7 +92,7 @@ public sealed class RacePrepareScript(IRaceService raceService, IMapCache mapCac
         }
 
         race.StartTime = DateTimeOffset.UtcNow.AddSeconds(3);
-        startTimers[race] = new Timer(
+        startTimers[race.Id] = new Timer(
             (_) => StartRaceAsync(race).SafeFireAndForget(exception => Alt.LogError(exception.ToString())),
             null,
             3000,
@@ -116,7 +116,7 @@ public sealed class RacePrepareScript(IRaceService raceService, IMapCache mapCac
 
     private async Task StartRaceAsync(Race race)
     {
-        if (startTimers.Remove(race, out var timer))
+        if (startTimers.Remove(race.Id, out var timer))
         {
             raceService.Start(race);
             await timer.DisposeAsync().ConfigureAwait(false);

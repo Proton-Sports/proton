@@ -11,7 +11,7 @@ namespace Proton.Server.Resource.Features.Races.Scripts;
 
 public sealed class RaceCountdownScript(IRaceService raceService, IMapCache mapCache) : HostedService
 {
-    private readonly Dictionary<Race, Timer> prepareTimers = [];
+    private readonly Dictionary<long, Timer> prepareTimers = [];
 
     public override Task StartAsync(CancellationToken ct)
     {
@@ -45,7 +45,7 @@ public sealed class RaceCountdownScript(IRaceService raceService, IMapCache mapC
             return;
         }
 
-        prepareTimers[race] = new Timer(
+        prepareTimers[race.Id] = new Timer(
             (state) => PrepareRace((Race)state!).SafeFireAndForget(exception => Alt.LogError(exception.ToString())),
             race,
             race.CountdownSeconds,
@@ -104,7 +104,7 @@ public sealed class RaceCountdownScript(IRaceService raceService, IMapCache mapC
 
     private async Task PrepareRace(Race race)
     {
-        if (prepareTimers.Remove(race, out var timer))
+        if (prepareTimers.Remove(race.Id, out var timer))
         {
             await AltAsync
                 .Do(() =>
