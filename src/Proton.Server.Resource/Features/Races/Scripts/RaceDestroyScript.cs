@@ -16,8 +16,7 @@ public sealed class RaceDestroyScript : IStartup
 
     private void HandleParticipantLeft(Race race, IPlayer player)
     {
-        var participants = raceService.GetParticipants(race.Id);
-        if (participants.Count == 0)
+        if (race.Participants.Count == 0)
         {
             raceService.DestroyRace(race);
         }

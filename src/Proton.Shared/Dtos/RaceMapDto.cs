@@ -1,3 +1,4 @@
+using AltV.Community.MValueAdapters.Generators;
 using AltV.Net;
 using AltV.Net.Elements.Args;
 using Proton.Shared.Adapters;
@@ -9,6 +10,7 @@ public sealed class RaceMapDto : IMValueConvertible
 {
     public long Id { get; set; }
     public string Name { get; set; } = string.Empty;
+    public string? IplName { get; set; }
     public List<SharedRaceStartPoint> StartPoints { get; set; } = null!;
     public List<SharedRacePoint> RacePoints { get; set; } = null!;
 
@@ -34,6 +36,9 @@ public sealed class RaceMapDto : IMValueConvertible
                     case "name":
                         dto.Name = reader.NextString();
                         break;
+                    case "iplName":
+                        dto.IplName = reader.NextString();
+                        break;
                     case "startPoints":
                         dto.StartPoints = DefaultMValueAdapters.GetArrayAdapter(SharedRaceStartPointMValueAdapter.Instance).FromMValue(reader);
                         break;
@@ -56,6 +61,11 @@ public sealed class RaceMapDto : IMValueConvertible
             writer.Value(value.Id);
             writer.Name("name");
             writer.Value(value.Name);
+            if (value.IplName is not null)
+            {
+                writer.Name("iplName");
+                writer.Value(value.IplName);
+            }
             writer.Name("startPoints");
             DefaultMValueAdapters.GetArrayAdapter(SharedRaceStartPointMValueAdapter.Instance).ToMValue(value.StartPoints ?? new List<SharedRaceStartPoint>(), writer);
             writer.Name("racePoints");

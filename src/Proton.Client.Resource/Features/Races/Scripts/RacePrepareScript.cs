@@ -2,6 +2,7 @@ using AltV.Net.Client;
 using AltV.Net.Elements.Entities;
 using AsyncAwaitBestPractices;
 using Proton.Client.Infrastructure.Interfaces;
+using Proton.Client.Resource.Features.Ipls.Abstractions;
 using Proton.Shared.Constants;
 using Proton.Shared.Contants;
 using Proton.Shared.Dtos;
@@ -13,11 +14,13 @@ public sealed class RacePrepareScript : IStartup
 {
 	private readonly IUiView uiView;
 	private readonly IRaceService raceService;
+	private readonly IIplService iplService;
 
-	public RacePrepareScript(IUiView uiView, IRaceService raceService)
+	public RacePrepareScript(IUiView uiView, IRaceService raceService, IIplService iplService)
 	{
 		this.uiView = uiView;
 		this.raceService = raceService;
+		this.iplService = iplService;
 
 		Alt.OnServer<RacePrepareDto>("race-prepare:mount", (dto) =>
 		{
@@ -30,8 +33,14 @@ public sealed class RacePrepareScript : IStartup
 	private async Task HandleServerMountAsync(RacePrepareDto dto)
 	{
 		var task = uiView.TryMountAsync(Route.RacePrepare);
+		Task? loadIplTask = default;
+		if (!string.IsNullOrEmpty(dto.IplName))
+		{
+			loadIplTask = iplService.LoadAsync(dto.IplName);
+		}
 
 		Alt.OnTick += DisableVehicleMovement;
+		raceService.IplName = dto.IplName;
 		raceService.RaceType = (RaceType)dto.RaceType;
 		raceService.Dimension = dto.Dimension;
 		raceService.EnsureRacePointsCapacity(dto.RacePoints.Count);
@@ -48,6 +57,7 @@ public sealed class RacePrepareScript : IStartup
 		{
 			uiView.Emit("race-prepare:setData", new RacePrepareDto { EndTime = dto.EndTime });
 		}
+		if (loadIplTask is not null) await loadIplTask;
 	}
 
 	private void HandleOnStarted(long _)

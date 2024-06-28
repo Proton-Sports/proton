@@ -110,6 +110,7 @@ public class CharacterCreatorScript : IStartup
         player.Visible = true;
         
         player.Emit("clientNametags:showNametags", true);
+        player.Invincible = true;
     }
 
     private async void CreateCharacter(IPlayer player, string appearanceJson)

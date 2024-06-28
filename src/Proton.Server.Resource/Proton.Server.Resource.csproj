@@ -4,13 +4,16 @@
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <LangVersion>Preview</LangVersion>
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <AnalysisLevel>latest-Default</AnalysisLevel>
+    <LangVersion>default</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Configuration.Binder" />
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" />
     <PackageReference Include="Microsoft.Extensions.Logging" />
     <PackageReference Include="BCrypt.Net-Next" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" />
@@ -20,9 +23,9 @@
     <ProjectReference Include="..\Proton.Server.Infrastructure\Proton.Server.Infrastructure.csproj" />
   </ItemGroup>
 
-    <PropertyGroup>
-	    <EFMigrationsAdditionalArgs>--msbuildprojectextensionspath "$(BaseIntermediateOutputPath)."</EFMigrationsAdditionalArgs>
-    </PropertyGroup>
+  <PropertyGroup>
+    <EFMigrationsAdditionalArgs>--msbuildprojectextensionspath "$(BaseIntermediateOutputPath)."</EFMigrationsAdditionalArgs>
+  </PropertyGroup>
 
   <ItemGroup>
     <Content Include="appsettings*.json">

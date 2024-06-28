@@ -17,9 +17,9 @@ public sealed class RaceHostScript : IStartup
 {
 	private readonly IRaceService raceService;
 	private readonly IDbContextFactory dbContextFactory;
-	private long counter = 0;
+	private long counter;
 
-	public RaceHostScript(IRaceService raceService, IDbContextFactory dbContextFactory)
+    public RaceHostScript(IRaceService raceService, IDbContextFactory dbContextFactory)
 	{
 		this.raceService = raceService;
 		this.dbContextFactory = dbContextFactory;

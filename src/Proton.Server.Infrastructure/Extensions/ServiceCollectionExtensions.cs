@@ -11,19 +11,20 @@ namespace Microsoft.Extensions.DependencyInjection;
 
 public static class ServiceCollectionExtensions
 {
-    public static IServiceCollection AddInfrastructure(this IServiceCollection serviceCollection, IConfiguration configuration)
+    public static IServiceCollection AddInfrastructure(this IServiceCollection serviceCollection)
     {
-        AddPersistence(serviceCollection, configuration);
+        AddPersistence(serviceCollection);
         serviceCollection.AddSingleton<INoClip, DefaultNoClip>();
         return serviceCollection;
     }
 
-    private static IServiceCollection AddPersistence(IServiceCollection serviceCollection, IConfiguration configuration)
+    private static IServiceCollection AddPersistence(IServiceCollection serviceCollection)
     {
         serviceCollection
             .AddOptions<PersistenceOptions>()
-            .Bind(configuration.GetSection(PersistenceOptions.Section))
-            .ValidateDataAnnotations();
+            .BindConfiguration(PersistenceOptions.Section)
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
         serviceCollection.AddPooledDbContextFactory<DefaultDbContext>((provider, builder) =>
         {
             var persistenceOptions = provider.GetRequiredService<IOptions<PersistenceOptions>>().Value;
