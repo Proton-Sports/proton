@@ -1,3 +1,4 @@
+using AltV.Net;
 using AltV.Net.Client;
 using AltV.Net.Client.Async;
 using AltV.Net.Client.Elements.Interfaces;
@@ -5,13 +6,14 @@ using AltV.Net.Elements.Args;
 using Microsoft.Extensions.DependencyInjection;
 using Proton.Client.Infrastructure.Extensions;
 using Proton.Client.Infrastructure.Interfaces;
-using Proton.Shared.Adapters;
-using Proton.Shared.Dtos;
 using Proton.Client.Resource.Authentication.Extentions;
 using Proton.Client.Resource.CharacterCreator.Extensions;
+using Proton.Client.Resource.Utils.Extentions;
+using Proton.Shared.Adapters;
+using Proton.Shared.Dtos;
+using Proton.Shared.Extensions;
 using Proton.Shared.Interfaces;
 using Proton.Shared.Models;
-using Proton.Shared.Extensions;
 
 namespace Proton.Server.Resource;
 
@@ -26,7 +28,9 @@ public sealed class ClientResource : AsyncResource
             .AddNoClips()
             .AddAuthentication()
             .AddRaceFeatures()
-            .AddCharacterCreator();
+            .AddUtils()
+            .AddCharacterCreator()
+            .AddIplFeatures();
         serviceProvider = serviceCollection.BuildServiceProvider();
     }
 

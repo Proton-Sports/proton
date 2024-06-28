@@ -1,7 +1,5 @@
 using AltV.Net.Client;
-using AltV.Net.Elements.Entities;
 using Proton.Client.Infrastructure.Interfaces;
-using Proton.Client.Resource.Features.Races.Models;
 using Proton.Shared.Contants;
 using Proton.Shared.Dtos;
 using Proton.Shared.Interfaces;
@@ -18,8 +16,6 @@ public sealed class RaceStartScript : IStartup
         this.raceService = raceService;
         this.uiView = uiView;
         Alt.OnServer<RaceStartDto>("race-start:start", HandleServerStart);
-        Alt.OnServer("race:destroy", RemoveRacePointHit);
-        Alt.OnServer("race:leave", RemoveRacePointHit);
         Alt.OnConnectionComplete += HandleConnectionComplete;
     }
 
@@ -42,44 +38,7 @@ public sealed class RaceStartScript : IStartup
                 }
             }
         }
-        raceService.Laps = dto.Laps;
-        raceService.CurrentLap = 0;
         raceService.Start();
-        raceService.RacePointHit += HandleRacePointHit;
         uiView.Unmount(Route.RacePrepare);
-    }
-
-    private void HandleRacePointHit(object state)
-    {
-        if (!raceService.TryGetPointResolver(out var resolver)) return;
-
-        var index = (int)state;
-        raceService.UnloadRacePoint(index);
-        var output = resolver.Resolve(new RacePointResolverInput
-        {
-            Index = index,
-            Lap = raceService.CurrentLap,
-            TotalLaps = raceService.Laps,
-            TotalPoints = raceService.RacePoints.Count
-        });
-        raceService.CurrentLap = output.Lap;
-
-        if (output.Finished)
-        {
-            Alt.EmitServer("race-start:finish");
-            raceService.Stop();
-            return;
-        }
-
-        raceService.LoadRacePoint(
-            output.NextIndex is null ? CheckpointType.CylinderCheckerboard : CheckpointType.CylinderDoubleArrow,
-            output.Index,
-            output.NextIndex
-        );
-    }
-
-    private void RemoveRacePointHit()
-    {
-        raceService.RacePointHit -= HandleRacePointHit;
     }
 }

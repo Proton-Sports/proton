@@ -26,12 +26,12 @@ public sealed class DefaultRaceService : IRaceService
         remove => hitEventHandlers.Remove(value);
     }
 
+    public long RaceId { get; set; }
     public int Dimension { get; set; }
-    public int Laps { get; set; }
-    public int CurrentLap { get; set; }
     public IReadOnlyList<RacePointDto> RacePoints => racePoints;
     public bool IsStarted => started;
     public RaceType RaceType { get; set; }
+    public string? IplName { get; set; }
 
     public DefaultRaceService(IEnumerable<IRacePointResolver> resolvers)
     {
@@ -65,12 +65,15 @@ public sealed class DefaultRaceService : IRaceService
         var checkpoint = Alt.CreateCheckpoint(
             checkpointType,
             point.Position - new Position(0, 0, point.Radius / 2),
-            nextPoint is null ? Position.Zero : nextPoint.Position - new Position(0, 0, nextPoint.Radius / 2),
+            nextPoint is null
+                ? Position.Zero
+                : nextPoint.Position - new Position(0, 0, nextPoint.Radius / 2),
             point.Radius,
             point.Radius,
             new Rgba(251, 251, 181, 128),
             new Rgba(0, 197, 252, 255),
-            512);
+            512
+        );
         checkpoint.Dimension = Dimension;
         var blip = Alt.CreatePointBlip(point.Position);
         blip.Sprite = BlipSpriteObjective;
@@ -87,8 +90,18 @@ public sealed class DefaultRaceService : IRaceService
         IBlip? nextBlip = default;
         if (nextPoint is not null)
         {
-            nextMarker = Alt.CreateMarker(MarkerType.MarkerCylinder, nextPoint.Position, new Rgba(251, 251, 181, 32), true, 512);
-            nextMarker.Scale = new Position(nextPoint.Radius * 2, nextPoint.Radius * 2, nextPoint.Radius);
+            nextMarker = Alt.CreateMarker(
+                MarkerType.MarkerCylinder,
+                nextPoint.Position,
+                new Rgba(251, 251, 181, 32),
+                true,
+                512
+            );
+            nextMarker.Scale = new Position(
+                nextPoint.Radius * 2,
+                nextPoint.Radius * 2,
+                nextPoint.Radius
+            );
             nextMarker.Dimension = Dimension;
             nextBlip = Alt.CreatePointBlip(nextPoint.Position);
             nextBlip.Sprite = BlipSpriteObjective;
@@ -102,7 +115,9 @@ public sealed class DefaultRaceService : IRaceService
 
     public bool UnloadRacePoint(int index)
     {
-        if (!indexToDataDictionary.TryGetValue(index, out var data)) return false;
+        Console.WriteLine("UnloadRacePoint " + index);
+        if (!indexToDataDictionary.TryGetValue(index, out var data))
+            return false;
         data.Destroy();
         indexToDataDictionary.Remove(index);
         return true;
@@ -128,7 +143,8 @@ public sealed class DefaultRaceService : IRaceService
     private void HandleTick()
     {
         var vehicle = Alt.LocalPlayer.Vehicle;
-        if (vehicle is null || hitEventHandlers.Count == 0) return;
+        if (vehicle is null || hitEventHandlers.Count == 0)
+            return;
 
         const float offset = 32f;
         var vehiclePosition = vehicle.Position;
@@ -155,7 +171,13 @@ public sealed class DefaultRaceService : IRaceService
         public readonly IMarker? NextMarker;
         public readonly IBlip? NextBlip;
 
-        public Data(ICheckpoint checkpoint, IBlip blip, IBlip arrowBlip, IMarker? nextMarker, IBlip? nextBlip)
+        public Data(
+            ICheckpoint checkpoint,
+            IBlip blip,
+            IBlip arrowBlip,
+            IMarker? nextMarker,
+            IBlip? nextBlip
+        )
         {
             Checkpoint = checkpoint;
             Blip = blip;

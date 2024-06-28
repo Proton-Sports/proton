@@ -5,72 +5,94 @@ using Microsoft.EntityFrameworkCore;
 using Proton.Server.Core.Interfaces;
 using Proton.Server.Resource.Features.Races.Constants;
 using Proton.Server.Resource.Features.Races.Models;
+using Proton.Server.Resource.SharedKernel;
 using Proton.Shared.Dtos;
-using Proton.Shared.Interfaces;
 
 namespace Proton.Server.Resource.Features.Races.Scripts;
 
-public sealed class RaceCountdownScript : IStartup
+public sealed class RaceCountdownScript(
+    IRaceService raceService,
+    IDbContextFactory dbContextFactory
+) : HostedService
 {
-    private readonly IRaceService raceService;
-    private readonly IDbContextFactory dbContextFactory;
-    private readonly Timer timer;
+    private Timer? timer;
 
-    public RaceCountdownScript(IRaceService raceService, IDbContextFactory dbContextFactory)
+    public override Task StartAsync(CancellationToken ct)
     {
-        this.raceService = raceService;
-        this.dbContextFactory = dbContextFactory;
-
         raceService.ParticipantJoined += HandleParticipantJoined;
         raceService.ParticipantLeft += HandleParticipantLeft;
         raceService.RacePrepared += HandleRacePrepared;
         Alt.OnPlayerDisconnect += HandlePlayerDisconnect;
         AltAsync.OnClient<IPlayer, Task>("race-countdown:getData", HandleGetDataAsync);
-        timer = new Timer((_) => HandleTimerTick(), null, 1000, Timeout.Infinite);
+        timer = new Timer((_) => HandleTimerTick(), null, 1000, 1000);
+        return Task.CompletedTask;
+    }
+
+    public override async Task StopAsync(CancellationToken ct)
+    {
+        if (timer is not null)
+        {
+            await timer.DisposeAsync().ConfigureAwait(false);
+        }
     }
 
     private async Task HandleGetDataAsync(IPlayer player)
     {
-        if (!raceService.TryGetRaceByParticipant(player, out var race)) return;
+        if (!raceService.TryGetRaceByParticipant(player, out var race))
+            return;
 
         await using var ctx = await dbContextFactory.CreateDbContextAsync().ConfigureAwait(false);
-        var mapName = await ctx.RaceMaps
-            .Where(x => x.Id == race.MapId)
+        var mapName = await ctx
+            .RaceMaps.Where(x => x.Id == race.MapId)
             .Select(x => x.Name)
             .FirstOrDefaultAsync()
             .ConfigureAwait(false);
-        if (mapName is null) return;
+        if (mapName is null)
+            return;
 
-        player.Emit("race-countdown:getData", new RaceCountdownDataDto
-        {
-            MapName = mapName,
-            EndTime = race.CreatedTime.AddSeconds(race.CountdownSeconds).ToUnixTimeMilliseconds(),
-            Participants = raceService.GetParticipants(race.Id).Count,
-            MaxParticipants = race.MaxParticipants
-        });
+        player.Emit(
+            "race-countdown:getData",
+            new RaceCountdownDataDto
+            {
+                MapName = mapName,
+                EndTime = race
+                    .CreatedTime.AddSeconds(race.CountdownSeconds)
+                    .ToUnixTimeMilliseconds(),
+                Participants = race.Participants.Count,
+                MaxParticipants = race.MaxParticipants
+            }
+        );
     }
 
     private void HandleParticipantJoined(Race race, IPlayer player)
     {
         player.Emit("race-countdown:mount");
 
-        var participants = raceService.GetParticipants(race.Id);
-        Alt.EmitClients([.. participants.Where(x => x != player).Select(x => x.Player)], "race-countdown:setParticipants", participants.Count);
+        var participants = race.Participants;
+        Alt.EmitClients(
+            [.. race.Participants.Where(x => x != player).Select(x => x.Player)],
+            "race-countdown:setParticipants",
+            participants.Count
+        );
     }
 
     private void HandleParticipantLeft(Race race, IPlayer player)
     {
         player.Emit("race-countdown:unmount");
 
-        var participants = raceService.GetParticipants(race.Id);
-        Alt.EmitClients([.. participants.Where(x => x != player).Select(x => x.Player)], "race-countdown:setParticipants", participants.Count);
+        var participants = race.Participants;
+        Alt.EmitClients(
+            [.. participants.Where(x => x != player).Select(x => x.Player)],
+            "race-countdown:setParticipants",
+            participants.Count
+        );
     }
 
     private void HandlePlayerDisconnect(IPlayer player, string reason)
     {
         if (raceService.TryGetRaceByParticipant(player, out var race))
         {
-            foreach (var participant in raceService.GetParticipants(race.Id))
+            foreach (var participant in race.Participants)
             {
                 if (participant.Player == player)
                 {
@@ -84,7 +106,11 @@ public sealed class RaceCountdownScript : IStartup
     private void HandleTimerTick()
     {
         var now = DateTimeOffset.UtcNow;
-        foreach (var race in raceService.Races.Where(x => x.Status == RaceStatus.Open && now >= x.CreatedTime.AddSeconds(x.CountdownSeconds)))
+        foreach (
+            var race in raceService.Races.Where(x =>
+                x.Status == RaceStatus.Open && now >= x.CreatedTime.AddSeconds(x.CountdownSeconds)
+            )
+        )
         {
             AltAsync.Do(() =>
             {
@@ -92,12 +118,11 @@ public sealed class RaceCountdownScript : IStartup
                 raceService.Prepare(race);
             });
         }
-        timer.Change(1000, Timeout.Infinite);
     }
 
     private Task HandleRacePrepared(Race race)
     {
-        var participants = raceService.GetParticipants(race.Id);
+        var participants = race.Participants;
         if (participants.Count == 0)
         {
             raceService.RemoveRace(race);

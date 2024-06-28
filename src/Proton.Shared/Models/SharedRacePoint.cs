@@ -1,3 +1,4 @@
+using AltV.Community.MValueAdapters.Generators;
 using AltV.Net;
 using AltV.Net.Data;
 using Proton.Shared.Adapters;
