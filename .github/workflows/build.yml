@@ -1,0 +1,38 @@
+name: Build and Push | Handlers
+on: [push]
+
+env:
+  PRODUCTION_BRANCH: main
+
+jobs:
+  build-server: # run this job on every push
+    name: Build Server
+    uses: ./.github/workflows/infra.yml
+    secrets: inherit
+    with:
+      job: build-server
+
+  build-client: # run this job on every push
+    name: Build Client
+    uses: ./.github/workflows/infra.yml
+    secrets: inherit
+    with:
+      job: build-client
+
+  upload-server: # only run this job when its pushed to main
+    needs: build-server
+    if: ${{ github.ref_name == github.env.PRODUCTION_BRANCH}}
+    name: Deploy Server
+    uses: ./.github/workflows/infra.yml
+    secrets: inherit
+    with:
+      job: deploy-server
+
+  upload-client: # only run this job when its pushed to main
+    needs: build-client
+    if: ${{ github.ref_name == github.env.PRODUCTION_BRANCH}}
+    name: Deploy Client
+    uses: ./.github/workflows/infra.yml
+    secrets: inherit
+    with:
+      job: deploy-client

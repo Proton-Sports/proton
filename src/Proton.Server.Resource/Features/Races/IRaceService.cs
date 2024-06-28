@@ -10,6 +10,7 @@ public interface IRaceService
     event Func<Race, Task>? RacePrepared;
     event Func<Race, Task>? RaceStarted;
     event Action<Race>? RaceCreated;
+    event Action<RaceParticipant>? ParticipantFinished;
 
     IReadOnlyCollection<Race> Races { get; }
 
@@ -20,7 +21,7 @@ public interface IRaceService
     bool AddParticipant(long raceId, RaceParticipant participant);
     bool RemoveParticipant(RaceParticipant participant);
     bool RemoveParticipantByPlayer(IPlayer player);
-    IReadOnlyCollection<RaceParticipant> GetParticipants(long raceId);
     void Prepare(Race race);
     void Start(Race race);
+    void Finish(RaceParticipant participant);
 }

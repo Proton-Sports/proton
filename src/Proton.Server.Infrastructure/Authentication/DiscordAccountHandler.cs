@@ -6,7 +6,10 @@ using Proton.Server.Infrastructure.Persistence;
 
 namespace Proton.Server.Infrastructure.Authentication
 {
-    public class DiscordAccountHandler(DiscordRestClient restClient, IDbContextFactory<DefaultDbContext> defaultDbFactory)
+    public class DiscordAccountHandler(
+        DiscordRestClient restClient,
+        IDbContextFactory<DefaultDbContext> defaultDbFactory
+    )
     {
         private readonly DiscordRestClient restClient = restClient;
         private readonly IDbContextFactory<DefaultDbContext> defaultDbFactory = defaultDbFactory;
@@ -35,12 +38,14 @@ namespace Proton.Server.Infrastructure.Authentication
             else
             {
                 string IPv6 = Ip.Replace(ipSplited.Last().ToString(), "");
-                defaultDb.Sessions.Add(new Session
-                {
-                    UserId = user.Id,
-                    Ipv4 = ipSplited.Last().ToString(),
-                    Ipv6 = IPv6
-                });
+                defaultDb.Sessions.Add(
+                    new Session
+                    {
+                        UserId = user.Id,
+                        Ipv4 = ipSplited.Last().ToString(),
+                        Ipv6 = IPv6
+                    }
+                );
 
                 await defaultDb.SaveChangesAsync();
                 return user.Id;
@@ -50,11 +55,7 @@ namespace Proton.Server.Infrastructure.Authentication
         public async Task Register(string Username)
         {
             var defaultDb = defaultDbFactory.CreateDbContext();
-            defaultDb.Users.Add(new User
-            {
-                DiscordId = GetCurrentUser().Id,
-                Username = Username
-            });
+            defaultDb.Users.Add(new User { DiscordId = GetCurrentUser().Id, Username = Username });
 
             await defaultDb.SaveChangesAsync();
         }
@@ -69,8 +70,8 @@ namespace Proton.Server.Infrastructure.Authentication
             }
             else
             {
-                var activeSession = defaultDb.Sessions.Where(x => x.UserId == user.Id &&
-                    x.IsActive)
+                var activeSession = defaultDb
+                    .Sessions.Where(x => x.UserId == user.Id && x.IsActive)
                     .OrderByDescending(x => x.Id)
                     .First();
                 if (activeSession is not null)
@@ -84,7 +85,6 @@ namespace Proton.Server.Infrastructure.Authentication
                 {
                     await Console.Out.WriteLineAsync("no session found");
                 }
-
             }
         }
     }
