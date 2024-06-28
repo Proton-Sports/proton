@@ -88,6 +88,8 @@ public class AuthenticationScript : IStartup
         {
             p.ProtonId = id;
             p.Emit("authentication:login:ok");
+            p.SetStreamSyncedMetaData("playerName", p.SocialClubName);
+            
             Alt.Emit("auth:firstSignIn", p);
         }
         else

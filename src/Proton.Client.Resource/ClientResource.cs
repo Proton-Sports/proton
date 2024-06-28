@@ -8,6 +8,7 @@ using Proton.Client.Infrastructure.Extensions;
 using Proton.Client.Infrastructure.Interfaces;
 using Proton.Client.Resource.Authentication.Extentions;
 using Proton.Client.Resource.CharacterCreator.Extensions;
+using Proton.Client.Resource.Nametags.Extensions;
 using Proton.Client.Resource.Hud.Extensions;
 using Proton.Client.Resource.Utils.Extentions;
 using Proton.Shared.Adapters;
@@ -29,6 +30,7 @@ public sealed class ClientResource : AsyncResource
             .AddNoClips()
             .AddAuthentication()
             .AddRaceFeatures()
+            .AddNametags()
             .AddHud()
             .AddUtils()
             .AddCharacterCreator()
