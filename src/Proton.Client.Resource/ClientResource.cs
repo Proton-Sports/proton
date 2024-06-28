@@ -29,7 +29,7 @@ public sealed class ClientResource : AsyncResource
             .AddNoClips()
             .AddAuthentication()
             .AddRaceFeatures()
-            .AddHud();
+            .AddHud()
             .AddUtils()
             .AddCharacterCreator()
             .AddIplFeatures();
