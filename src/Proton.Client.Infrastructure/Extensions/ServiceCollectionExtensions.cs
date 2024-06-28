@@ -1,9 +1,10 @@
 using AltV.Net.Client;
+using Microsoft.Extensions.DependencyInjection;
 using Proton.Client.Core.Interfaces;
 using Proton.Client.Infrastructure.Interfaces;
 using Proton.Client.Infrastructure.Services;
 
-namespace Microsoft.Extensions.DependencyInjection;
+namespace Proton.Client.Infrastructure.Extensions;
 
 public static class ServiceCollectionExtensions
 {

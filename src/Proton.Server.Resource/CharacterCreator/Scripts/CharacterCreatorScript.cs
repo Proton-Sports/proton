@@ -19,9 +19,7 @@ public class CharacterCreatorScript : IStartup
     {
         this.characterHandler = characterHandler;
         
-        AltAsync.OnClient<IPlayer>("server:testCharCreator", StartCharacterCreator);
-        AltAsync.OnClient<IPlayer, string>("characterServer:setAppearance", SetAppearance);
-
+        AltAsync.OnClient<IPlayer, string>("characterServer:setAppearance", CreateCharacter);
         AltAsync.OnServer<IPlayer>("auth:firstSignIn", CheckAppearance);
     }
 
@@ -35,7 +33,13 @@ public class CharacterCreatorScript : IStartup
         if (hasCharacter)
         {
             var userCharacter = await characterHandler.GetByUserId(protonPlayer.ProtonId);
-            SetAppearance(player, JsonSerializer.Serialize(userCharacter));
+            if (userCharacter == null)
+            {
+                player.Kick("Invalid character. Please try again.");
+                return;
+            }
+            
+            SetAppearance(protonPlayer, userCharacter);
         }
         else
         {
@@ -43,35 +47,8 @@ public class CharacterCreatorScript : IStartup
         }
     }
 
-    private async void SetAppearance(IPlayer player, string appearanceJson)
+    private void SetAppearance(PPlayer player, Character characterAppearance)
     {
-        var isValid = player.Exists;
-        if (!isValid) return;
-        
-        var characterAppearance = JsonSerializer.Deserialize<Character>(appearanceJson, new JsonSerializerOptions
-        {
-            PropertyNameCaseInsensitive = true,
-            NumberHandling = JsonNumberHandling.AllowReadingFromString
-        });
-        
-        if (characterAppearance == null)
-        {
-            player.Kick("Invalid appearance. Please try again.");
-            return;
-        }
-
-        if (player is PPlayer protonPlayer)
-            characterAppearance.UserId =
-                protonPlayer.ProtonId;
-
-        await characterHandler.Add(characterAppearance);
-        
-        player.Dimension = 0;
-        player.Frozen = false;
-        player.Position = new Position(0, 0, 72);
-        player.Rotation = Rotation.Zero;
-        player.Visible = true;
-        
         player.Model = characterAppearance.CharacterGender switch
         {
             0 => (uint)PedModel.FreemodeFemale01,
@@ -107,7 +84,55 @@ public class CharacterCreatorScript : IStartup
         
         player.HairColor = (byte)characterAppearance.FirstHairColor;
         player.HairHighlightColor = (byte)characterAppearance.SecondHairColor;
+
+        switch (player.Model)
+        {
+            case (uint)PedModel.FreemodeFemale01:
+                player.SetClothes(4, 68, 3, 0);
+                player.SetClothes(11, 144, 3, 0);
+                player.SetClothes(6, 47, 3, 0);
+                player.SetClothes(3, 17, 0, 0);
+                player.SetClothes(8, 34, 0, 0);
+                break;
+            case (uint)PedModel.FreemodeMale01:
+                player.SetClothes(4, 66, 3, 0);
+                player.SetClothes(11, 147, 3, 0);
+                player.SetClothes(6, 46, 3, 0);
+                player.SetClothes(3, 165, 16, 0);
+                player.SetClothes(8, 15, 0, 0);
+                break;
+        }
         
+        player.Dimension = 0;
+        player.Frozen = false;
+        player.Position = new Position(486.417f, -3339.692f, 6.070f);
+        player.Rotation = Rotation.Zero;
+        player.Visible = true;
+    }
+
+    private async void CreateCharacter(IPlayer player, string appearanceJson)
+    {
+        var isValid = player.Exists;
+        if (!isValid) return;
+        
+        var characterAppearance = JsonSerializer.Deserialize<Character>(appearanceJson, new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true,
+            NumberHandling = JsonNumberHandling.AllowReadingFromString
+        });
+        
+        if (characterAppearance == null)
+        {
+            player.Kick("Invalid appearance. Please try again.");
+            return;
+        }
+
+        if (player is not PPlayer protonPlayer) return;
+
+        characterAppearance.UserId = protonPlayer.ProtonId;
+        await characterHandler.Add(characterAppearance);
+        
+        SetAppearance(protonPlayer, characterAppearance);
         player.Emit("characterClient:stopCharacterCreator");
     }
 

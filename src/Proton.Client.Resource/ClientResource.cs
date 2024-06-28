@@ -4,6 +4,7 @@ using AltV.Net.Client.Async;
 using AltV.Net.Client.Elements.Interfaces;
 using AltV.Net.Elements.Args;
 using Microsoft.Extensions.DependencyInjection;
+using Proton.Client.Infrastructure.Extensions;
 using Proton.Client.Infrastructure.Interfaces;
 using Proton.Client.Resource.Authentication.Extentions;
 using Proton.Client.Resource.CharacterCreator.Extensions;
