@@ -42,14 +42,17 @@ public class CharacterCreatorScript : IStartup
         this.uiView.Mounting += HandleMounting;
         this.uiView.On<bool>("characterClient:mouseEntered", MouseEntered);
 
-        this.uiView.OnMount(Route.CharacterCreator, () =>
-        {
-            uiView.Focus();
+        this.uiView.OnMount(
+            Route.CharacterCreator,
+            () =>
+            {
+                uiView.Focus();
 
-            Alt.Natives.DoScreenFadeIn(1000);
-            Alt.Natives.DisplayRadar(false);
-            Alt.ShowCursor(true);
-        });
+                Alt.Natives.DoScreenFadeIn(1000);
+                Alt.Natives.DisplayRadar(false);
+                Alt.ShowCursor(true);
+            }
+        );
     }
 
     private void HandleMounting(Route route, MountingEventArgs e)
@@ -86,8 +89,10 @@ public class CharacterCreatorScript : IStartup
 
     private void DeleteCharacter()
     {
-        if (characterPed == null) return;
-        if (!characterPed.Exists) return;
+        if (characterPed == null)
+            return;
+        if (!characterPed.Exists)
+            return;
 
         characterPed.Destroy();
     }
@@ -95,7 +100,8 @@ public class CharacterCreatorScript : IStartup
     private void DeleteCharacterCreatorCamera()
     {
         var doesCameraExists = Alt.Natives.DoesCamExist(characterCamera);
-        if (!doesCameraExists) return;
+        if (!doesCameraExists)
+            return;
 
         Alt.Natives.SetCamActive(characterCamera, false);
         Alt.Natives.RenderScriptCams(false, false, 0, true, false, 0);
@@ -113,10 +119,12 @@ public class CharacterCreatorScript : IStartup
 
     private void SetGender(int selectedModel)
     {
-        if (characterPed == null) return;
+        if (characterPed == null)
+            return;
 
         var doesEntityExists = characterPed.Exists;
-        if (!doesEntityExists) return;
+        if (!doesEntityExists)
+            return;
 
         uint selectedModelUint = selectedModel switch
         {
@@ -126,17 +134,20 @@ public class CharacterCreatorScript : IStartup
         };
 
         var currentModel = characterPed.Model;
-        if (currentModel == selectedModelUint) return;
+        if (currentModel == selectedModelUint)
+            return;
 
         CreateCharacter(selectedModelUint);
     }
 
     private void SetCharacterClothes(uint characterModel)
     {
-        if (characterPed == null) return;
+        if (characterPed == null)
+            return;
 
         var doesEntityExist = characterPed.Exists;
-        if (!doesEntityExist) return;
+        if (!doesEntityExist)
+            return;
 
         switch (characterModel)
         {
@@ -159,16 +170,21 @@ public class CharacterCreatorScript : IStartup
 
     private void SetAppearance(string appearanceJson)
     {
-        if (characterPed == null) return;
+        if (characterPed == null)
+            return;
 
         var doesEntityExist = characterPed.Exists;
-        if (!doesEntityExist) return;
+        if (!doesEntityExist)
+            return;
 
-        var characterAppearance = JsonSerializer.Deserialize<Character>(appearanceJson, new JsonSerializerOptions
-        {
-            PropertyNameCaseInsensitive = true,
-            NumberHandling = JsonNumberHandling.AllowReadingFromString
-        });
+        var characterAppearance = JsonSerializer.Deserialize<Character>(
+            appearanceJson,
+            new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true,
+                NumberHandling = JsonNumberHandling.AllowReadingFromString
+            }
+        );
 
         if (characterAppearance == null)
         {
@@ -177,31 +193,77 @@ public class CharacterCreatorScript : IStartup
         }
 
         Alt.Natives.SetPedHeadBlendData(characterPed.ScriptId, 0, 0, 0, 0, 0, 0, 0, 0, 0, false);
-        Alt.Natives.SetPedHeadBlendData(characterPed.ScriptId, characterAppearance.FaceFather, characterAppearance.FaceMother,
-            0, characterAppearance.SkinFather, characterAppearance.SkinMother, 0,
-            characterAppearance.FaceMix, characterAppearance.SkinMix, 0, false);
+        Alt.Natives.SetPedHeadBlendData(
+            characterPed.ScriptId,
+            characterAppearance.FaceFather,
+            characterAppearance.FaceMother,
+            0,
+            characterAppearance.SkinFather,
+            characterAppearance.SkinMother,
+            0,
+            characterAppearance.FaceMix,
+            characterAppearance.SkinMix,
+            0,
+            false
+        );
 
         foreach (var characterAppearanceFaceFeature in characterAppearance.FaceFeatures)
         {
-            Alt.Natives.SetPedMicroMorph(characterPed.ScriptId, characterAppearanceFaceFeature.Index, characterAppearanceFaceFeature.Value);
+            Alt.Natives.SetPedMicroMorph(
+                characterPed.ScriptId,
+                characterAppearanceFaceFeature.Index,
+                characterAppearanceFaceFeature.Value
+            );
         }
 
         foreach (var characterAppearanceFaceOverlay in characterAppearance.FaceOverlays)
         {
-            Alt.Natives.SetPedHeadOverlay(characterPed.ScriptId, characterAppearanceFaceOverlay.Index, characterAppearanceFaceOverlay.Value, characterAppearanceFaceOverlay.Opacity);
+            Alt.Natives.SetPedHeadOverlay(
+                characterPed.ScriptId,
+                characterAppearanceFaceOverlay.Index,
+                characterAppearanceFaceOverlay.Value,
+                characterAppearanceFaceOverlay.Opacity
+            );
 
             if (characterAppearanceFaceOverlay.HasColor)
             {
-                Alt.Natives.SetPedHeadOverlayTint(characterPed.ScriptId, characterAppearanceFaceOverlay.Index, 2, characterAppearanceFaceOverlay.FirstColor, characterAppearanceFaceOverlay.FirstColor);
+                Alt.Natives.SetPedHeadOverlayTint(
+                    characterPed.ScriptId,
+                    characterAppearanceFaceOverlay.Index,
+                    2,
+                    characterAppearanceFaceOverlay.FirstColor,
+                    characterAppearanceFaceOverlay.FirstColor
+                );
             }
         }
 
         Alt.Natives.SetPedComponentVariation(characterPed.ScriptId, 2, characterAppearance.HairDrawable, 0, 0);
-        Alt.Natives.SetPedHairTint(characterPed.ScriptId, characterAppearance.FirstHairColor, characterAppearance.SecondHairColor);
-        Alt.Natives.SetPedHeadOverlay(characterPed.ScriptId, 1, characterAppearance.FacialHair, characterAppearance.FacialHairOpacity);
-        Alt.Natives.SetPedHeadOverlayTint(characterPed.ScriptId, 1, 1, characterAppearance.FirstFacialHairColor, characterAppearance.SecondFacialHairColor);
+        Alt.Natives.SetPedHairTint(
+            characterPed.ScriptId,
+            characterAppearance.FirstHairColor,
+            characterAppearance.SecondHairColor
+        );
+        Alt.Natives.SetPedHeadOverlay(
+            characterPed.ScriptId,
+            1,
+            characterAppearance.FacialHair,
+            characterAppearance.FacialHairOpacity
+        );
+        Alt.Natives.SetPedHeadOverlayTint(
+            characterPed.ScriptId,
+            1,
+            1,
+            characterAppearance.FirstFacialHairColor,
+            characterAppearance.SecondFacialHairColor
+        );
         Alt.Natives.SetPedHeadOverlay(characterPed.ScriptId, 2, characterAppearance.Eyebrows, 1);
-        Alt.Natives.SetPedHeadOverlayTint(characterPed.ScriptId, 2, 1, characterAppearance.EyebrowsColor, characterAppearance.EyebrowsColor);
+        Alt.Natives.SetPedHeadOverlayTint(
+            characterPed.ScriptId,
+            2,
+            1,
+            characterAppearance.EyebrowsColor,
+            characterAppearance.EyebrowsColor
+        );
         Alt.Natives.SetHeadBlendEyeColor(characterPed.ScriptId, characterAppearance.EyeColor);
     }
 
@@ -228,7 +290,8 @@ public class CharacterCreatorScript : IStartup
             characterPed.Model = characterModel;
             SetCharacterClothes(characterModel);
 
-            Alt.Natives.TaskPlayAnim(characterPed.ScriptId,
+            Alt.Natives.TaskPlayAnim(
+                characterPed.ScriptId,
                 "anim@heists@heist_corona@single_team",
                 "single_team_loop_boss",
                 1,
@@ -236,19 +299,32 @@ public class CharacterCreatorScript : IStartup
                 -1,
                 1,
                 0,
-                false, false, false);
+                false,
+                false,
+                false
+            );
 
             return;
         }
 
-        characterPed = Alt.CreateLocalPed(characterModel, Alt.LocalPlayer.Dimension, locationPosition, new Rotation(0, 0, (float) 3.14), false, 0);
-        characterPed.Rotation = new Rotation(0, 0, (float) 3.14);
+        characterPed = Alt.CreateLocalPed(
+            characterModel,
+            Alt.LocalPlayer.Dimension,
+            locationPosition,
+            new Rotation(0, 0, (float)3.14),
+            false,
+            0
+        );
+        characterPed.Rotation = new Rotation(0, 0, (float)3.14);
         characterPed.Frozen = true;
 
         Alt.Natives.RequestAnimDict("anim@heists@heist_corona@single_team");
-        await AltAsync.WaitFor(() => Alt.Natives.HasAnimDictLoaded("anim@heists@heist_corona@single_team") && characterPed.Spawned);
+        await AltAsync.WaitFor(
+            () => Alt.Natives.HasAnimDictLoaded("anim@heists@heist_corona@single_team") && characterPed.Spawned
+        );
 
-        Alt.Natives.TaskPlayAnim(characterPed.ScriptId,
+        Alt.Natives.TaskPlayAnim(
+            characterPed.ScriptId,
             "anim@heists@heist_corona@single_team",
             "single_team_loop_boss",
             1,
@@ -256,7 +332,10 @@ public class CharacterCreatorScript : IStartup
             -1,
             1,
             0,
-            false, false, false);
+            false,
+            false,
+            false
+        );
 
         SetCharacterClothes(characterModel);
     }
@@ -266,15 +345,29 @@ public class CharacterCreatorScript : IStartup
         startPosition = locationPosition;
 
         var doesCameraExists = Alt.Natives.DoesCamExist(characterCamera);
-        if (doesCameraExists) return;
+        if (doesCameraExists)
+            return;
 
         var forwardVector = Alt.Natives.GetEntityForwardVector(Alt.LocalPlayer);
-        var forwardCameraPosition = new Position((float)(startPosition.X + forwardVector.X * 1.2),
-            (float)(startPosition.Y + forwardVector.Y * 1.2), startPosition.Z + zPos);
+        var forwardCameraPosition = new Position(
+            (float)(startPosition.X + forwardVector.X * 1.2),
+            (float)(startPosition.Y + forwardVector.Y * 1.2),
+            startPosition.Z + zPos
+        );
 
         startCameraPosition = forwardCameraPosition;
-        characterCamera = Alt.Natives.CreateCamWithParams("DEFAULT_SCRIPTED_CAMERA", forwardCameraPosition.X,
-            forwardCameraPosition.Y, forwardCameraPosition.Z, 0, 0, 0, cameraFov, true, 0);
+        characterCamera = Alt.Natives.CreateCamWithParams(
+            "DEFAULT_SCRIPTED_CAMERA",
+            forwardCameraPosition.X,
+            forwardCameraPosition.Y,
+            forwardCameraPosition.Z,
+            0,
+            0,
+            0,
+            cameraFov,
+            true,
+            0
+        );
 
         Alt.Natives.PointCamAtCoord(characterCamera, startPosition.X, startPosition.Y, startPosition.Z + zPos);
         Alt.Natives.SetCamActive(characterCamera, true);
@@ -285,10 +378,12 @@ public class CharacterCreatorScript : IStartup
 
     private void CameraControls()
     {
-        if (characterPed == null) return;
+        if (characterPed == null)
+            return;
 
         var doesEntityExist = characterPed.Exists;
-        if (!doesEntityExist) return;
+        if (!doesEntityExist)
+            return;
 
         Alt.Natives.DisableControlAction(0, 0, true);
         Alt.Natives.DisableControlAction(0, 1, true);
@@ -350,7 +445,12 @@ public class CharacterCreatorScript : IStartup
                 zPos = 1.2f;
             }
 
-            Alt.Natives.SetCamCoord(characterCamera, startCameraPosition.X, startCameraPosition.Y, startPosition.Z + zPos);
+            Alt.Natives.SetCamCoord(
+                characterCamera,
+                startCameraPosition.X,
+                startCameraPosition.Y,
+                startPosition.Z + zPos
+            );
             Alt.Natives.PointCamAtCoord(characterCamera, startPosition.X, startPosition.Y, startPosition.Z + zPos);
             Alt.Natives.SetCamActive(characterCamera, true);
             Alt.Natives.RenderScriptCams(true, false, 0, true, false, 0);
@@ -365,7 +465,12 @@ public class CharacterCreatorScript : IStartup
                 zPos = -1.2f;
             }
 
-            Alt.Natives.SetCamCoord(characterCamera, startCameraPosition.X, startCameraPosition.Y, startPosition.Z + zPos);
+            Alt.Natives.SetCamCoord(
+                characterCamera,
+                startCameraPosition.X,
+                startCameraPosition.Y,
+                startPosition.Z + zPos
+            );
             Alt.Natives.PointCamAtCoord(characterCamera, startPosition.X, startPosition.Y, startPosition.Z + zPos);
             Alt.Natives.SetCamActive(characterCamera, true);
             Alt.Natives.RenderScriptCams(true, false, 0, true, false, 0);
@@ -377,16 +482,22 @@ public class CharacterCreatorScript : IStartup
             {
                 const double degToRadians = 2 * (Math.PI / 180);
                 oldHeading -= (float)degToRadians;
-                characterPed.Rotation =
-                    new Rotation(characterPed.Rotation.Roll, characterPed.Rotation.Pitch, oldHeading);
+                characterPed.Rotation = new Rotation(
+                    characterPed.Rotation.Roll,
+                    characterPed.Rotation.Pitch,
+                    oldHeading
+                );
             }
 
             if (cursorX > screenResolution.X / 2)
             {
                 const double degToRadians = 2 * (Math.PI / 180);
                 oldHeading += (float)degToRadians;
-                characterPed.Rotation =
-                    new Rotation(characterPed.Rotation.Roll, characterPed.Rotation.Pitch, oldHeading);
+                characterPed.Rotation = new Rotation(
+                    characterPed.Rotation.Roll,
+                    characterPed.Rotation.Pitch,
+                    oldHeading
+                );
             }
         }
 
@@ -394,23 +505,14 @@ public class CharacterCreatorScript : IStartup
         {
             const double degToRadians = 2 * (Math.PI / 180);
             oldHeading += (float)degToRadians;
-            characterPed.Rotation =
-                new Rotation(characterPed.Rotation.Roll, characterPed.Rotation.Pitch, oldHeading);
+            characterPed.Rotation = new Rotation(characterPed.Rotation.Roll, characterPed.Rotation.Pitch, oldHeading);
         }
 
         if (Alt.Natives.IsDisabledControlPressed(0, 34))
         {
             const double degToRadians = 2 * (Math.PI / 180);
             oldHeading -= (float)degToRadians;
-            characterPed.Rotation =
-                new Rotation(characterPed.Rotation.Roll, characterPed.Rotation.Pitch, oldHeading);
+            characterPed.Rotation = new Rotation(characterPed.Rotation.Roll, characterPed.Rotation.Pitch, oldHeading);
         }
-<<<<<<< HEAD
-
-        Alt.Natives.ClearPedTasksImmediately(Alt.LocalPlayer);
-        Alt.Natives.ClearPedSecondaryTask(characterPed.ScriptId);
-        Alt.Natives.ClearPedTasksImmediately(characterPed.ScriptId);
-=======
->>>>>>> main
     }
 }
