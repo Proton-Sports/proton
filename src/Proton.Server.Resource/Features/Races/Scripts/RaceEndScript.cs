@@ -1,5 +1,5 @@
 using AltV.Net;
-using Proton.Server.Resource.Features.Races.Constants;
+using Proton.Server.Resource.Features.Races.Abstractions;
 using Proton.Server.Resource.SharedKernel;
 
 namespace Proton.Server.Resource.Features.Races.Scripts;
@@ -32,18 +32,18 @@ public sealed class RaceEndScript(IRaceService raceService) : HostedService
             foreach (var participant in participants)
             {
                 if (participant.FinishTime == 0 || participant.FinishTime > earlistFinishTime)
+                {
                     continue;
+                }
+
                 earlistFinishTime = participant.FinishTime;
             }
             if (earlistFinishTime == long.MaxValue)
+            {
                 continue;
+            }
 
-            if (
-                now
-                >= DateTimeOffset
-                    .FromUnixTimeMilliseconds(earlistFinishTime)
-                    .AddSeconds(race.Duration)
-            )
+            if (now >= DateTimeOffset.FromUnixTimeMilliseconds(earlistFinishTime).AddSeconds(race.Duration))
             {
                 Alt.EmitClients([.. participants.Select(x => x.Player)], "race:destroy");
                 race.Status = RaceStatus.Ended;

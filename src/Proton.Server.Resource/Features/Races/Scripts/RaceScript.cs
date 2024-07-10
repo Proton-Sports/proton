@@ -1,6 +1,6 @@
 using AltV.Net;
 using AltV.Net.Elements.Entities;
-using Proton.Server.Resource.Features.Races.Models;
+using Proton.Server.Resource.Features.Races.Abstractions;
 using Proton.Shared.Interfaces;
 
 namespace Proton.Server.Resource.Features.Races.Scripts;

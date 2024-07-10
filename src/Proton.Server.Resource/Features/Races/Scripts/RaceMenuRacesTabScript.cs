@@ -5,7 +5,7 @@ using AltV.Net.Elements.Entities;
 using AsyncAwaitBestPractices;
 using Microsoft.EntityFrameworkCore;
 using Proton.Server.Core.Interfaces;
-using Proton.Server.Resource.Features.Races.Models;
+using Proton.Server.Resource.Features.Races.Abstractions;
 using Proton.Shared.Dtos;
 using Proton.Shared.Interfaces;
 
@@ -38,64 +38,87 @@ public sealed class RaceMenuRacesTabScript : IStartup
 
         var races = raceService.Races;
         var mapIds = races.Select(x => x.MapId).ToList();
-        var mapDictionary = await ctx.RaceMaps
-            .Where(x => mapIds.Contains(x.Id))
+        var mapDictionary = await ctx
+            .RaceMaps.Where(x => mapIds.Contains(x.Id))
             .Select(x => new { x.Id, x.Name })
             .ToDictionaryAsync(x => x.Id)
             .ConfigureAwait(false);
 
-        player.Emit("race-menu-races:getRaces", races.Select(race =>
-        {
-            string name = string.Empty;
-            if (mapDictionary.TryGetValue(race.MapId, out var map))
-            {
-                name = map.Name;
-            }
+        player.Emit(
+            "race-menu-races:getRaces",
+            races
+                .Select(race =>
+                {
+                    var name = string.Empty;
+                    if (mapDictionary.TryGetValue(race.MapId, out var map))
+                    {
+                        name = map.Name;
+                    }
 
-            return new RaceDto
-            {
-                Id = race.Id,
-                MaxParticipants = race.MaxParticipants,
-                Name = name,
-                Participants = race.Participants.Count,
-                Status = (byte)race.Status,
-            };
-        }).ToList());
+                    return new RaceDto
+                    {
+                        Id = race.Id,
+                        MaxParticipants = race.MaxParticipants,
+                        Name = name,
+                        Participants = race.Participants.Count,
+                        Status = (byte)race.Status,
+                    };
+                })
+                .ToList()
+        );
     }
 
     private void HandleGetDetails(IPlayer player, long id)
     {
         var race = raceService.Races.FirstOrDefault(x => x.Id == id);
-        if (race is null) return;
-
-        player.Emit("race-menu-races:getDetails", new RaceDetailsDto
+        if (race is null)
         {
-            Id = race.Id,
-            MapId = race.MapId,
-            Description = race.Description,
-            Duration = race.Duration,
-            Ghosting = race.Ghosting,
-            Host = race.Host.Name,
-            Laps = race.Laps,
-            Participants = race.Participants.Select(x => new RaceParticipantDto { Id = x.Player.Id, Name = x.Player.Name }).ToList(),
-            Time = race.Time.ToString("h:mm", CultureInfo.InvariantCulture),
-            Type = (byte)race.Type,
-            VehicleModel = race.VehicleModel.ToString(),
-            Weather = race.Weather
-        });
+            return;
+        }
+
+        player.Emit(
+            "race-menu-races:getDetails",
+            new RaceDetailsDto
+            {
+                Id = race.Id,
+                MapId = race.MapId,
+                Description = race.Description,
+                Duration = race.Duration,
+                Ghosting = race.Ghosting,
+                Host = race.Host.Name,
+                Laps = race.Laps,
+                Participants = race
+                    .Participants.Select(x => new RaceParticipantDto { Id = x.Player.Id, Name = x.Player.Name })
+                    .ToList(),
+                Time = race.Time.ToString("h:mm", CultureInfo.InvariantCulture),
+                Type = (byte)race.Type,
+                VehicleModel = race.VehicleModel.ToString(),
+                Weather = race.Weather
+            }
+        );
     }
 
     private void HandleJoin(IPlayer player, long id)
     {
         var race = raceService.Races.FirstOrDefault(x => x.Id == id);
-        if (race is null) return;
+        if (race is null)
+        {
+            return;
+        }
 
         var participants = race.Participants;
-        if (participants.Count == race.MaxParticipants) return;
+        if (participants.Count == race.MaxParticipants)
+        {
+            return;
+        }
 
         if (raceService.TryGetRaceByParticipant(player, out var oldRace))
         {
-            if (id == oldRace.Id) return;
+            if (id == oldRace.Id)
+            {
+                return;
+            }
+
             raceService.RemoveParticipantByPlayer(player);
         }
 
@@ -104,29 +127,43 @@ public sealed class RaceMenuRacesTabScript : IStartup
 
     private void HandleParticipantJoined(Race race, IPlayer player)
     {
-        Alt.EmitAllClients("race-menu-races:participantChanged", race.Id, "joined", new RaceParticipantDto { Id = player.Id, Name = player.Name });
+        Alt.EmitAllClients(
+            "race-menu-races:participantChanged",
+            race.Id,
+            "joined",
+            new RaceParticipantDto { Id = player.Id, Name = player.Name }
+        );
     }
 
     private void HandleParticipantLeft(Race race, IPlayer player)
     {
-        Alt.EmitAllClients("race-menu-races:participantChanged", race.Id, "left", new RaceParticipantDto { Id = player.Id, Name = player.Name });
+        Alt.EmitAllClients(
+            "race-menu-races:participantChanged",
+            race.Id,
+            "left",
+            new RaceParticipantDto { Id = player.Id, Name = player.Name }
+        );
     }
 
     private async Task HandleRaceCreated(Race race)
     {
         await using var context = await dbContextFactory.CreateDbContextAsync().ConfigureAwait(false);
-        var mapName = await context.RaceMaps
-            .Where(x => x.Id == race.MapId)
+        var mapName = await context
+            .RaceMaps.Where(x => x.Id == race.MapId)
             .Select(x => x.Name)
             .FirstOrDefaultAsync()
             .ConfigureAwait(false);
-        Alt.EmitAllClients("race-menu-races:raceChanged", "created", new RaceDto
-        {
-            Id = race.Id,
-            MaxParticipants = race.MaxParticipants,
-            Participants = 1,
-            Name = mapName ?? string.Empty,
-            Status = (byte)race.Status
-        });
+        Alt.EmitAllClients(
+            "race-menu-races:raceChanged",
+            "created",
+            new RaceDto
+            {
+                Id = race.Id,
+                MaxParticipants = race.MaxParticipants,
+                Participants = 1,
+                Name = mapName ?? string.Empty,
+                Status = (byte)race.Status
+            }
+        );
     }
 }

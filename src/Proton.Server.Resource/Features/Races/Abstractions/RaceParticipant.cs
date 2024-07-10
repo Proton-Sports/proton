@@ -1,6 +1,6 @@
 using AltV.Net.Elements.Entities;
 
-namespace Proton.Server.Resource.Features.Races.Models;
+namespace Proton.Server.Resource.Features.Races.Abstractions;
 
 public class RaceParticipant
 {

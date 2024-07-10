@@ -5,7 +5,6 @@ using AltV.Net.Enums;
 using AsyncAwaitBestPractices;
 using Proton.Server.Resource.Features.Ipls.Abstractions;
 using Proton.Server.Resource.Features.Races.Abstractions;
-using Proton.Server.Resource.Features.Races.Models;
 using Proton.Server.Resource.SharedKernel;
 using Proton.Shared.Dtos;
 using Proton.Shared.Models;

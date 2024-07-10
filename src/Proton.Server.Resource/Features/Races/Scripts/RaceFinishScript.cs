@@ -1,5 +1,5 @@
 using AltV.Net;
-using Proton.Server.Resource.Features.Races.Models;
+using Proton.Server.Resource.Features.Races.Abstractions;
 using Proton.Server.Resource.SharedKernel;
 using Proton.Shared.Dtos;
 

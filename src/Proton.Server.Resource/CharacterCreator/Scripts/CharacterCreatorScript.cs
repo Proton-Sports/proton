@@ -15,19 +15,31 @@ namespace Proton.Server.Resource.CharacterCreator.Scripts;
 public class CharacterCreatorScript : IStartup
 {
     private readonly CharacterHandler characterHandler;
+
     public CharacterCreatorScript(CharacterHandler characterHandler)
     {
         this.characterHandler = characterHandler;
-        
+
         AltAsync.OnClient<IPlayer, string>("characterServer:setAppearance", CreateCharacter);
         AltAsync.OnServer<IPlayer>("auth:firstSignIn", CheckAppearance);
     }
 
     private async void CheckAppearance(IPlayer player)
     {
-        if (player is not PPlayer protonPlayer) return;
-        if (!protonPlayer.Exists) return;
-        if (protonPlayer.ProtonId == -1) return;
+        if (player is not PPlayer protonPlayer)
+        {
+            return;
+        }
+
+        if (!protonPlayer.Exists)
+        {
+            return;
+        }
+
+        if (protonPlayer.ProtonId == -1)
+        {
+            return;
+        }
 
         var hasCharacter = await characterHandler.HasCharacter(protonPlayer.ProtonId);
         if (hasCharacter)
@@ -38,7 +50,7 @@ public class CharacterCreatorScript : IStartup
                 player.Kick("Invalid character. Please try again.");
                 return;
             }
-            
+
             SetAppearance(protonPlayer, userCharacter);
         }
         else
@@ -56,32 +68,59 @@ public class CharacterCreatorScript : IStartup
             _ => player.Model
         };
 
-        player.SetHeadBlendData((uint)characterAppearance.FaceFather, (uint)characterAppearance.FaceMother,
-            0, (uint)characterAppearance.SkinFather, (uint)characterAppearance.SkinMother, 0, 
-            characterAppearance.FaceMix, characterAppearance.SkinMix, 0);
-        
+        player.SetHeadBlendData(
+            (uint)characterAppearance.FaceFather,
+            (uint)characterAppearance.FaceMother,
+            0,
+            (uint)characterAppearance.SkinFather,
+            (uint)characterAppearance.SkinMother,
+            0,
+            characterAppearance.FaceMix,
+            characterAppearance.SkinMix,
+            0
+        );
+
         foreach (var characterAppearanceFaceFeature in characterAppearance.FaceFeatures)
         {
             player.SetFaceFeature((byte)characterAppearanceFaceFeature.Index, characterAppearanceFaceFeature.Value);
         }
-        
+
         foreach (var characterAppearanceFaceOverlay in characterAppearance.FaceOverlays)
         {
-            player.SetHeadOverlay(characterAppearanceFaceOverlay.Index, (byte)characterAppearanceFaceOverlay.Value, characterAppearanceFaceOverlay.Opacity);
+            player.SetHeadOverlay(
+                characterAppearanceFaceOverlay.Index,
+                (byte)characterAppearanceFaceOverlay.Value,
+                characterAppearanceFaceOverlay.Opacity
+            );
 
             if (characterAppearanceFaceOverlay.HasColor)
             {
-                player.SetHeadOverlayColor(characterAppearanceFaceOverlay.Index, 2, characterAppearanceFaceOverlay.FirstColor, characterAppearanceFaceOverlay.FirstColor);
+                player.SetHeadOverlayColor(
+                    characterAppearanceFaceOverlay.Index,
+                    2,
+                    characterAppearanceFaceOverlay.FirstColor,
+                    characterAppearanceFaceOverlay.FirstColor
+                );
             }
         }
-        
+
         player.SetClothes(2, (ushort)characterAppearance.HairDrawable, 0, 0);
         player.SetHeadOverlay(1, (byte)characterAppearance.FacialHair, characterAppearance.FacialHairOpacity);
-        player.SetHeadOverlayColor(1, 1, (byte)characterAppearance.FirstFacialHairColor, (byte)characterAppearance.SecondFacialHairColor);
+        player.SetHeadOverlayColor(
+            1,
+            1,
+            (byte)characterAppearance.FirstFacialHairColor,
+            (byte)characterAppearance.SecondFacialHairColor
+        );
         player.SetHeadOverlay(2, (byte)characterAppearance.Eyebrows, 1);
-        player.SetHeadOverlayColor(2, 1, (byte)characterAppearance.EyebrowsColor, (byte)characterAppearance.EyebrowsColor);
+        player.SetHeadOverlayColor(
+            2,
+            1,
+            (byte)characterAppearance.EyebrowsColor,
+            (byte)characterAppearance.EyebrowsColor
+        );
         player.SetEyeColor((ushort)characterAppearance.EyeColor);
-        
+
         player.HairColor = (byte)characterAppearance.FirstHairColor;
         player.HairHighlightColor = (byte)characterAppearance.SecondHairColor;
 
@@ -102,13 +141,13 @@ public class CharacterCreatorScript : IStartup
                 player.SetClothes(8, 15, 0, 0);
                 break;
         }
-        
+
         player.Dimension = 0;
         player.Frozen = false;
         player.Position = new Position(486.417f, -3339.692f, 6.070f);
         player.Rotation = Rotation.Zero;
         player.Visible = true;
-        
+
         player.Emit("clientNametags:showNametags", true);
         player.Invincible = true;
     }
@@ -116,25 +155,34 @@ public class CharacterCreatorScript : IStartup
     private async void CreateCharacter(IPlayer player, string appearanceJson)
     {
         var isValid = player.Exists;
-        if (!isValid) return;
-        
-        var characterAppearance = JsonSerializer.Deserialize<Character>(appearanceJson, new JsonSerializerOptions
+        if (!isValid)
         {
-            PropertyNameCaseInsensitive = true,
-            NumberHandling = JsonNumberHandling.AllowReadingFromString
-        });
-        
+            return;
+        }
+
+        var characterAppearance = JsonSerializer.Deserialize<Character>(
+            appearanceJson,
+            new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true,
+                NumberHandling = JsonNumberHandling.AllowReadingFromString
+            }
+        );
+
         if (characterAppearance == null)
         {
             player.Kick("Invalid appearance. Please try again.");
             return;
         }
 
-        if (player is not PPlayer protonPlayer) return;
+        if (player is not PPlayer protonPlayer)
+        {
+            return;
+        }
 
         characterAppearance.UserId = protonPlayer.ProtonId;
         await characterHandler.Add(characterAppearance);
-        
+
         SetAppearance(protonPlayer, characterAppearance);
         player.Emit("characterClient:stopCharacterCreator");
     }
@@ -146,7 +194,7 @@ public class CharacterCreatorScript : IStartup
         player.Position = new Position(402.90833f, -996.61365f, -99.00013f);
         player.Rotation = new Rotation(0, 0, 3.14f);
         player.Visible = false;
-        
+
         player.Emit("characterClient:startCharacterCreator");
     }
 }

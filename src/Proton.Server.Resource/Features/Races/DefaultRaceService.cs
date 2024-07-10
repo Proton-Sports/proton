@@ -1,7 +1,6 @@
 using AltV.Net.Elements.Entities;
 using AsyncAwaitBestPractices;
-using Proton.Server.Resource.Features.Races.Constants;
-using Proton.Server.Resource.Features.Races.Models;
+using Proton.Server.Resource.Features.Races.Abstractions;
 
 namespace Proton.Server.Resource.Features.Races;
 

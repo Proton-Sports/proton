@@ -1,9 +1,8 @@
 using AltV.Net.Elements.Entities;
 using AltV.Net.Enums;
-using Proton.Server.Resource.Features.Races.Constants;
 using Proton.Shared.Constants;
 
-namespace Proton.Server.Resource.Features.Races.Models;
+namespace Proton.Server.Resource.Features.Races.Abstractions;
 
 public record class Race
 {

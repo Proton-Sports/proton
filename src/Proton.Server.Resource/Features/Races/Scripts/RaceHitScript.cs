@@ -2,7 +2,6 @@ using System.Numerics;
 using AltV.Net.Async;
 using AltV.Net.Elements.Entities;
 using Proton.Server.Resource.Features.Races.Abstractions;
-using Proton.Server.Resource.Features.Races.Models;
 using Proton.Server.Resource.SharedKernel;
 using Proton.Shared.Constants;
 using Proton.Shared.Dtos;
@@ -15,8 +14,9 @@ public sealed class RaceHitScript(
     IEnumerable<IRacePointResolver> resolvers
 ) : HostedService
 {
-    private readonly Dictionary<RaceType, IRacePointResolver> raceTypeResolvers =
-        resolvers.ToDictionary(x => x.SupportedRaceType);
+    private readonly Dictionary<RaceType, IRacePointResolver> raceTypeResolvers = resolvers.ToDictionary(x =>
+        x.SupportedRaceType
+    );
 
     public override Task StartAsync(CancellationToken ct)
     {
