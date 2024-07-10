@@ -20,6 +20,7 @@ public class CharacterCreatorScript : IStartup
     private int cameraFov = 70;
     private uint controlsInterval;
     private float zPos = 0.5f;
+    private bool mouseEntered;
     private int locationInterior;
     private Position startCameraPosition;
     private Position startPosition;
@@ -39,16 +40,16 @@ public class CharacterCreatorScript : IStartup
         this.uiView.On<string>("characterClient:setAppearance", SetAppearance);
         this.uiView.On<string>("characterClient:submitAppearance", SubmitAppearance);
         this.uiView.Mounting += HandleMounting;
+        this.uiView.On<bool>("characterClient:mouseEntered", MouseEntered);
 
         this.uiView.OnMount(Route.CharacterCreator, () =>
         {
             uiView.Focus();
 
             Alt.Natives.DoScreenFadeIn(1000);
+            Alt.Natives.DisplayRadar(false);
             Alt.ShowCursor(true);
         });
-
-        Alt.OnConsoleCommand += ConsoleCommand;
     }
 
     private void HandleMounting(Route route, MountingEventArgs e)
@@ -59,10 +60,9 @@ public class CharacterCreatorScript : IStartup
         }
     }
 
-    private void ConsoleCommand(string commandName, string[] args)
+    private void MouseEntered(bool isMouseEntered)
     {
-        if (commandName != "character-creator") return;
-        Alt.EmitServer("server:testCharCreator");
+        mouseEntered = isMouseEntered;
     }
 
     private async void StopCharacterCreator()
@@ -80,7 +80,7 @@ public class CharacterCreatorScript : IStartup
         Alt.FocusData.ClearFocusOverride();
         Alt.Natives.DoScreenFadeIn(1000);
         Alt.Natives.UnpinInterior(locationInterior);
-
+        Alt.Natives.DisplayRadar(true);
         Alt.ShowCursor(false);
     }
 
@@ -141,18 +141,18 @@ public class CharacterCreatorScript : IStartup
         switch (characterModel)
         {
             case (uint)PedModel.FreemodeFemale01:
-                Alt.Natives.SetPedComponentVariation(characterPed.ScriptId, 3, 15, 0, 0);
-                Alt.Natives.SetPedComponentVariation(characterPed.ScriptId, 4, 14, 0, 0);
-                Alt.Natives.SetPedComponentVariation(characterPed.ScriptId, 6, 35, 0, 0);
-                Alt.Natives.SetPedComponentVariation(characterPed.ScriptId, 8, 15, 0, 0);
-                Alt.Natives.SetPedComponentVariation(characterPed.ScriptId, 11, 15, 0, 0);
+                Alt.Natives.SetPedComponentVariation(characterPed.ScriptId, 4, 68, 3, 0);
+                Alt.Natives.SetPedComponentVariation(characterPed.ScriptId, 11, 144, 3, 0);
+                Alt.Natives.SetPedComponentVariation(characterPed.ScriptId, 6, 47, 3, 0);
+                Alt.Natives.SetPedComponentVariation(characterPed.ScriptId, 3, 17, 0, 0);
+                Alt.Natives.SetPedComponentVariation(characterPed.ScriptId, 8, 34, 0, 0);
                 break;
             case (uint)PedModel.FreemodeMale01:
-                Alt.Natives.SetPedComponentVariation(characterPed.ScriptId, 3, 15, 0, 0);
-                Alt.Natives.SetPedComponentVariation(characterPed.ScriptId, 4, 14, 0, 0);
-                Alt.Natives.SetPedComponentVariation(characterPed.ScriptId, 6, 34, 0, 0);
+                Alt.Natives.SetPedComponentVariation(characterPed.ScriptId, 4, 66, 3, 0);
+                Alt.Natives.SetPedComponentVariation(characterPed.ScriptId, 11, 147, 3, 0);
+                Alt.Natives.SetPedComponentVariation(characterPed.ScriptId, 6, 46, 3, 0);
+                Alt.Natives.SetPedComponentVariation(characterPed.ScriptId, 3, 165, 16, 0);
                 Alt.Natives.SetPedComponentVariation(characterPed.ScriptId, 8, 15, 0, 0);
-                Alt.Natives.SetPedComponentVariation(characterPed.ScriptId, 11, 91, 0, 0);
                 break;
         }
     }
@@ -205,76 +205,65 @@ public class CharacterCreatorScript : IStartup
         Alt.Natives.SetHeadBlendEyeColor(characterPed.ScriptId, characterAppearance.EyeColor);
     }
 
-    private async void StartCharacterCreator()
+    private void StartCharacterCreator()
     {
-        Alt.Natives.DoScreenFadeOut(1000);
-
         locationInterior = Alt.Natives.GetInteriorAtCoords(locationPosition.X, locationPosition.Y, locationPosition.Z);
 
         Alt.Natives.PinInteriorInMemory(locationInterior);
         Alt.FocusData.OverrideFocusPosition(locationPosition, Vector3.Zero);
 
-        try
-        {
-            await AltAsync.WaitFor(() => Alt.Natives.IsScreenblurFadeRunning() == false, timeout: 10000, interval: 0);
+        var currentModel = Alt.LocalPlayer.Model;
 
-            Alt.SetTimeout(() =>
-            {
-                var currentModel = Alt.LocalPlayer.Model;
+        CreateCharacter(currentModel);
+        CreateCharacterCreatorCamera();
+        SetCharacterClothes(currentModel);
 
-                CreateCharacter(currentModel);
-                CreateCharacterCreatorCamera();
-                SetCharacterClothes(currentModel);
-
-                uiView.Mount(Route.CharacterCreator);
-            }, 1000);
-        }
-        catch (Exception ex)
-        {
-            Alt.Log(ex.Message);
-        }
+        uiView.Mount(Route.CharacterCreator);
     }
 
-    private static double GetOppositeDirection(double radian)
+    private async void CreateCharacter(uint characterModel)
     {
-        if (radian < Math.PI)
-        {
-            return radian + Math.PI;
-        }
-
-        return radian - Math.PI;
-    }
-
-    private void CreateCharacter(uint characterModel)
-    {
-        var selectedGender = characterModel switch
-        {
-            (uint)PedModel.FreemodeMale01 => 1,
-            (uint)PedModel.FreemodeFemale01 => 0,
-            _ => 1
-        };
-
         if (characterPed is { Exists: true })
         {
             characterPed.Model = characterModel;
             SetCharacterClothes(characterModel);
-            uiView.Emit("characterPage:changeGender", selectedGender);
+
+            Alt.Natives.TaskPlayAnim(characterPed.ScriptId,
+                "anim@heists@heist_corona@single_team",
+                "single_team_loop_boss",
+                1,
+                1,
+                -1,
+                1,
+                0,
+                false, false, false);
 
             return;
         }
 
-        characterPed = Alt.CreateLocalPed(characterModel, Alt.LocalPlayer.Dimension, Alt.LocalPlayer.Position, Alt.LocalPlayer.Rotation, false, 0);
-        characterPed.Rotation = new Rotation(characterPed.Rotation.Pitch, characterPed.Rotation.Roll,
-            (float)GetOppositeDirection(characterPed.Rotation.Yaw));
+        characterPed = Alt.CreateLocalPed(characterModel, Alt.LocalPlayer.Dimension, locationPosition, new Rotation(0, 0, (float) 3.14), false, 0);
+        characterPed.Rotation = new Rotation(0, 0, (float) 3.14);
         characterPed.Frozen = true;
 
+        Alt.Natives.RequestAnimDict("anim@heists@heist_corona@single_team");
+        await AltAsync.WaitFor(() => Alt.Natives.HasAnimDictLoaded("anim@heists@heist_corona@single_team") && characterPed.Spawned);
+
+        Alt.Natives.TaskPlayAnim(characterPed.ScriptId,
+            "anim@heists@heist_corona@single_team",
+            "single_team_loop_boss",
+            1,
+            1,
+            -1,
+            1,
+            0,
+            false, false, false);
+
         SetCharacterClothes(characterModel);
-        uiView.Emit("characterPage:changeGender", selectedGender);
     }
 
     private void CreateCharacterCreatorCamera()
     {
-        startPosition = Alt.LocalPlayer.Position;
+        startPosition = locationPosition;
 
         var doesCameraExists = Alt.Natives.DoesCamExist(characterCamera);
         if (doesCameraExists) return;
@@ -320,7 +309,7 @@ public class CharacterCreatorScript : IStartup
 
         if (Alt.Natives.IsDisabledControlPressed(0, 17))
         {
-            if (cursorX < screenResolution.X / 2 + 400 && cursorX > screenResolution.X / 2 - 400)
+            if (!mouseEntered)
             {
                 cameraFov -= 2;
 
@@ -337,7 +326,7 @@ public class CharacterCreatorScript : IStartup
 
         if (Alt.Natives.IsDisabledControlPressed(0, 16))
         {
-            if (cursorX < screenResolution.X / 2 + 400 && cursorX > screenResolution.X / 2 - 400)
+            if (!mouseEntered)
             {
                 cameraFov += 2;
 
@@ -416,9 +405,12 @@ public class CharacterCreatorScript : IStartup
             characterPed.Rotation =
                 new Rotation(characterPed.Rotation.Roll, characterPed.Rotation.Pitch, oldHeading);
         }
+<<<<<<< HEAD
 
         Alt.Natives.ClearPedTasksImmediately(Alt.LocalPlayer);
         Alt.Natives.ClearPedSecondaryTask(characterPed.ScriptId);
         Alt.Natives.ClearPedTasksImmediately(characterPed.ScriptId);
+=======
+>>>>>>> main
     }
 }

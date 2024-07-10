@@ -2,18 +2,16 @@ using AltV.Net.Client;
 using AltV.Net.Client.Async;
 using AltV.Net.Client.Elements.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
+using Proton.Client.Infrastructure.Extensions;
 using Proton.Client.Resource.Authentication.Extentions;
 using Proton.Client.Resource.CharacterCreator.Extensions;
 using Proton.Client.Resource.Commons.Abstractions;
 using Proton.Client.Resource.Features.UiViews.Abstractions;
+using Proton.Client.Resource.Hud.Extensions;
+using Proton.Client.Resource.Nametags.Extensions;
 using Proton.Client.Resource.Utils.Extentions;
-using Proton.Shared.Adapters;
-using Proton.Shared.Dtos;
-using Proton.Shared.Extensions;
 using Proton.Shared.Extensions;
 using Proton.Shared.Interfaces;
-using Proton.Shared.Interfaces;
-using Proton.Shared.Models;
 
 namespace Proton.Client.Resource;
 
@@ -29,6 +27,8 @@ public sealed class ClientResource : AsyncResource
             .AddNoClips()
             .AddAuthentication()
             .AddRaceFeatures()
+            .AddNametags()
+            .AddHud()
             .AddUtils()
             .AddCharacterCreator()
             .AddIplFeatures();

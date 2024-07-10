@@ -11,6 +11,7 @@ resources/proton-ui/*
 !resources/proton-client/resource.toml
 !resources/proton-server/resource.toml
 !resources/proton-ui/resource.toml
+!resources/proton-client/fonts
 server.log
 altv-crash-handler
 altv-server

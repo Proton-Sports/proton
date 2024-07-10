@@ -1,7 +1,12 @@
 using AltV.Net.Client;
 using AsyncAwaitBestPractices;
+<<<<<<< HEAD
 using Proton.Client.Resource.Features.Ipls.Abstractions;
 using Proton.Client.Resource.Features.UiViews.Abstractions;
+=======
+using Proton.Client.Infrastructure.Interfaces;
+using Proton.Client.Resource.Features.Ipls.Abstractions;
+>>>>>>> main
 using Proton.Shared.Contants;
 using Proton.Shared.Dtos;
 using Proton.Shared.Interfaces;
@@ -19,6 +24,7 @@ public sealed class RaceEndScript : IStartup
         this.uiView = uiView;
         this.raceService = raceService;
         this.iplService = iplService;
+<<<<<<< HEAD
         Alt.OnServer<RaceEndCountdownDto>(
             "race-end:countdown",
             (dto) =>
@@ -26,6 +32,12 @@ public sealed class RaceEndScript : IStartup
                 HandleServerCountdown(dto).SafeFireAndForget((exception) => Alt.LogError(exception.ToString()));
             }
         );
+=======
+        Alt.OnServer<RaceEndCountdownDto>("race-end:countdown", (dto) =>
+        {
+            HandleServerCountdown(dto).SafeFireAndForget((exception) => Alt.LogError(exception.ToString()));
+        });
+>>>>>>> main
         Alt.OnServer("race:destroy", HandleServerRaceDestroyAsync);
     }
 
