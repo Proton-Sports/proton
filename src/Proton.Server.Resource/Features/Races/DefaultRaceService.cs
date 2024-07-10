@@ -19,12 +19,15 @@ public sealed class DefaultRaceService : IRaceService
     public event Action<Race>? RaceCreated;
     public event Action<RaceParticipant>? ParticipantFinished;
     public event Action<Race>? RaceDestroyed;
+    public event Action<Race>? RaceFinished;
 
     public void AddRace(Race race)
     {
         races.Add(race);
         if (RaceCreated is not null)
+        {
             RaceCreated(race);
+        }
     }
 
     public bool RemoveRace(Race race)
@@ -43,7 +46,9 @@ public sealed class DefaultRaceService : IRaceService
             playerRace.Remove(participant.Player);
             participant.Vehicle?.Destroy();
             if (ParticipantLeft is not null)
+            {
                 ParticipantLeft(race, participant.Player);
+            }
         }
         if (RaceDestroyed is not null)
         {
@@ -61,41 +66,61 @@ public sealed class DefaultRaceService : IRaceService
     {
         var race = races.Find(x => x.Id == raceId);
         if (race is null)
+        {
             return false;
+        }
 
         race.Participants.Add(participant);
         playerRace[participant.Player] = race;
         if (ParticipantJoined is not null)
+        {
             ParticipantJoined(race, participant.Player);
+        }
+
         return true;
     }
 
     public bool RemoveParticipant(RaceParticipant participant)
     {
         if (!playerRace.TryGetValue(participant.Player, out var race))
+        {
             return false;
+        }
+
         playerRace.Remove(participant.Player);
         bool removed = race.Participants.Remove(participant);
         participant.Vehicle?.Destroy();
         if (ParticipantLeft is not null)
+        {
             ParticipantLeft(race, participant.Player);
+        }
+
         return removed;
     }
 
     public bool RemoveParticipantByPlayer(IPlayer player)
     {
         if (!playerRace.TryGetValue(player, out var race))
+        {
             return false;
+        }
+
         playerRace.Remove(player);
         for (var i = 0; i != race.Participants.Count; ++i)
         {
             var participant = race.Participants[i];
             if (participant.Player != player)
+            {
                 continue;
+            }
+
             race.Participants.RemoveAt(i);
             participant.Vehicle?.Destroy();
             if (ParticipantLeft is not null)
+            {
                 ParticipantLeft(race, participant.Player);
+            }
+
             return true;
         }
         return false;
@@ -130,6 +155,14 @@ public sealed class DefaultRaceService : IRaceService
         if (ParticipantFinished is not null)
         {
             ParticipantFinished(participant);
+        }
+    }
+
+    public void Finish(Race race)
+    {
+        if (RaceFinished is not null)
+        {
+            RaceFinished(race);
         }
     }
 }

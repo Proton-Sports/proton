@@ -11,6 +11,7 @@ public interface IRaceService
     event Func<Race, Task>? RaceStarted;
     event Action<Race>? RaceCreated;
     event Action<RaceParticipant>? ParticipantFinished;
+    event Action<Race>? RaceFinished;
     event Action<Race>? RaceDestroyed;
 
     IReadOnlyCollection<Race> Races { get; }
@@ -25,4 +26,5 @@ public interface IRaceService
     void Prepare(Race race);
     void Start(Race race);
     void Finish(RaceParticipant participant);
+    void Finish(Race race);
 }

@@ -19,12 +19,13 @@ public static partial class ServiceCollectionExtensions
             .AddStartup<RaceMenuRacesTabScript>()
             .AddHostedService<RaceCountdownScript>()
             .AddHostedService<RacePrepareScript>()
-            .AddStartup<RaceStartScript>()
+            .AddHostedService<RaceStartScript>()
             .AddStartup<RaceDestroyScript>()
             .AddHostedService<RaceEndScript>()
             .AddStartup<RaceLeaveScript>()
             .AddHostedService<RaceHudScript>()
-            .AddHostedService<RaceHitScript>();
+            .AddHostedService<RaceHitScript>()
+            .AddHostedService<RaceFinishScript>();
         return serviceCollection;
     }
 }
