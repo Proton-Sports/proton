@@ -1,9 +1,9 @@
 using AltV.Net.Client;
 using AltV.Net.Client.Elements.Entities;
-using Proton.Client.Infrastructure.Interfaces;
+using Proton.Client.Resource.Features.UiViews.Abstractions;
 using Proton.Shared.Contants;
 
-namespace Proton.Client.Infrastructure.Services;
+namespace Proton.Client.Resource.Features.UiViews;
 
 public class DefaultUiView : WebView, IUiView
 {
@@ -18,6 +18,8 @@ public class DefaultUiView : WebView, IUiView
         this.On<string, bool, bool>("webview.unmount", HandleUnmount);
     }
 
+    public event Action<Route, MountingEventArgs>? Mounting;
+
     public bool IsMounted(Route route)
     {
         return mountedDictionary.ContainsKey(route.Value);
@@ -25,8 +27,16 @@ public class DefaultUiView : WebView, IUiView
 
     public void Mount(Route route)
     {
+        if (Mounting is not null)
+        {
+            var eventArgs = new MountingEventArgs { Cancel = false };
+            Mounting(route, eventArgs);
+            if (eventArgs.Cancel)
+            {
+                return;
+            }
+        }
         Emit("webview.mount", route.Value);
-        mountedDictionary.TryAdd(route.Value, true);
     }
 
     public Action OnMount(Route route, Action callback)
@@ -65,6 +75,16 @@ public class DefaultUiView : WebView, IUiView
 
     public Task<bool> TryMountAsync(Route route)
     {
+        if (Mounting is not null)
+        {
+            var eventArgs = new MountingEventArgs { Cancel = false };
+            Mounting(route, eventArgs);
+            if (eventArgs.Cancel)
+            {
+                return Task.FromResult(false);
+            }
+        }
+
         if (mountTaskDictionary.TryGetValue(route.Value, out var taskCompletionSource))
         {
             return taskCompletionSource.Task;
@@ -72,7 +92,7 @@ public class DefaultUiView : WebView, IUiView
 
         taskCompletionSource = new TaskCompletionSource<bool>();
         mountTaskDictionary[route.Value] = taskCompletionSource;
-        Mount(route);
+        Emit("webview.mount", route.Value);
         return taskCompletionSource.Task;
     }
 
@@ -84,11 +104,15 @@ public class DefaultUiView : WebView, IUiView
 
     private void HandleMount(string route, bool success, bool emitHandlers)
     {
-        if (success && emitHandlers && onMountHandlers.TryGetValue(route, out var handlers))
+        if (success)
         {
-            foreach (var handler in handlers)
+            mountedDictionary.TryAdd(route, true);
+            if (emitHandlers && onMountHandlers.TryGetValue(route, out var handlers))
             {
-                handler();
+                foreach (var handler in handlers)
+                {
+                    handler();
+                }
             }
         }
         if (!mountTaskDictionary.TryGetValue(route, out var taskCompletionSource)) return;
@@ -98,11 +122,15 @@ public class DefaultUiView : WebView, IUiView
 
     private void HandleUnmount(string route, bool success, bool emitHandlers)
     {
-        if (success && emitHandlers && onUnmountHandlers.TryGetValue(route, out var handlers))
+        if (success)
         {
-            foreach (var handler in handlers)
+            mountedDictionary.Remove(route);
+            if (emitHandlers && onUnmountHandlers.TryGetValue(route, out var handlers))
             {
-                handler();
+                foreach (var handler in handlers)
+                {
+                    handler();
+                }
             }
         }
     }

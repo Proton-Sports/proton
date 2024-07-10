@@ -14,18 +14,18 @@ public static partial class ServiceCollectionExtensions
             .AddSingleton<IRaceService, DefaultRaceService>()
             .AddSingleton<IRacePointResolver, RacePointLapResolver>()
             .AddSingleton<IRacePointResolver, RacePointRallyResolver>()
-            .AddStartup<RaceCreatorScript>()
+            .AddHostedService<RaceCreatorScript>()
             .AddStartup<RaceMenuScript>()
             .AddStartup<RaceMenuRacesTabScript>()
             .AddStartup<RaceHostScript>()
             .AddStartup<RaceCountdownScript>()
-            .AddStartup<RacePrepareScript>()
+            .AddHostedService<RacePrepareScript>()
             .AddStartup<RaceStartScript>()
             .AddStartup<RaceEndScript>()
             .AddStartup<RaceLeaveScript>()
-            .AddStartup<RaceJoinScript>()
             .AddStartup<RaceHudScript>()
-            .AddStartup<RaceHitScript>();
+            .AddStartup<RaceHitScript>()
+            .AddStartup<RacePhasingScript>();
         return serviceCollection;
     }
 }

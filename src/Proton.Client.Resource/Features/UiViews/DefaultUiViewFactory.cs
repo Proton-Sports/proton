@@ -1,8 +1,8 @@
 using AltV.Net.Client;
 using AltV.Net.Client.Elements.Interfaces;
-using Proton.Client.Infrastructure.Interfaces;
+using Proton.Client.Resource.Features.UiViews.Abstractions;
 
-namespace Proton.Client.Infrastructure.Services;
+namespace Proton.Client.Resource.Features.UiViews;
 
 public class DefaultUiViewFactory : IUiViewFactory
 {

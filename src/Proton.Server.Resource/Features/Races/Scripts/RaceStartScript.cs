@@ -28,6 +28,7 @@ public sealed class RaceStartScript : IStartup
         {
             participant.NextRacePointIndex = 0;
             participant.Lap = 0;
+            participant.Player.Frozen = false;
             if (participant.Vehicle is not null)
             {
                 participant.Vehicle!.Frozen = false;
@@ -60,9 +61,7 @@ public sealed class RaceStartScript : IStartup
                 "race-end:countdown",
                 new RaceEndCountdownDto
                 {
-                    EndTime = DateTimeOffset
-                        .UtcNow.AddSeconds(race.Duration)
-                        .ToUnixTimeMilliseconds()
+                    EndTime = DateTimeOffset.UtcNow.AddSeconds(race.Duration).ToUnixTimeMilliseconds()
                 }
             );
         }

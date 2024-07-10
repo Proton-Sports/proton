@@ -1,14 +1,7 @@
-﻿using AltV.Net;
-using AltV.Net.Client;
-using AltV.Net.Client.Async;
-using Proton.Client.Infrastructure.Interfaces;
+﻿using AltV.Net.Client;
+using Proton.Client.Resource.Features.UiViews.Abstractions;
 using Proton.Shared.Contants;
 using Proton.Shared.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Proton.Client.Resource.Authentication.Scripts;
 
@@ -29,8 +22,17 @@ public sealed class AuthenticationScript : IStartup
 
         this.uiView.On("authentication:login", SendLoginRequest);
         this.uiView.On("webview:ready", () => uiView.Mount(Route.Auth));
+        this.uiView.Mounting += HandleMounting;
 
         Alt.OnConsoleCommand += Alt_OnConsoleCommand;
+    }
+
+    private void HandleMounting(Route route, MountingEventArgs e)
+    {
+        if (route == Route.RaceMainMenuList && uiView.IsMounted(Route.Auth))
+        {
+            e.Cancel = true;
+        }
     }
 
     private void Alt_OnConsoleCommand(string name, string[] args)

@@ -18,6 +18,7 @@ public sealed class DefaultRaceService : IRaceService
     public event Func<Race, Task>? RaceStarted;
     public event Action<Race>? RaceCreated;
     public event Action<RaceParticipant>? ParticipantFinished;
+    public event Action<Race>? RaceDestroyed;
 
     public void AddRace(Race race)
     {
@@ -43,6 +44,10 @@ public sealed class DefaultRaceService : IRaceService
             participant.Vehicle?.Destroy();
             if (ParticipantLeft is not null)
                 ParticipantLeft(race, participant.Player);
+        }
+        if (RaceDestroyed is not null)
+        {
+            RaceDestroyed(race);
         }
         return ret;
     }

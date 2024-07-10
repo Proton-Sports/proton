@@ -3,11 +3,16 @@ using AltV.Net.Client;
 using AltV.Net.Data;
 using Proton.Client.Core.Interfaces;
 using Proton.Client.Core.Models;
+using Proton.Client.Infrastructure.Constants;
 using Proton.Shared.Helpers;
 
 namespace Proton.Client.Infrastructure.Services;
 
-public class ClientOnlyNoClip : INoClip
+public class ClientOnlyNoClip(
+    IRaycastService raycastService,
+    IGameplayCamera gameplayCamera,
+    IScriptCameraFactory scriptCameraFactory
+) : INoClip
 {
     private const int ActionForward = 32;
     private const int ActionBackward = 33;
@@ -17,30 +22,35 @@ public class ClientOnlyNoClip : INoClip
     private const int ActionDown = 36;
     private const int ActionShift = 21;
     private const int ActionNextCamera = 0;
-    private readonly IRaycastService raycastService;
-    private readonly IGameplayCamera gameplayCamera;
 
     private RaycastData? raycastData = default;
 
+    public IScriptCamera? Camera { get; protected set; }
     public bool IsStarted { get; protected set; }
-
-    public ClientOnlyNoClip(IRaycastService raycastService, IGameplayCamera gameplayCamera)
-    {
-        this.raycastService = raycastService;
-        this.gameplayCamera = gameplayCamera;
-    }
 
     public void Start()
     {
         IsStarted = true;
-        raycastService.StartAsyncRaycastBatch(() =>
-        {
-            var position = gameplayCamera.Position;
-            return (position, position + gameplayCamera.ForwardVector * 1000);
-        }, (raycastData) =>
-        {
-            this.raycastData = raycastData;
-        });
+        Camera = scriptCameraFactory.CreateScriptCamera(CameraHash.Scripted, true);
+        Camera.Position = Alt.LocalPlayer.Position + new Position(0, 0, 1);
+        Camera.Rotation = Alt.Natives.GetGameplayCamRot(2);
+        Camera.Fov = gameplayCamera.Fov;
+        Camera.Render();
+        raycastService.StartAsyncRaycastBatch(
+            () =>
+            {
+                if (Camera is null)
+                {
+                    return (Vector3.Zero, Vector3.Zero);
+                }
+                var position = Camera.Position;
+                return (position, position + Camera.ForwardVector * 1000);
+            },
+            (raycastData) =>
+            {
+                this.raycastData = raycastData;
+            }
+        );
         Alt.OnTick += HandleTick;
     }
 
@@ -49,6 +59,11 @@ public class ClientOnlyNoClip : INoClip
         IsStarted = false;
         raycastService.StopAsyncRaycastBatch();
         Alt.OnTick -= HandleTick;
+        if (Camera is not null)
+        {
+            Camera.Dispose();
+            Camera = null;
+        }
     }
 
     public bool TryGetRaycastData(out RaycastData data)
@@ -59,6 +74,11 @@ public class ClientOnlyNoClip : INoClip
 
     private void HandleTick()
     {
+        if (Camera is null)
+        {
+            return;
+        }
+
         Alt.Natives.DisableControlAction(0, ActionForward, true);
         Alt.Natives.DisableControlAction(0, ActionBackward, true);
         Alt.Natives.DisableControlAction(0, ActionLeft, true);
@@ -72,26 +92,59 @@ public class ClientOnlyNoClip : INoClip
         Vector3 currentPosition = player.Position;
         Vector3 position = currentPosition;
         var speed = 1f;
-        var camRotationInRadian = Alt.Natives.GetGameplayCamRot(2) * MathF.PI / 180;
-        player.Rotation = new Rotation(0, 0, camRotationInRadian.Z);
-        var (forward, right) = ToVectors(camRotationInRadian);
+        var rot = Camera.Rotation;
+        var rotInRadian = rot * MathF.PI / 180;
+        player.Rotation = new Rotation(0, 0, rotInRadian.Z);
+        var (forward, right) = ToVectors(rotInRadian);
         forward.Z = 0;
         right.Z = 0;
-        if (Alt.Natives.IsDisabledControlPressed(0, ActionShift)) speed *= 5;
-        if (Alt.Natives.IsDisabledControlPressed(0, ActionForward)) position += forward * speed;
-        if (Alt.Natives.IsDisabledControlPressed(0, ActionBackward)) position += forward * (-speed);
-        if (Alt.Natives.IsDisabledControlPressed(0, ActionLeft)) position += right * (-speed);
-        if (Alt.Natives.IsDisabledControlPressed(0, ActionRight)) position += right * speed;
-        if (Alt.Natives.IsDisabledControlPressed(0, ActionUp)) position.Z += speed;
-        if (Alt.Natives.IsDisabledControlPressed(0, ActionDown)) position.Z -= speed;
+        if (Alt.Natives.IsDisabledControlPressed(0, ActionShift))
+            speed *= 5;
+        if (Alt.Natives.IsDisabledControlPressed(0, ActionForward))
+            position += forward * speed;
+        if (Alt.Natives.IsDisabledControlPressed(0, ActionBackward))
+            position -= forward * speed;
+        if (Alt.Natives.IsDisabledControlPressed(0, ActionLeft))
+            position -= right * speed;
+        if (Alt.Natives.IsDisabledControlPressed(0, ActionRight))
+            position += right * speed;
+        if (Alt.Natives.IsDisabledControlPressed(0, ActionUp))
+            position.Z += speed;
+        if (Alt.Natives.IsDisabledControlPressed(0, ActionDown))
+            position.Z -= speed;
 
         if (raycastData is { IsHit: true })
         {
-            Alt.Natives.DrawMarkerSphere(raycastData.EndPosition.X, raycastData.EndPosition.Y, raycastData.EndPosition.Z, 2, 255, 0, 0, 255);
+            Alt.Natives.DrawMarkerSphere(
+                raycastData.EndPosition.X,
+                raycastData.EndPosition.Y,
+                raycastData.EndPosition.Z,
+                2,
+                255,
+                0,
+                0,
+                255
+            );
         }
+
+        var mouseX = Alt.Natives.GetDisabledControlNormal(1, 1);
+        var mouseY = Alt.Natives.GetDisabledControlNormal(1, 2);
+        var mouseSens = Alt.Natives.GetProfileSetting(13);
+        var finalRot = new Vector3(rot.X - mouseY * mouseSens, rot.Y, rot.Z - mouseX * mouseSens);
+        if (finalRot.X >= 89)
+        {
+            finalRot.X = 89;
+        }
+        if (finalRot.X <= -89)
+        {
+            finalRot.X = -89;
+        }
+        Alt.Natives.ForceCameraRelativeHeadingAndPitch(finalRot.X, finalRot.Y, finalRot.Z);
+        Camera.Rotation = finalRot;
         if (currentPosition != position)
         {
             Alt.LocalPlayer.Position = position;
+            Camera.Position = position;
         }
     }
 

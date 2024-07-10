@@ -22,6 +22,6 @@ public record class Race
     public string Weather { get; set; } = string.Empty;
     public DateTimeOffset CreatedTime { get; set; }
     public RaceStatus Status { get; set; }
-    public DateTimeOffset PreparationEndTime { get; set; }
+    public DateTimeOffset StartTime { get; set; }
     public List<RaceParticipant> Participants { get; set; } = [];
 }

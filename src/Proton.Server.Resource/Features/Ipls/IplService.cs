@@ -61,7 +61,11 @@ public sealed class IplService : IIplService
         }
     }
 
+<<<<<<< HEAD
+    private sealed class LoadAsyncState
+=======
     private class LoadAsyncState
+>>>>>>> main
     {
         public required TaskCompletionSource<bool> Source;
         public int Count;

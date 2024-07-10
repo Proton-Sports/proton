@@ -20,17 +20,20 @@ public sealed class DefaultRaceService : IRaceService
     private readonly HashSet<Action<object>> hitEventHandlers = new();
     private bool started;
 
+    public event Action? Started;
+    public event Action? Stopped;
+
     public event Action<object> RacePointHit
     {
         add => hitEventHandlers.Add(value);
         remove => hitEventHandlers.Remove(value);
     }
 
-    public long RaceId { get; set; }
     public int Dimension { get; set; }
     public IReadOnlyList<RacePointDto> RacePoints => racePoints;
     public bool IsStarted => started;
     public RaceType RaceType { get; set; }
+    public bool Ghosting { get; set; }
     public string? IplName { get; set; }
 
     public DefaultRaceService(IEnumerable<IRacePointResolver> resolvers)
@@ -65,9 +68,7 @@ public sealed class DefaultRaceService : IRaceService
         var checkpoint = Alt.CreateCheckpoint(
             checkpointType,
             point.Position - new Position(0, 0, point.Radius / 2),
-            nextPoint is null
-                ? Position.Zero
-                : nextPoint.Position - new Position(0, 0, nextPoint.Radius / 2),
+            nextPoint is null ? Position.Zero : nextPoint.Position - new Position(0, 0, nextPoint.Radius / 2),
             point.Radius,
             point.Radius,
             new Rgba(251, 251, 181, 128),
@@ -97,11 +98,7 @@ public sealed class DefaultRaceService : IRaceService
                 true,
                 512
             );
-            nextMarker.Scale = new Position(
-                nextPoint.Radius * 2,
-                nextPoint.Radius * 2,
-                nextPoint.Radius
-            );
+            nextMarker.Scale = new Position(nextPoint.Radius * 2, nextPoint.Radius * 2, nextPoint.Radius);
             nextMarker.Dimension = Dimension;
             nextBlip = Alt.CreatePointBlip(nextPoint.Position);
             nextBlip.Sprite = BlipSpriteObjective;
@@ -115,7 +112,6 @@ public sealed class DefaultRaceService : IRaceService
 
     public bool UnloadRacePoint(int index)
     {
-        Console.WriteLine("UnloadRacePoint " + index);
         if (!indexToDataDictionary.TryGetValue(index, out var data))
             return false;
         data.Destroy();
@@ -127,12 +123,20 @@ public sealed class DefaultRaceService : IRaceService
     {
         started = true;
         Alt.OnTick += HandleTick;
+        if (Started is not null)
+        {
+            Started();
+        }
     }
 
     public void Stop()
     {
         started = false;
         Alt.OnTick -= HandleTick;
+        if (Stopped is not null)
+        {
+            Stopped();
+        }
     }
 
     public bool TryGetPointResolver(out IRacePointResolver resolver)
@@ -171,13 +175,7 @@ public sealed class DefaultRaceService : IRaceService
         public readonly IMarker? NextMarker;
         public readonly IBlip? NextBlip;
 
-        public Data(
-            ICheckpoint checkpoint,
-            IBlip blip,
-            IBlip arrowBlip,
-            IMarker? nextMarker,
-            IBlip? nextBlip
-        )
+        public Data(ICheckpoint checkpoint, IBlip blip, IBlip arrowBlip, IMarker? nextMarker, IBlip? nextBlip)
         {
             Checkpoint = checkpoint;
             Blip = blip;

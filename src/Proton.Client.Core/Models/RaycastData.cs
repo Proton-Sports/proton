@@ -2,7 +2,7 @@ using System.Numerics;
 
 namespace Proton.Client.Core.Models;
 
-public class RaycastData
+public record class RaycastData
 {
     public bool IsHit { get; }
     public uint HitEntity { get; }

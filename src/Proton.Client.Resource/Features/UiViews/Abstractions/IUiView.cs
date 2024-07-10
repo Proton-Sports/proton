@@ -1,10 +1,13 @@
 using AltV.Net.Client.Elements.Interfaces;
 using Proton.Shared.Contants;
 
-namespace Proton.Client.Infrastructure.Interfaces;
+namespace Proton.Client.Resource.Features.UiViews.Abstractions;
 
 public interface IUiView : IWebView
 {
+    // Called before a route is mounted, can be cancelled
+    event Action<Route, MountingEventArgs> Mounting;
+
     void Mount(Route route);
     Task<bool> TryMountAsync(Route route);
     void Unmount(Route route);

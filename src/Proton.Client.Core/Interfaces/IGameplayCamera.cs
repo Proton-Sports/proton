@@ -8,4 +8,5 @@ public interface IGameplayCamera
     Vector3 Position { get; }
     Vector3 Rotation { get; }
     Vector3 ForwardVector { get; }
+    float Fov { get; }
 }
