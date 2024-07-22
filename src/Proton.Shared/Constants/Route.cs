@@ -19,6 +19,7 @@ public sealed class Route : IEquatable<Route>
     public static readonly Route Speedometer = new("speedometer");
     public static readonly Route RaceHud = new("race-hud");
     public static readonly Route RaceFinishScoreboard = new("race-finish-scoreboard");
+    public static readonly Route RaceStartCountdown = new("race-start-countdown");
 
     public override bool Equals(object? obj) => Equals(obj as Route);
 
