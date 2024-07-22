@@ -1,3 +1,4 @@
+using AltV.Net;
 using AltV.Net.Elements.Entities;
 using AsyncAwaitBestPractices;
 using Proton.Server.Resource.Features.Races.Abstractions;
@@ -18,7 +19,7 @@ public sealed class DefaultRaceService : IRaceService
     public event Action<Race>? RaceCreated;
     public event Action<RaceParticipant>? ParticipantFinished;
     public event Action<Race>? RaceDestroyed;
-    public event Action<Race>? RaceFinished;
+    public event Func<Race, Task>? RaceFinished;
 
     public void AddRace(Race race)
     {
@@ -161,7 +162,7 @@ public sealed class DefaultRaceService : IRaceService
     {
         if (RaceFinished is not null)
         {
-            RaceFinished(race);
+            RaceFinished(race).SafeFireAndForget(exception => Alt.LogError(exception.ToString()));
         }
     }
 }

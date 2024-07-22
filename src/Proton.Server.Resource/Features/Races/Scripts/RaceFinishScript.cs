@@ -5,15 +5,16 @@ using Proton.Shared.Dtos;
 
 namespace Proton.Server.Resource.Features.Races.Scripts;
 
-public sealed class RaceFinishScript(IRaceService raceService) : HostedService
+public sealed class RaceFinishScript(IRaceService raceService, IMapCache mapCache) : HostedService
 {
     public override Task StartAsync(CancellationToken ct)
     {
-        raceService.ParticipantFinished += HandleFinished;
+        raceService.ParticipantFinished += OnParticipantFinished;
+        raceService.RaceFinished += OnRaceFinishedAsync;
         return Task.CompletedTask;
     }
 
-    private void HandleFinished(RaceParticipant participant)
+    private void OnParticipantFinished(RaceParticipant participant)
     {
         if (!raceService.TryGetRaceByParticipant(participant.Player, out var race))
         {
@@ -40,5 +41,31 @@ public sealed class RaceFinishScript(IRaceService raceService) : HostedService
                 }
             );
         }
+    }
+
+    private async Task OnRaceFinishedAsync(Race race)
+    {
+        var map = await mapCache.GetAsync(race.MapId).ConfigureAwait(false);
+        if (map is null)
+        {
+            return;
+        }
+
+        var dto = new MountScoreboardDto()
+        {
+            Name = map.Name,
+            Participants =
+            [
+                .. race
+                    .Participants.Select(x => new ScoreboardParticipantDto
+                    {
+                        Name = x.Player.Name,
+                        Team = "Proton Sports",
+                        TimeMs = x.FinishTime - race.StartTime.ToUnixTimeMilliseconds(),
+                    })
+                    .OrderBy(x => x.TimeMs)
+            ]
+        };
+        Alt.EmitClients([.. race.Participants.Select(x => x.Player)], "race-finish:mountScoreboard", dto);
     }
 }
