@@ -1,21 +1,17 @@
 using System.Numerics;
 using AltV.Net.Client;
-using AltV.Net.Data;
 using AltV.Net.Elements.Entities;
 using AsyncAwaitBestPractices;
 using Proton.Client.Core.Interfaces;
 using Proton.Client.Infrastructure.Constants;
 using Proton.Client.Resource.Commons;
 using Proton.Client.Resource.Features.Ipls.Abstractions;
-using Proton.Client.Resource.Features.UiViews.Abstractions;
 using Proton.Shared.Constants;
-using Proton.Shared.Contants;
 using Proton.Shared.Dtos;
 
 namespace Proton.Client.Resource.Features.Races.Scripts;
 
 public sealed class RacePrepareScript(
-    IUiView uiView,
     IRaceService raceService,
     IIplService iplService,
     IScriptCameraFactory scriptCameraFactory
@@ -53,7 +49,6 @@ public sealed class RacePrepareScript(
             preloadCamera.Dispose();
             preloadCamera = null;
         }
-        var task = uiView.TryMountAsync(Route.RacePrepare);
         Task? loadIplTask = default;
         if (!string.IsNullOrEmpty(dto.IplName))
         {
@@ -79,10 +74,6 @@ public sealed class RacePrepareScript(
             ++index;
         }
 
-        if (await task.ConfigureAwait(false))
-        {
-            uiView.Emit("race-prepare:setData", new RacePrepareDto { EndTime = dto.EndTime });
-        }
         if (loadIplTask is not null)
         {
             await loadIplTask.ConfigureAwait(false);

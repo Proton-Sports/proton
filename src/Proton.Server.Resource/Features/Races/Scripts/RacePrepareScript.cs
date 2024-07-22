@@ -89,15 +89,20 @@ public sealed class RacePrepareScript(IRaceService raceService, IMapCache mapCac
             participant.Player.SetIntoVehicle(participant.Vehicle, 1);
         }
 
-        race.StartTime = DateTimeOffset.UtcNow.AddSeconds(3);
+        Alt.EmitClients(players, "race-start-countdown:mount");
+        await Task.Delay(2000).ConfigureAwait(false);
+        Alt.EmitClients(players, "race-start-countdown:start");
+
+        var startDuration = TimeSpan.FromSeconds(5);
+        race.StartTime = DateTimeOffset.UtcNow.Add(startDuration);
         startTimers[race.Id] = new Timer(
             (state) => StartRaceAsync((Race)race!).SafeFireAndForget(exception => Alt.LogError(exception.ToString())),
             race,
-            3000,
+            (int)startDuration.TotalMilliseconds,
             Timeout.Infinite
         );
         Alt.EmitClients(
-            [.. participants.Select(x => x.Player)],
+            players,
             "race-prepare:mount",
             new RacePrepareDto
             {
