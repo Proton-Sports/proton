@@ -31,7 +31,8 @@ public sealed class ClientResource : AsyncResource
             .AddHud()
             .AddUtils()
             .AddCharacterCreator()
-            .AddIplFeatures();
+            .AddIplFeatures()
+            .AddRockstarEditorFeatures();
         serviceProvider = serviceCollection.BuildServiceProvider();
     }
 
