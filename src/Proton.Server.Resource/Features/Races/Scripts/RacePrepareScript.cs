@@ -55,7 +55,7 @@ public sealed class RacePrepareScript(IRaceService raceService, IMapCache mapCac
         foreach (var (point, participant) in map.StartPoints.Zip(participants))
         {
             createTasks.AddLast(AltAsync.CreateVehicle(race.VehicleModel, point.Position, point.Rotation, 256));
-            participant.Player.Emit("race-prepare:preloadWorld", point.Position, point.Rotation);
+            participant.Player.Emit("race-prepare:enterTransition", point.Position, point.Rotation);
         }
 
         await Task.Delay(3000).ConfigureAwait(false);
@@ -88,6 +88,9 @@ public sealed class RacePrepareScript(IRaceService raceService, IMapCache mapCac
             );
             participant.Player.SetIntoVehicle(participant.Vehicle, 1);
         }
+
+        Alt.EmitClients(players, "race-prepare:exitTransition");
+        await Task.Delay(1000).ConfigureAwait(false);
 
         Alt.EmitClients(players, "race-start-countdown:mount");
         await Task.Delay(2000).ConfigureAwait(false);

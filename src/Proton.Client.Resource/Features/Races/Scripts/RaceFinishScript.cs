@@ -13,6 +13,7 @@ public sealed class RaceFinishScript(IUiView uiView) : HostedService
     public override Task StartAsync(CancellationToken ct)
     {
         Alt.OnServer<MountScoreboardDto>("race-finish:mountScoreboard", OnServerMountScoreboard);
+        Alt.OnServer("race:destroy", OnRaceDestroy);
         uiView.On("race-finish:getData", OnViewGetData);
         uiView.OnUnmount(Route.RaceFinishScoreboard, OnRaceFinishScoreboardUnmount);
         return Task.CompletedTask;
@@ -22,6 +23,11 @@ public sealed class RaceFinishScript(IUiView uiView) : HostedService
     {
         mountScoreboardDto = dto;
         uiView.Mount(Route.RaceFinishScoreboard);
+    }
+
+    private void OnRaceDestroy()
+    {
+        uiView.Unmount(Route.RaceFinishScoreboard);
     }
 
     private void OnViewGetData()
