@@ -9,6 +9,7 @@ namespace Proton.Client.Resource.Features.Races.Scripts;
 public sealed class RaceMenuScript : IStartup
 {
     private readonly IUiView uiView;
+
     public RaceMenuScript(IUiView uiView)
     {
         this.uiView = uiView;
@@ -23,11 +24,19 @@ public sealed class RaceMenuScript : IStartup
         switch (key)
         {
             case Key.Tab:
-                if (uiView.IsMounted(Route.RaceMainMenuList)) break;
+                if (uiView.IsMounted(Route.RaceMainMenuList))
+                {
+                    break;
+                }
+
                 uiView.Mount(Route.RaceMainMenuList);
                 break;
             case Key.Escape:
-                if (!uiView.IsMounted(Route.RaceMainMenuList)) break;
+                if (!uiView.IsMounted(Route.RaceMainMenuList))
+                {
+                    break;
+                }
+
                 uiView.Unmount(Route.RaceMainMenuList);
                 break;
         }

@@ -29,17 +29,32 @@ public sealed class RacePrepareScript(
             }
         );
         Alt.OnServer<long>("race:start", HandleOnStarted);
-        Alt.OnServer<Vector3, Vector3>("race-prepare:preloadWorld", OnPreloadWorld);
+        Alt.OnServer<Vector3, Vector3>("race-prepare:enterTransition", OnEnterTransition);
+        Alt.OnServer("race-prepare:exitTransition", OnExitTransition);
         return Task.CompletedTask;
     }
 
-    private void OnPreloadWorld(Vector3 position, Vector3 rotation)
+    private void OnEnterTransition(Vector3 position, Vector3 rotation)
     {
-        Alt.FocusData.OverrideFocusPosition(position, Vector3.Zero);
-        preloadCamera = scriptCameraFactory.CreateScriptCamera(CameraHash.Scripted, true);
-        preloadCamera.Position = position + new Vector3(0f, 0f, 3f);
-        preloadCamera.Rotation = rotation * 180 / MathF.PI;
-        preloadCamera.Render();
+        Alt.OnTick += DisableVehicleMovement;
+        Alt.Natives.DoScreenFadeOut(1000);
+        Alt.SetTimeout(
+            () =>
+            {
+                Alt.FocusData.OverrideFocusPosition(position, Vector3.Zero);
+                // preloadCamera = scriptCameraFactory.CreateScriptCamera(CameraHash.Scripted, true);
+                // preloadCamera.Position = position + new Vector3(0f, 0f, 3f);
+                // preloadCamera.Rotation = rotation * 180 / MathF.PI;
+                // preloadCamera.Render();
+            },
+            1000
+        );
+    }
+
+    private void OnExitTransition()
+    {
+        Alt.Natives.DoScreenFadeIn(1000);
+        Alt.FocusData.ClearFocusOverride();
     }
 
     private async Task HandleServerMountAsync(RacePrepareDto dto)
@@ -55,7 +70,6 @@ public sealed class RacePrepareScript(
             loadIplTask = iplService.LoadAsync(dto.IplName);
         }
 
-        Alt.OnTick += DisableVehicleMovement;
         raceService.IplName = dto.IplName;
         raceService.RaceType = (RaceType)dto.RaceType;
         raceService.Dimension = dto.Dimension;
@@ -82,7 +96,6 @@ public sealed class RacePrepareScript(
 
     private void HandleOnStarted(long _)
     {
-        Alt.FocusData.ClearFocusOverride();
         Alt.OnTick -= DisableVehicleMovement;
     }
 
