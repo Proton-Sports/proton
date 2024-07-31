@@ -26,7 +26,8 @@ public static partial class ServiceCollectionExtensions
             .AddHostedService<RaceHudScript>()
             .AddHostedService<RaceHitScript>()
             .AddHostedService<RaceFinishScript>()
-            .AddHostedService<RaceFinishCountdownScript>();
+            .AddHostedService<RaceFinishCountdownScript>()
+            .AddHostedService<RaceStartCountdownScript>();
         return serviceCollection;
     }
 }

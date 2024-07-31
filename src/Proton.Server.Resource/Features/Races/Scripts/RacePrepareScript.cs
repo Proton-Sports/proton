@@ -90,16 +90,17 @@ public sealed class RacePrepareScript(IRaceService raceService, IMapCache mapCac
         }
 
         Alt.EmitClients(players, "race-prepare:exitTransition");
-        await Task.Delay(1000).ConfigureAwait(false);
 
-        Alt.EmitClients(players, "race-start-countdown:mount");
-        await Task.Delay(2000).ConfigureAwait(false);
-        Alt.EmitClients(players, "race-start-countdown:start");
+        await Task.Delay(5000).ConfigureAwait(false);
+        raceService.Countdown(race, TimeSpan.FromSeconds(3));
+        // Alt.EmitClients(players, "race-start-countdown:mount");
+        // await Task.Delay(2000).ConfigureAwait(false);
+        // Alt.EmitClients(players, "race-start-countdown:start");
 
-        var startDuration = TimeSpan.FromSeconds(5);
+        var startDuration = TimeSpan.FromSeconds(8);
         race.StartTime = DateTimeOffset.UtcNow.Add(startDuration);
         startTimers[race.Id] = new Timer(
-            (state) => StartRaceAsync((Race)race!).SafeFireAndForget(exception => Alt.LogError(exception.ToString())),
+            (state) => StartRaceAsync((Race)state!).SafeFireAndForget(exception => Alt.LogError(exception.ToString())),
             race,
             (int)startDuration.TotalMilliseconds,
             Timeout.Infinite
