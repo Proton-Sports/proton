@@ -13,6 +13,7 @@ public interface IRaceService
     event Action<RaceParticipant>? ParticipantFinished;
     event Func<Race, Task>? RaceFinished;
     event Action<Race>? RaceDestroyed;
+    event Action<Race, TimeSpan>? RaceCountdown;
 
     IReadOnlyCollection<Race> Races { get; }
 
@@ -27,4 +28,5 @@ public interface IRaceService
     void Start(Race race);
     void Finish(RaceParticipant participant);
     void Finish(Race race);
+    void Countdown(Race race, TimeSpan countDelay);
 }

@@ -20,6 +20,7 @@ public sealed class DefaultRaceService : IRaceService
     public event Action<RaceParticipant>? ParticipantFinished;
     public event Action<Race>? RaceDestroyed;
     public event Func<Race, Task>? RaceFinished;
+    public event Action<Race, TimeSpan>? RaceCountdown;
 
     public void AddRace(Race race)
     {
@@ -163,6 +164,14 @@ public sealed class DefaultRaceService : IRaceService
         if (RaceFinished is not null)
         {
             RaceFinished(race).SafeFireAndForget(exception => Alt.LogError(exception.ToString()));
+        }
+    }
+
+    public void Countdown(Race race, TimeSpan countDelay)
+    {
+        if (RaceCountdown is not null)
+        {
+            RaceCountdown(race, countDelay);
         }
     }
 }
