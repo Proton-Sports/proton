@@ -3,7 +3,6 @@ using AltV.Net.Client;
 using AltV.Net.Elements.Entities;
 using AsyncAwaitBestPractices;
 using Proton.Client.Core.Interfaces;
-using Proton.Client.Infrastructure.Constants;
 using Proton.Client.Resource.Commons;
 using Proton.Client.Resource.Features.Ipls.Abstractions;
 using Proton.Shared.Constants;
@@ -11,11 +10,7 @@ using Proton.Shared.Dtos;
 
 namespace Proton.Client.Resource.Features.Races.Scripts;
 
-public sealed class RacePrepareScript(
-    IRaceService raceService,
-    IIplService iplService,
-    IScriptCameraFactory scriptCameraFactory
-) : HostedService
+public sealed class RacePrepareScript(IRaceService raceService, IIplService iplService) : HostedService
 {
     private IScriptCamera? preloadCamera;
 
@@ -29,12 +24,12 @@ public sealed class RacePrepareScript(
             }
         );
         Alt.OnServer<long>("race:start", HandleOnStarted);
-        Alt.OnServer<Vector3, Vector3>("race-prepare:enterTransition", OnEnterTransition);
+        Alt.OnServer<Vector3>("race-prepare:enterTransition", OnEnterTransition);
         Alt.OnServer("race-prepare:exitTransition", OnExitTransition);
         return Task.CompletedTask;
     }
 
-    private void OnEnterTransition(Vector3 position, Vector3 rotation)
+    private void OnEnterTransition(Vector3 position)
     {
         Alt.OnTick += DisableVehicleMovement;
         Alt.Natives.DoScreenFadeOut(1000);
@@ -42,10 +37,6 @@ public sealed class RacePrepareScript(
             () =>
             {
                 Alt.FocusData.OverrideFocusPosition(position, Vector3.Zero);
-                // preloadCamera = scriptCameraFactory.CreateScriptCamera(CameraHash.Scripted, true);
-                // preloadCamera.Position = position + new Vector3(0f, 0f, 3f);
-                // preloadCamera.Rotation = rotation * 180 / MathF.PI;
-                // preloadCamera.Render();
             },
             1000
         );
