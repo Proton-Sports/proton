@@ -1,4 +1,5 @@
 using AltV.Net.Client;
+using AltV.Net.Client.Elements.Data;
 using Proton.Client.Resource.Commons;
 using Proton.Client.Resource.Features.UiViews.Abstractions;
 using Proton.Shared.Contants;
@@ -16,6 +17,7 @@ public sealed class RaceFinishScript(IUiView uiView) : HostedService
         Alt.OnServer("race:destroy", OnRaceDestroy);
         uiView.On("race-finish:getData", OnViewGetData);
         uiView.OnUnmount(Route.RaceFinishScoreboard, OnRaceFinishScoreboardUnmount);
+        uiView.OnMount(Route.RaceFinishScoreboard, OnMount);
         return Task.CompletedTask;
     }
 
@@ -40,6 +42,20 @@ public sealed class RaceFinishScript(IUiView uiView) : HostedService
 
     private void OnRaceFinishScoreboardUnmount()
     {
+        Alt.OnKeyUp -= OnKeyUp;
         mountScoreboardDto = null;
+    }
+
+    private void OnMount()
+    {
+        Alt.OnKeyUp += OnKeyUp;
+    }
+
+    private void OnKeyUp(Key key)
+    {
+        if (key == Key.X)
+        {
+            uiView.Emit("race-finish-scoreboard:toggle");
+        }
     }
 }
