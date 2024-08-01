@@ -14,7 +14,7 @@ public sealed class RaceHudScript : IStartup
     {
         this.uiView = uiView;
         uiView.OnMount(Route.RaceHud, OnMount);
-        Alt.OnServer<long>("race:prepare", OnServerRacePrepare);
+        Alt.OnServer("race-prepare:exitTransition", OnServerRacePrepareExitTransition);
         Alt.OnServer<long>("race-hud:startTime", OnServerStartTime);
         Alt.OnServer<RaceHudDto>("race-hud:getData", OnServerGetData);
         Alt.OnServer<RaceHudTickDto>("race-hud:tick", OnServerTick);
@@ -23,7 +23,7 @@ public sealed class RaceHudScript : IStartup
         Alt.OnServer("race:destroy", OnDestroy);
     }
 
-    private void OnServerRacePrepare(long id)
+    private void OnServerRacePrepareExitTransition()
     {
         uiView.Mount(Route.RaceHud);
     }
