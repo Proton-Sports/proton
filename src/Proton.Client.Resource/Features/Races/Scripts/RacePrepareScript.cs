@@ -5,12 +5,14 @@ using AsyncAwaitBestPractices;
 using Proton.Client.Core.Interfaces;
 using Proton.Client.Resource.Commons;
 using Proton.Client.Resource.Features.Ipls.Abstractions;
+using Proton.Client.Resource.Features.UiViews.Abstractions;
 using Proton.Shared.Constants;
+using Proton.Shared.Contants;
 using Proton.Shared.Dtos;
 
 namespace Proton.Client.Resource.Features.Races.Scripts;
 
-public sealed class RacePrepareScript(IRaceService raceService, IIplService iplService) : HostedService
+public sealed class RacePrepareScript(IUiView uiView, IRaceService raceService, IIplService iplService) : HostedService
 {
     private IScriptCamera? preloadCamera;
 
@@ -31,6 +33,7 @@ public sealed class RacePrepareScript(IRaceService raceService, IIplService iplS
 
     private void OnEnterTransition(Vector3 position)
     {
+        uiView.Mount(Route.RacePrepareTransition);
         Alt.OnTick += DisableVehicleMovement;
         Alt.Natives.DoScreenFadeOut(1000);
         Alt.SetTimeout(
@@ -44,6 +47,7 @@ public sealed class RacePrepareScript(IRaceService raceService, IIplService iplS
 
     private void OnExitTransition()
     {
+        uiView.Unmount(Route.RacePrepareTransition);
         Alt.Natives.DoScreenFadeIn(1000);
         Alt.FocusData.ClearFocusOverride();
     }
@@ -67,16 +71,19 @@ public sealed class RacePrepareScript(IRaceService raceService, IIplService iplS
         raceService.EnsureRacePointsCapacity(dto.RacePoints.Count);
         raceService.AddRacePoints(dto.RacePoints);
 
-        var index = 0;
-        while (index + 1 < Math.Min(dto.RacePoints.Count, 2))
+        if (!dto.DisableLoadingCheckpoint)
         {
-            var nextIndex = index + 1;
-            raceService.LoadRacePoint(
-                CheckpointType.CylinderDoubleArrow,
-                index,
-                nextIndex < dto.RacePoints.Count ? nextIndex : null
-            );
-            ++index;
+            var index = 0;
+            while (index + 1 < Math.Min(dto.RacePoints.Count, 2))
+            {
+                var nextIndex = index + 1;
+                raceService.LoadRacePoint(
+                    CheckpointType.CylinderDoubleArrow,
+                    index,
+                    nextIndex < dto.RacePoints.Count ? nextIndex : null
+                );
+                ++index;
+            }
         }
 
         if (loadIplTask is not null)

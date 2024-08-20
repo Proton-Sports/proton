@@ -1,7 +1,6 @@
 using AltV.Net;
 using AltV.Net.Async;
 using AltV.Net.Elements.Entities;
-using AsyncAwaitBestPractices;
 using Proton.Server.Resource.Features.Races.Abstractions;
 using Proton.Server.Resource.SharedKernel;
 using Proton.Shared.Dtos;
@@ -15,7 +14,6 @@ public sealed class RaceCountdownScript(IRaceService raceService, IMapCache mapC
         raceService.ParticipantJoined += HandleParticipantJoined;
         raceService.ParticipantLeft += HandleParticipantLeft;
         raceService.RacePrepared += HandleRacePrepared;
-        Alt.OnPlayerDisconnect += HandlePlayerDisconnect;
         AltAsync.OnClient<IPlayer, Task>("race-countdown:getData", HandleGetDataAsync);
         return Task.CompletedTask;
     }
@@ -47,6 +45,11 @@ public sealed class RaceCountdownScript(IRaceService raceService, IMapCache mapC
 
     private void HandleParticipantJoined(Race race, IPlayer player)
     {
+        if (race.Status != RaceStatus.Open)
+        {
+            return;
+        }
+
         player.Emit("race-countdown:mount");
 
         var participants = race.Participants;
@@ -67,21 +70,6 @@ public sealed class RaceCountdownScript(IRaceService raceService, IMapCache mapC
             "race-countdown:setParticipants",
             participants.Count
         );
-    }
-
-    private void HandlePlayerDisconnect(IPlayer player, string reason)
-    {
-        if (raceService.TryGetRaceByParticipant(player, out var race))
-        {
-            foreach (var participant in race.Participants)
-            {
-                if (participant.Player == player)
-                {
-                    raceService.RemoveParticipant(participant);
-                    break;
-                }
-            }
-        }
     }
 
     private Task HandleRacePrepared(Race race)

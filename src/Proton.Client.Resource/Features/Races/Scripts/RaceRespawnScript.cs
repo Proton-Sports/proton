@@ -20,12 +20,19 @@ public sealed class RaceRespawnScript(IRaceService raceService) : HostedService
     {
         Alt.OnKeyDown += OnKeyDown;
         Alt.OnKeyUp += OnKeyUp;
+        Alt.OnTick += OnTick;
+    }
+
+    private void OnTick()
+    {
+        Alt.Natives.DisableControlAction(0, 80, true);
     }
 
     private void OnStopped()
     {
         Alt.OnKeyDown -= OnKeyDown;
         Alt.OnKeyUp -= OnKeyUp;
+        Alt.OnTick -= OnTick;
     }
 
     private void OnKeyDown(Key key)

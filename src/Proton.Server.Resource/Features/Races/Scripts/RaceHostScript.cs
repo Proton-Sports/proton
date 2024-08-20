@@ -54,6 +54,7 @@ public sealed class RaceHostScript(IRaceService raceService, IDbContextFactory d
         var race = new Race
         {
             Id = ++counter,
+            Guid = Guid.NewGuid(),
             Host = player,
             VehicleModel = model,
             MapId = dto.MapId,

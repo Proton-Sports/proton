@@ -1,5 +1,3 @@
-using System.Text.Json;
-using System.Text.Json.Serialization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Proton.Server.Core.Interfaces;
@@ -17,9 +15,12 @@ public class DefaultDbContext : DbContext, IDbContext
     public DbSet<RaceStartPoint> RaceStartPoints => Set<RaceStartPoint>();
     public DbSet<RacePoint> RacePoints => Set<RacePoint>();
     public DbSet<Vehicle> Vehicles => Set<Vehicle>();
+    public DbSet<UserRaceRestoration> UserRaceRestorations => Set<UserRaceRestoration>();
 
     public DefaultDbContext() { }
-    public DefaultDbContext(DbContextOptions options) : base(options) { }
+
+    public DefaultDbContext(DbContextOptions options)
+        : base(options) { }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -27,17 +28,20 @@ public class DefaultDbContext : DbContext, IDbContext
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(DefaultDbContext).Assembly);
     }
 
-    EntityEntry<TEntity> IDbContext.Add<TEntity>(TEntity entity) where TEntity : class
+    EntityEntry<TEntity> IDbContext.Add<TEntity>(TEntity entity)
+        where TEntity : class
     {
         return Add(entity);
     }
 
-    ValueTask<EntityEntry<TEntity>> IDbContext.AddAsync<TEntity>(TEntity entity, CancellationToken cancellationToken) where TEntity : class
+    ValueTask<EntityEntry<TEntity>> IDbContext.AddAsync<TEntity>(TEntity entity, CancellationToken cancellationToken)
+        where TEntity : class
     {
         return AddAsync(entity, cancellationToken);
     }
 
-    EntityEntry<TEntity> IDbContext.Attach<TEntity>(TEntity entity) where TEntity : class
+    EntityEntry<TEntity> IDbContext.Attach<TEntity>(TEntity entity)
+        where TEntity : class
     {
         return Attach(entity);
     }

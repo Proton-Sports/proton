@@ -53,7 +53,7 @@ public sealed class RaceHudScript(IRaceService raceService, IMapCache mapCache) 
                         Lap = x.Lap,
                         Name = x.Player.Name,
                         Distance = x.AccumulatedDistance,
-                        PartialDistance = 0,
+                        PartialDistance = x.PartialDistance,
                         SpeedPerHour = x.Player.IsInVehicle
                             ? ((Vector3)x.Player.Vehicle.Velocity).Length()
                             : x.Player.MoveSpeed,
