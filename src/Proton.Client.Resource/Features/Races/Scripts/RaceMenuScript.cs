@@ -24,6 +24,7 @@ public sealed class RaceMenuScript : IStartup
         switch (key)
         {
             case Key.Tab:
+                Console.WriteLine($"RaceMainMenuList mounted ? {uiView.IsMounted(Route.RaceMainMenuList)}");
                 if (uiView.IsMounted(Route.RaceMainMenuList))
                 {
                     break;

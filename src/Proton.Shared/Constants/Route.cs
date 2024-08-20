@@ -14,6 +14,7 @@ public sealed class Route : IEquatable<Route>
     public static readonly Route Auth = new("auth");
     public static readonly Route RaceCountdown = new("race-countdown");
     public static readonly Route RacePrepare = new("race-prepare");
+    public static readonly Route RacePrepareTransition = new("race-prepare-transition");
     public static readonly Route RaceFinishCountdown = new("race-finish-countdown");
     public static readonly Route CharacterCreator = new("character-creator");
     public static readonly Route Speedometer = new("speedometer");

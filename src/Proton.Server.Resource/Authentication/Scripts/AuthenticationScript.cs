@@ -16,6 +16,7 @@ using System.Security.Principal;
 using System.Text;
 using System.Threading.Tasks;
 
+
 namespace Proton.Server.Resource.Authentication.Scripts;
 
 public class AuthenticationScript : IStartup

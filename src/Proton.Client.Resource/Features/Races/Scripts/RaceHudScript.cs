@@ -21,9 +21,15 @@ public sealed class RaceHudScript : IStartup
         Alt.OnServer<long>("race-hud:lapTime", OnServerLapTime);
         Alt.OnServer("race:finish", OnFinish);
         Alt.OnServer("race:destroy", OnDestroy);
+        Alt.OnServer("race-hud:mount", OnServerMount);
     }
 
     private void OnServerRacePrepareExitTransition()
+    {
+        uiView.Mount(Route.RaceHud);
+    }
+
+    private void OnServerMount()
     {
         uiView.Mount(Route.RaceHud);
     }

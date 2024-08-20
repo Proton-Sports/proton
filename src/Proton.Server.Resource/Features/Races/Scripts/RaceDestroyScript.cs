@@ -28,10 +28,10 @@ public sealed class RaceDestroyScript(IRaceService raceService) : HostedService
 
     private void HandleParticipantLeft(Race race, IPlayer player)
     {
-        if (race.Participants.Count == 0)
-        {
-            raceService.DestroyRace(race);
-        }
+        // if (race.Participants.Count == 0)
+        // {
+        //     raceService.DestroyRace(race);
+        // }
     }
 
     private Task OnRaceFinished(Race race)

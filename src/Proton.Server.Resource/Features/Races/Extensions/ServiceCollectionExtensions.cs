@@ -21,14 +21,14 @@ public static partial class ServiceCollectionExtensions
             .AddHostedService<RacePrepareScript>()
             .AddHostedService<RaceStartScript>()
             .AddHostedService<RaceDestroyScript>()
-            // .AddHostedService<RaceEndScript>()
             .AddStartup<RaceLeaveScript>()
             .AddHostedService<RaceHudScript>()
             .AddHostedService<RaceHitScript>()
             .AddHostedService<RaceFinishScript>()
             .AddHostedService<RaceFinishCountdownScript>()
             .AddHostedService<RaceStartCountdownScript>()
-            .AddHostedService<RaceRespawnScript>();
+            .AddHostedService<RaceRespawnScript>()
+            .AddHostedService<RaceRestoreScript>();
         return serviceCollection;
     }
 }

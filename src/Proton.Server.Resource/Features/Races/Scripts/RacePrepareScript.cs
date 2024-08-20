@@ -93,9 +93,6 @@ public sealed class RacePrepareScript(IRaceService raceService, IMapCache mapCac
 
         await Task.Delay(5000).ConfigureAwait(false);
         raceService.Countdown(race, TimeSpan.FromSeconds(3));
-        // Alt.EmitClients(players, "race-start-countdown:mount");
-        // await Task.Delay(2000).ConfigureAwait(false);
-        // Alt.EmitClients(players, "race-start-countdown:start");
 
         var startDuration = TimeSpan.FromSeconds(8);
         race.StartTime = DateTimeOffset.UtcNow.Add(startDuration);

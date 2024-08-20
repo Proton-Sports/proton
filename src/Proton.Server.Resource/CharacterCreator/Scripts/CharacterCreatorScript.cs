@@ -142,14 +142,14 @@ public class CharacterCreatorScript : IStartup
                 break;
         }
 
-        player.Dimension = 0;
-        player.Frozen = false;
-        player.Position = new Position(486.417f, -3339.692f, 6.070f);
-        player.Rotation = Rotation.Zero;
-        player.Visible = true;
+        // player.Dimension = 0;
+        // player.Frozen = false;
+        // player.Position = new Position(486.417f, -3339.692f, 6.070f);
+        // player.Rotation = Rotation.Zero;
+        // player.Visible = true;
 
         player.Emit("clientNametags:showNametags", true);
-        player.Invincible = true;
+        // player.Invincible = true;
     }
 
     private async void CreateCharacter(IPlayer player, string appearanceJson)
