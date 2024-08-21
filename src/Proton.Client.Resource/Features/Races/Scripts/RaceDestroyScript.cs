@@ -2,10 +2,12 @@ using AltV.Net.Client;
 using AsyncAwaitBestPractices;
 using Proton.Client.Resource.Commons;
 using Proton.Client.Resource.Features.Ipls.Abstractions;
+using Proton.Client.Resource.Features.UiViews.Abstractions;
+using Proton.Shared.Contants;
 
 namespace Proton.Client.Resource.Features.Races.Scripts;
 
-public sealed class RaceDestroyScript(IRaceService raceService, IIplService iplService) : HostedService
+public sealed class RaceDestroyScript(IRaceService raceService, IIplService iplService, IUiView uiView) : HostedService
 {
     public override Task StartAsync(CancellationToken ct)
     {
@@ -19,11 +21,12 @@ public sealed class RaceDestroyScript(IRaceService raceService, IIplService iplS
 
     private void OnEnterTransition()
     {
-        Console.WriteLine("OnEnterTransition");
+        uiView.Mount(Route.RaceEndTransition);
         Alt.Natives.DoScreenFadeOut(1000);
         Alt.SetTimeout(
             () =>
             {
+                uiView.Unmount(Route.RaceEndTransition);
                 Alt.Natives.DoScreenFadeIn(1000);
             },
             3000
