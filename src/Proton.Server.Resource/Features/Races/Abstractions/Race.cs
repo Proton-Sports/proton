@@ -24,4 +24,5 @@ public record class Race
     public RaceStatus Status { get; set; }
     public DateTimeOffset StartTime { get; set; }
     public List<RaceParticipant> Participants { get; set; } = [];
+    public int PrizePool { get; set; }
 }

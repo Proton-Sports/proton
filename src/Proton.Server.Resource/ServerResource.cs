@@ -49,9 +49,27 @@ public sealed class ServerResource : AsyncResource
     {
         ResourceExtensions.RegisterMValueAdapters();
 
+        for (var total = 1; total <= 20; ++total)
+        {
+            var prizePool = total * 200;
+            Console.WriteLine($"Total players: {total}, prize pool: {prizePool}$");
+            for (var finished = 1; finished <= total; ++finished)
+            {
+                Console.WriteLine($"\tFinish {finished}, receive {Calc(total, finished) / 100 * prizePool}$");
+            }
+            Console.WriteLine("=================");
+        }
+
         // TODO: Add logging for startup
         _ = host.Services.GetServices<IStartup>();
         host.StartAsync().Wait();
+    }
+
+    public float Calc(int total, int finished)
+    {
+        var totalMin = Math.Min(total, 4);
+        var splits = ((totalMin * (1 + totalMin)) >> 1) + Math.Max(total - 4, 0);
+        return (100f / splits) * (MathF.Max(MathF.Min(total, 4) - finished, 0) + 1);
     }
 
     public override void OnStop()

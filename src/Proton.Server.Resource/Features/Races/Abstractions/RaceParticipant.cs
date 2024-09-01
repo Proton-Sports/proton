@@ -12,4 +12,5 @@ public class RaceParticipant
     public int? NextRacePointIndex { get; set; }
     public LinkedList<RacePointLog> PointLogs { get; set; } = new();
     public long FinishTime { get; set; }
+    public float PrizePercent { get; set; }
 }
