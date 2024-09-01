@@ -1,15 +1,19 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Proton.Server.Core.Models;
+using Proton.Server.Core.Models.Log;
 
 namespace Proton.Server.Core.Interfaces;
 
 public interface IDbContext : IDisposable, IAsyncDisposable
 {
+    DbSet<User> Users { get; }
+    DbSet<Character> Characters { get; }
+    DbSet<Session> Sessions { get; }
+    DbSet<Vehicle> Vehicles { get; }
     DbSet<RaceMap> RaceMaps { get; }
     DbSet<RaceStartPoint> RaceStartPoints { get; }
     DbSet<RacePoint> RacePoints { get; }
-    DbSet<Character> Characters { get; }
     DbSet<UserRaceRestoration> UserRaceRestorations { get; }
 
     EntityEntry<TEntity> Add<TEntity>(TEntity entity)
