@@ -40,10 +40,11 @@ public sealed class RewardForPlayingScript(IDbContextFactory dbFactory) : Hosted
     private async ValueTask TimerTickAsync()
     {
         var rewardingPlayers = new List<PPlayer>();
-        foreach (var player in Alt.GetAllPlayers().Cast<PPlayer>())
+        foreach (var player in Alt.GetAllPlayers().Cast<PPlayer>().Where(a => a.ProtonId != -1))
         {
             if (!playerMinutes.TryGetValue(player, out var minutes))
             {
+                minutes = 1;
                 playerMinutes.Add(player, 1);
             }
             else
@@ -55,6 +56,7 @@ public sealed class RewardForPlayingScript(IDbContextFactory dbFactory) : Hosted
             if (minutes == 30)
             {
                 rewardingPlayers.Add(player);
+                playerMinutes[player] = 0;
             }
         }
 
