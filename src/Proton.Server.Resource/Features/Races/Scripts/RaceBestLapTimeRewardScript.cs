@@ -21,7 +21,7 @@ public sealed class RaceBestLapTimeRewardScript(IRaceService raceService, IDbCon
         RaceParticipant? bestLapParticipant = default;
         foreach (var participant in race.Participants.Where(a => a.FinishTime != 0))
         {
-            foreach (var lap in participant.PointLogs.GroupBy(a => a.Lap))
+            foreach (var lap in participant.PointLogs.GroupBy(a => a.Lap).Where(a => a.Key > 0))
             {
                 var points = lap.ToList();
                 if (points.Count == 0)
