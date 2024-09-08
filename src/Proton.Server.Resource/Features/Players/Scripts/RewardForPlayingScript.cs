@@ -1,6 +1,5 @@
 using AltV.Net;
 using AltV.Net.Elements.Entities;
-using AsyncAwaitBestPractices;
 using Microsoft.EntityFrameworkCore;
 using Proton.Server.Core.Factorys;
 using Proton.Server.Core.Interfaces;
@@ -16,9 +15,9 @@ public sealed class RewardForPlayingScript(IDbContextFactory dbFactory) : Hosted
     public override Task StartAsync(CancellationToken ct)
     {
         timer = new Timer(
-            (state) =>
+            async (state) =>
             {
-                TimerTickAsync().SafeFireAndForget(e => Alt.LogError(e.ToString()));
+                await TimerTickAsync().ConfigureAwait(false);
             },
             null,
             0,

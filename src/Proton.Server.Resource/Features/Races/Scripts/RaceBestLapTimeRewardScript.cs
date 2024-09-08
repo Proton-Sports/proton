@@ -29,7 +29,7 @@ public sealed class RaceBestLapTimeRewardScript(IRaceService raceService, IDbCon
                     continue;
                 }
 
-                var startTime = points.Count == 1 ? race.StartTime : points[0].Time;
+                var startTime = (lap.Key == 1 || points.Count == 1) ? race.StartTime : points[0].Time;
                 var endTime = points[^1].Time;
 
                 var lapMs = (endTime - startTime).TotalMilliseconds;
