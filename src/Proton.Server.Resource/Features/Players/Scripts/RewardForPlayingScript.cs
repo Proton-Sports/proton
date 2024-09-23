@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Proton.Server.Core.Interfaces;
 using Proton.Server.Infrastructure.Factorys;
 using Proton.Server.Resource.SharedKernel;
+using Proton.Shared.Dtos;
 
 namespace Proton.Server.Resource.Features.Players.Scripts;
 
@@ -51,6 +52,7 @@ public sealed class RewardForPlayingScript(IDbContextFactory dbFactory) : Hosted
                 minutes += 1;
                 playerMinutes[player] = minutes;
             }
+            Console.WriteLine(minutes);
 
             if (minutes == 30)
             {
@@ -63,6 +65,19 @@ public sealed class RewardForPlayingScript(IDbContextFactory dbFactory) : Hosted
         {
             return;
         }
+
+        // TODO: maybe a NotificationService in favor of PPlayer.SendNotification
+        Alt.EmitClients(
+            [.. rewardingPlayers],
+            "player:sendNotification",
+            new NotificationDto
+            {
+                Icon = "CHAR_BANK_MAZE",
+                Title = "Money rewards",
+                SecondaryTitle = "Playing every 30 minutes",
+                Body = $"You have received 50$ for playing every 30 minutes.",
+            }
+        );
 
         await using var db = await dbFactory.CreateDbContextAsync().ConfigureAwait(false);
         await db

@@ -5,6 +5,7 @@ using Proton.Server.Core.Interfaces;
 using Proton.Server.Infrastructure.Factorys;
 using Proton.Server.Resource.Features.Races.Abstractions;
 using Proton.Server.Resource.SharedKernel;
+using Proton.Shared.Dtos;
 
 namespace Proton.Server.Resource.Features.Races.Scripts;
 
@@ -34,11 +35,26 @@ public sealed class RaceRewardScript(IRaceService raceService, IDbContextFactory
         var totalMin = Math.Min(total, 4);
         var splits = ((totalMin * (1 + totalMin)) >> 1) + Math.Max(total - 4, 0);
         participant.PrizePercent = 1f / splits * (Math.Max(Math.Min(total, 4) - finished, 0) + 1);
+        var money = (int)Math.Round(participant.PrizePercent * race.PrizePool);
+
+        ((PPlayer)participant.Player).SendNotification(
+            new NotificationDto
+            {
+                Icon = "CHAR_BANK_MAZE",
+                Title = "Money rewards",
+                SecondaryTitle = "Race completed",
+                Body =
+                    $"You have received {money}$ for being the {finished switch {
+                    1 => "1st",
+                    2 => "2nd",
+                    3 => "3rd",
+                    _ => $"{finished + 1}th"}} racer to complete.",
+            }
+        );
 
         await db
             .Users.Where(a => a.Id == pplayer.ProtonId)
-            .ExecuteUpdateAsync(a =>
-                a.SetProperty(a => a.Money, a => a.Money + (int)Math.Round(participant.PrizePercent * race.PrizePool))
-            );
+            .ExecuteUpdateAsync(a => a.SetProperty(a => a.Money, a => a.Money + money))
+            .ConfigureAwait(false);
     }
 }

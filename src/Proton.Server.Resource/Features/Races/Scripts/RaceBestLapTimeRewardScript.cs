@@ -1,8 +1,10 @@
+using AltV.Net;
 using Microsoft.EntityFrameworkCore;
 using Proton.Server.Core.Interfaces;
 using Proton.Server.Infrastructure.Factorys;
 using Proton.Server.Resource.Features.Races.Abstractions;
 using Proton.Server.Resource.SharedKernel;
+using Proton.Shared.Dtos;
 
 namespace Proton.Server.Resource.Features.Races.Scripts;
 
@@ -45,6 +47,15 @@ public sealed class RaceBestLapTimeRewardScript(IRaceService raceService, IDbCon
                 return;
             }
 
+            pplayer.SendNotification(
+                new NotificationDto
+                {
+                    Icon = "CHAR_BANK_MAZE",
+                    Title = "Money rewards",
+                    SecondaryTitle = "Best lap time",
+                    Body = $"You have received 100$ for making best lap time in the race.",
+                }
+            );
             await using var db = await dbFactory.CreateDbContextAsync().ConfigureAwait(false);
             await db
                 .Users.Where(a => a.Id == pplayer.ProtonId)
