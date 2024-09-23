@@ -1,8 +1,8 @@
 using AltV.Net;
 using AsyncAwaitBestPractices;
 using Microsoft.EntityFrameworkCore;
-using Proton.Server.Core.Factorys;
 using Proton.Server.Core.Interfaces;
+using Proton.Server.Infrastructure.Factorys;
 using Proton.Server.Resource.Features.Races.Abstractions;
 using Proton.Server.Resource.SharedKernel;
 

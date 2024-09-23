@@ -12,8 +12,7 @@ public static class ServiceCollectionExtensions
             .AddSingleton<IGameplayCamera, DefaultGameplayCamera>()
             .AddSingleton<IScriptCameraFactory, DefaultScriptCameraFactory>()
             .AddSingleton<IRaycastService, DefaultRaycastService>()
-            .AddSingleton<INoClip, ClientOnlyNoClip>()
-            .AddSingleton<NotificationService>(); //TODO: Add Interface
+            .AddSingleton<INoClip, ClientOnlyNoClip>();
         return serviceCollection;
     }
 }

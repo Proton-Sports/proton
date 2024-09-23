@@ -5,9 +5,9 @@ using AltV.Net.Async;
 using AltV.Net.Data;
 using AltV.Net.Elements.Entities;
 using AltV.Net.Enums;
-using Proton.Server.Core.Factorys;
 using Proton.Server.Core.Models;
 using Proton.Server.Infrastructure.CharacterCreator;
+using Proton.Server.Infrastructure.Factorys;
 using Proton.Shared.Interfaces;
 
 namespace Proton.Server.Resource.CharacterCreator.Scripts;

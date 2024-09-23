@@ -9,6 +9,7 @@ using Proton.Client.Resource.Commons.Abstractions;
 using Proton.Client.Resource.Features.UiViews.Abstractions;
 using Proton.Client.Resource.Hud.Extensions;
 using Proton.Client.Resource.Nametags.Extensions;
+using Proton.Client.Resource.Notifications.Extensions;
 using Proton.Client.Resource.Utils.Extentions;
 using Proton.Shared.Extensions;
 using Proton.Shared.Interfaces;
@@ -32,7 +33,8 @@ public sealed class ClientResource : AsyncResource
             .AddUtils()
             .AddCharacterCreator()
             .AddIplFeatures()
-            .AddRockstarEditorFeatures();
+            .AddRockstarEditorFeatures()
+            .AddNotificationFeatures();
         serviceProvider = serviceCollection.BuildServiceProvider();
     }
 

@@ -1,21 +1,20 @@
-﻿using AltV.Net;
-using AltV.Net.Async;
-using AltV.Net.Elements.Entities;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using Proton.Server.Core.Factorys;
-using Proton.Server.Core.Interfaces;
-using Proton.Server.Infrastructure.Authentication;
-using Proton.Server.Infrastructure.Persistence;
-using Proton.Shared.Interfaces;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.AccessControl;
 using System.Security.Principal;
 using System.Text;
 using System.Threading.Tasks;
-
+using AltV.Net;
+using AltV.Net.Async;
+using AltV.Net.Elements.Entities;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Proton.Server.Core.Interfaces;
+using Proton.Server.Infrastructure.Authentication;
+using Proton.Server.Infrastructure.Factorys;
+using Proton.Server.Infrastructure.Persistence;
+using Proton.Shared.Interfaces;
 
 namespace Proton.Server.Resource.Authentication.Scripts;
 
@@ -25,11 +24,14 @@ public class AuthenticationScript : IStartup
     private readonly IDbContextFactory<DefaultDbContext> dbContextFactory;
     private readonly IConfiguration configuration;
 
-    private Dictionary<IPlayer, DiscordAccountHandler> playerAuthenticationStore = new Dictionary<IPlayer, DiscordAccountHandler>();
+    private Dictionary<IPlayer, DiscordAccountHandler> playerAuthenticationStore =
+        new Dictionary<IPlayer, DiscordAccountHandler>();
 
-    public AuthenticationScript(DiscordHandler discord,
+    public AuthenticationScript(
+        DiscordHandler discord,
         IDbContextFactory<DefaultDbContext> dbContextFactory,
-        IConfiguration configuration)
+        IConfiguration configuration
+    )
     {
         this.discord = discord;
         this.dbContextFactory = dbContextFactory;
@@ -38,8 +40,10 @@ public class AuthenticationScript : IStartup
         AltAsync.OnPlayerConnect += OnPlayerConnect;
         AltAsync.OnPlayerDisconnect += OnPlayerDisconnect;
         AltAsync.OnResourceStop += OnResourceStop;
-        Alt.OnClient<string>("authentication:token:exchange",
-            (player, token) => OnTokenExchange(player, token).GetAwaiter());
+        Alt.OnClient<string>(
+            "authentication:token:exchange",
+            (player, token) => OnTokenExchange(player, token).GetAwaiter()
+        );
         Alt.OnClient("authentication:login", (p) => OnPlayerWantsLogin(p));
     }
 
@@ -90,7 +94,7 @@ public class AuthenticationScript : IStartup
             p.ProtonId = id;
             p.Emit("authentication:login:ok");
             p.SetStreamSyncedMetaData("playerName", p.SocialClubName);
-            
+
             Alt.Emit("auth:firstSignIn", p);
         }
         else

@@ -1,26 +1,13 @@
 ﻿using AltV.Net;
 using AltV.Net.Async.Elements.Entities;
-using AltV.Net.Elements.Entities;
-using Proton.Server.Core.Models;
-using Proton.Shared.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Proton.Shared.Dtos;
 
-namespace Proton.Server.Core.Factorys
+namespace Proton.Server.Infrastructure.Factorys;
+
+public class PPlayer(ICore core, nint nativePointer, uint id) : AsyncPlayer(core, nativePointer, id)
 {
-    public class PPlayer : AsyncPlayer
-    {
-        //If -1 Player not Loggedin
-        public long ProtonId { get; set; } = -1;
+    //If -1 Player not Loggedin
+    public long ProtonId { get; set; } = -1;
 
-        public PPlayer(ICore core, nint nativePointer, uint id) : base(core, nativePointer, id)
-        {
-        }
-
-        public void SendNotification(SharedNotification notify)
-            => Player.Emit("player:sendNotification", notify);
-    }
+    public void SendNotification(NotificationDto notify) => Player.Emit("player:sendNotification", notify);
 }

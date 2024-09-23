@@ -1,21 +1,14 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Proton.Client.Resource.Utils.Scripts;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace Proton.Client.Resource.Utils.Extentions
+namespace Proton.Client.Resource.Utils.Extentions;
+
+public static class ServiceCollectionExtention
 {
-    internal static class ServiceCollectionExtention
+    public static IServiceCollection AddUtils(this IServiceCollection services)
     {
-        internal static IServiceCollection AddUtils(this IServiceCollection services)
-        {
-            services.AddStartup<NotificationScript>();
-            services.AddStartup<SpeedometerScript>();
+        services.AddStartup<SpeedometerScript>();
 
-            return services;
-        }
+        return services;
     }
 }
