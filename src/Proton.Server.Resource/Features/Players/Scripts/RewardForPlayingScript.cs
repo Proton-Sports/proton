@@ -52,7 +52,6 @@ public sealed class RewardForPlayingScript(IDbContextFactory dbFactory) : Hosted
                 minutes += 1;
                 playerMinutes[player] = minutes;
             }
-            Console.WriteLine(minutes);
 
             if (minutes == 30)
             {

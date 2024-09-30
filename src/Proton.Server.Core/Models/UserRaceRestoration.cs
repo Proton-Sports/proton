@@ -1,3 +1,4 @@
+using AltV.Net.Enums;
 using Proton.Server.Core.Interfaces;
 
 namespace Proton.Server.Core.Models;
@@ -19,4 +20,5 @@ public sealed record UserRaceRestoration : IAggregateRoot
     public float Roll { get; init; }
     public float Pitch { get; init; }
     public float Yaw { get; init; }
+    public VehicleModel VehicleModel { get; init; }
 }

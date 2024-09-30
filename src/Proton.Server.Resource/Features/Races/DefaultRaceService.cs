@@ -12,7 +12,7 @@ public sealed class DefaultRaceService : IRaceService
 
     public IReadOnlyCollection<Race> Races => new List<Race>(races);
 
-    public event Action<Race, IPlayer>? ParticipantJoined;
+    public event Action<Race, RaceParticipant>? ParticipantJoined;
     public event Action<Race, IPlayer>? ParticipantLeft;
     public event Func<Race, Task>? RacePrepared;
     public event Func<Race, Task>? RaceStarted;
@@ -75,7 +75,7 @@ public sealed class DefaultRaceService : IRaceService
         playerRace[participant.Player] = race;
         if (ParticipantJoined is not null)
         {
-            ParticipantJoined(race, participant.Player);
+            ParticipantJoined(race, participant);
         }
 
         return true;
@@ -89,7 +89,7 @@ public sealed class DefaultRaceService : IRaceService
         }
 
         playerRace.Remove(participant.Player);
-        bool removed = race.Participants.Remove(participant);
+        var removed = race.Participants.Remove(participant);
         participant.Vehicle?.Destroy();
         if (ParticipantLeft is not null)
         {
@@ -134,7 +134,7 @@ public sealed class DefaultRaceService : IRaceService
         {
             foreach (var handler in RacePrepared.GetInvocationList().Cast<Func<Race, Task>>())
             {
-                handler(race).SafeFireAndForget(Console.WriteLine);
+                handler(race).SafeFireAndForget(e => Alt.LogError(e.ToString()));
             }
         }
     }
@@ -146,7 +146,7 @@ public sealed class DefaultRaceService : IRaceService
         {
             foreach (var handler in RaceStarted.GetInvocationList().Cast<Func<Race, Task>>())
             {
-                handler(race).SafeFireAndForget(Console.WriteLine);
+                handler(race).SafeFireAndForget(e => Alt.LogError(e.ToString()));
             }
         }
     }

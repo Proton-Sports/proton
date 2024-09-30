@@ -93,6 +93,7 @@ public sealed class RaceRestoreScript(
             Roll = rotation.Roll,
             Pitch = rotation.Pitch,
             Yaw = rotation.Yaw,
+            VehicleModel = participant.VehicleModel,
         };
         await using var db = await dbFactory.CreateDbContextAsync().ConfigureAwait(false);
         db.Add(restoration);
@@ -142,15 +143,13 @@ public sealed class RaceRestoreScript(
         var position = new Position(restoration.X, restoration.Y, restoration.Z);
         var rotation = new Rotation(restoration.Roll, restoration.Pitch, restoration.Yaw);
         p.Position = position;
-        Console.WriteLine("Set player to pos " + position);
         p.Rotation = rotation;
         p.Dimension = (int)race.Id;
         if (race.Status == RaceStatus.Started)
         {
-            vehicle = await AltAsync.CreateVehicle(race.VehicleModel, position, rotation).ConfigureAwait(false);
+            vehicle = await AltAsync.CreateVehicle(restoration.VehicleModel, position, rotation).ConfigureAwait(false);
             vehicle.Dimension = (int)race.Id;
             p.SetIntoVehicle(vehicle, 1);
-            Console.WriteLine("Created vehicle " + vehicle);
         }
         var participant = new RaceParticipant
         {
@@ -171,6 +170,7 @@ public sealed class RaceRestoreScript(
                     })
             ),
             FinishTime = restoration.FinishTime,
+            VehicleModel = restoration.VehicleModel,
         };
         raceService.AddParticipant(race.Id, participant);
 
@@ -221,6 +221,5 @@ public sealed class RaceRestoreScript(
         player.Emit("race-hud:mount");
 
         await deleteTask.ConfigureAwait(false);
-        Console.WriteLine("End of restore");
     }
 }

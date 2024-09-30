@@ -18,9 +18,9 @@ public sealed class RaceScript : IStartup
         raceService.RaceStarted += HandleRaceStarted;
     }
 
-    private void HandleParticipantJoined(Race race, IPlayer player)
+    private void HandleParticipantJoined(Race race, RaceParticipant participant)
     {
-        player.Emit("race:join", race.Id);
+        participant.Player.Emit("race:join", race.Id);
     }
 
     private void HandleParticipantLeft(Race race, IPlayer player)

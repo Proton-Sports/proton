@@ -3,7 +3,6 @@ using AltV.Net;
 using AltV.Net.Async;
 using AltV.Net.Elements.Entities;
 using AltV.Net.Enums;
-using AsyncAwaitBestPractices;
 using Microsoft.EntityFrameworkCore;
 using Proton.Server.Core.Interfaces;
 using Proton.Server.Resource.Features.Races.Abstractions;
@@ -16,25 +15,13 @@ namespace Proton.Server.Resource.Features.Races.Scripts;
 public sealed class RaceHostScript(IRaceService raceService, IDbContextFactory dbContextFactory) : HostedService
 {
     private long counter;
-    private readonly Dictionary<long, Timer> prepareTimers = [];
 
     public override Task StartAsync(CancellationToken ct)
     {
         Alt.OnClient<IPlayer, RaceHostSubmitDto>("race-host:submit", HandleSubmit);
         AltAsync.OnClient<IPlayer, Task>("race-host:availableMaps", HandleAvailableMapsAsync);
         AltAsync.OnClient<IPlayer, long, Task>("race-host:getMaxRacers", HandleGetMaxRacersAsync);
-        raceService.RaceDestroyed += (race) =>
-            OnRaceDestroyedAsync(race).SafeFireAndForget(exception => Alt.LogError(exception.ToString()));
         return Task.CompletedTask;
-    }
-
-    public override async Task StopAsync(CancellationToken ct)
-    {
-        foreach (var (_, timer) in prepareTimers)
-        {
-            await timer.DisposeAsync().ConfigureAwait(false);
-        }
-        prepareTimers.Clear();
     }
 
     private void HandleSubmit(IPlayer player, RaceHostSubmitDto dto)
@@ -45,10 +32,15 @@ public sealed class RaceHostScript(IRaceService raceService, IDbContextFactory d
             return;
         }
 
-        if (!Enum.TryParse<VehicleModel>(dto.VehicleName, true, out var model))
+        var names = dto.VehicleName.Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+        var models = new VehicleModel[names.Length];
+        for (var i = 0; i != names.Length; ++i)
         {
-            // TODO: Error handling
-            return;
+            if (!Enum.TryParse<VehicleModel>(names[i], true, out var model))
+            {
+                return;
+            }
+            models[i] = model;
         }
 
         var race = new Race
@@ -56,7 +48,7 @@ public sealed class RaceHostScript(IRaceService raceService, IDbContextFactory d
             Id = ++counter,
             Guid = Guid.NewGuid(),
             Host = player,
-            VehicleModel = model,
+            VehicleModels = models,
             MapId = dto.MapId,
             MaxParticipants = dto.Racers,
             Duration = dto.Duration,
@@ -102,12 +94,9 @@ public sealed class RaceHostScript(IRaceService raceService, IDbContextFactory d
             Status = RaceStatus.Open,
         };
         raceService.AddRace(race);
-        raceService.AddParticipant(race.Id, new RaceParticipant { Player = player });
-        prepareTimers[race.Id] = new Timer(
-            (state) => PrepareRace((Race)state!).SafeFireAndForget(exception => Alt.LogError(exception.ToString())),
-            race,
-            race.CountdownSeconds * 1000,
-            Timeout.Infinite
+        raceService.AddParticipant(
+            race.Id,
+            new RaceParticipant { Player = player, VehicleModel = race.VehicleModels[0] }
         );
         player.Emit("race-host:submit");
     }
@@ -131,27 +120,5 @@ public sealed class RaceHostScript(IRaceService raceService, IDbContextFactory d
             .FirstOrDefaultAsync()
             .ConfigureAwait(false);
         player.Emit("race-host:getMaxRacers", Math.Max(racers, 1));
-    }
-
-    private async Task PrepareRace(Race race)
-    {
-        if (prepareTimers.Remove(race.Id, out var timer))
-        {
-            await AltAsync
-                .Do(() =>
-                {
-                    raceService.Prepare(race);
-                })
-                .ConfigureAwait(false);
-            await timer.DisposeAsync().ConfigureAwait(false);
-        }
-    }
-
-    private async Task OnRaceDestroyedAsync(Race race)
-    {
-        if (prepareTimers.Remove(race.Id, out var timer))
-        {
-            await timer.DisposeAsync().ConfigureAwait(false);
-        }
     }
 }
