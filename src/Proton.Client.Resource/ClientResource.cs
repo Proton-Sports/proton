@@ -26,7 +26,7 @@ public sealed class ClientResource : AsyncResource
             .AddInfrastructure()
             .AddUiViews()
             .AddNoClips()
-            .AddAuthentication()
+            // .AddAuthentication()
             .AddRaceFeatures()
             .AddNametags()
             .AddHud()
@@ -34,7 +34,8 @@ public sealed class ClientResource : AsyncResource
             .AddCharacterCreator()
             .AddIplFeatures()
             .AddRockstarEditorFeatures()
-            .AddNotificationFeatures();
+            .AddNotificationFeatures()
+            .AddPlayerFeatures();
         serviceProvider = serviceCollection.BuildServiceProvider();
     }
 

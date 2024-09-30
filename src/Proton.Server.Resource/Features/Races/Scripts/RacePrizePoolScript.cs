@@ -13,7 +13,7 @@ public sealed class RacePrizePoolScript(IRaceService raceService) : HostedServic
         return Task.CompletedTask;
     }
 
-    private void OnParticipantJoined(Race race, IPlayer player)
+    private void OnParticipantJoined(Race race, RaceParticipant participant)
     {
         race.PrizePool += 200;
     }

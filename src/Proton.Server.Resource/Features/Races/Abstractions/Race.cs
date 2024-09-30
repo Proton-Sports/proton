@@ -10,7 +10,7 @@ public record class Race
     public Guid Guid { get; set; }
     public IPlayer Host { get; set; } = null!;
     public long MapId { get; set; }
-    public VehicleModel VehicleModel { get; set; }
+    public VehicleModel[] VehicleModels { get; set; } = [];
     public int MaxParticipants { get; set; }
     public int Duration { get; set; }
     public int CountdownSeconds { get; set; }
@@ -25,4 +25,5 @@ public record class Race
     public DateTimeOffset StartTime { get; set; }
     public List<RaceParticipant> Participants { get; set; } = [];
     public int PrizePool { get; set; }
+    public bool LobbyCountingDown { get; set; }
 }

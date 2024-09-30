@@ -92,7 +92,7 @@ public sealed class RaceMenuRacesTabScript : IStartup
                     .ToList(),
                 Time = race.Time.ToString("h:mm", CultureInfo.InvariantCulture),
                 Type = (byte)race.Type,
-                VehicleModel = race.VehicleModel.ToString(),
+                VehicleModels = race.VehicleModels.Select(a => a.ToString()).ToArray(),
                 Weather = race.Weather
             }
         );
@@ -122,16 +122,16 @@ public sealed class RaceMenuRacesTabScript : IStartup
             raceService.RemoveParticipantByPlayer(player);
         }
 
-        raceService.AddParticipant(id, new RaceParticipant { Player = player });
+        raceService.AddParticipant(id, new RaceParticipant { Player = player, VehicleModel = race.VehicleModels[0] });
     }
 
-    private void HandleParticipantJoined(Race race, IPlayer player)
+    private void HandleParticipantJoined(Race race, RaceParticipant participant)
     {
         Alt.EmitAllClients(
             "race-menu-races:participantChanged",
             race.Id,
             "joined",
-            new RaceParticipantDto { Id = player.Id, Name = player.Name }
+            new RaceParticipantDto { Id = participant.Player.Id, Name = participant.Player.Name }
         );
     }
 

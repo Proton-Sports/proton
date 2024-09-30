@@ -1,4 +1,5 @@
 using AltV.Net.Elements.Entities;
+using AltV.Net.Enums;
 
 namespace Proton.Server.Resource.Features.Races.Abstractions;
 
@@ -13,4 +14,6 @@ public class RaceParticipant
     public LinkedList<RacePointLog> PointLogs { get; set; } = new();
     public long FinishTime { get; set; }
     public float PrizePercent { get; set; }
+    public bool Ready { get; set; }
+    public VehicleModel VehicleModel { get; set; }
 }
