@@ -9,6 +9,7 @@ public interface IUiView : IWebView
     event Action<Route, MountingEventArgs> Mounting;
 
     void Mount(Route route);
+    void Mount<T>(Route route, T data);
     Task<bool> TryMountAsync(Route route);
     void Unmount(Route route);
     bool IsMounted(Route route);

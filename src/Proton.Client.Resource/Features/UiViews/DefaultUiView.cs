@@ -12,7 +12,8 @@ public class DefaultUiView : WebView, IUiView
     private readonly Dictionary<string, HashSet<Action>> onMountHandlers = new();
     private readonly Dictionary<string, HashSet<Action>> onUnmountHandlers = new();
 
-    public DefaultUiView(ICore core, IntPtr webViewNativePointer, uint id) : base(core, webViewNativePointer, id)
+    public DefaultUiView(ICore core, IntPtr webViewNativePointer, uint id)
+        : base(core, webViewNativePointer, id)
     {
         this.On<string, bool, bool>("webview.mount", HandleMount);
         this.On<string, bool, bool>("webview.unmount", HandleUnmount);
@@ -37,6 +38,20 @@ public class DefaultUiView : WebView, IUiView
             }
         }
         Emit("webview.mount", route.Value);
+    }
+
+    public void Mount<T>(Route route, T data)
+    {
+        if (Mounting is not null)
+        {
+            var eventArgs = new MountingEventArgs { Cancel = false };
+            Mounting(route, eventArgs);
+            if (eventArgs.Cancel)
+            {
+                return;
+            }
+        }
+        Emit("webview.mount", route.Value, data);
     }
 
     public Action OnMount(Route route, Action callback)
@@ -115,7 +130,8 @@ public class DefaultUiView : WebView, IUiView
                 }
             }
         }
-        if (!mountTaskDictionary.TryGetValue(route, out var taskCompletionSource)) return;
+        if (!mountTaskDictionary.TryGetValue(route, out var taskCompletionSource))
+            return;
         taskCompletionSource.SetResult(success);
         mountTaskDictionary.Remove(route);
     }
