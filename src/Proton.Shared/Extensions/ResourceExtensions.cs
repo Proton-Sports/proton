@@ -10,11 +10,11 @@ public sealed class ResourceExtensions
 {
     public static void RegisterMValueAdapters()
     {
-        AltShared.Core.RegisterMValueAdapter(SharedRaceCreatorDataMValueAdapter.Instance);
-        AltShared.Core.RegisterMValueAdapter(RaceMapDto.Adapter.Instance);
-        AltShared.Core.RegisterMValueAdapter(DefaultMValueAdapters.GetArrayAdapter(RaceMapDto.Adapter.Instance));
-        AltShared.Core.RegisterMValueAdapter(DefaultMValueAdapters.GetArrayAdapter(SharedRacePointMValueAdapter.Instance));
-        AltShared.Core.RegisterMValueAdapter(RaceHostSubmitDto.Adapter.Instance);
+        AltShared.RegisterMValueAdapter(SharedRaceCreatorDataMValueAdapter.Instance);
+        AltShared.RegisterMValueAdapter(RaceMapDto.Adapter.Instance);
+        AltShared.RegisterMValueAdapter(DefaultMValueAdapters.GetArrayAdapter(RaceMapDto.Adapter.Instance));
+        AltShared.RegisterMValueAdapter(DefaultMValueAdapters.GetArrayAdapter(SharedRacePointMValueAdapter.Instance));
+        AltShared.RegisterMValueAdapter(RaceHostSubmitDto.Adapter.Instance);
         AltExtensions.RegisterAdapters(registerListAdapters: true, logAdapters: true);
     }
 }
