@@ -167,7 +167,7 @@ public sealed class DefaultRaceService : IRaceService
         }
     }
 
-    private class Data
+    private sealed class Data
     {
         public readonly ICheckpoint Checkpoint;
         public readonly IBlip Blip;

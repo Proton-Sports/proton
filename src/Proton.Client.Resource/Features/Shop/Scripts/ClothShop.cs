@@ -1,14 +1,14 @@
 ﻿using System.Text.Json;
 using AltV.Net.Client;
 using AltV.Net.Client.Elements.Data;
-using Proton.Client.Infrastructure.Services;
 using Proton.Client.Resource.Features.UiViews.Abstractions;
+using Proton.Client.Resource.Notifications;
 using Proton.Shared.Contants;
 using Proton.Shared.Helpers;
 using Proton.Shared.Interfaces;
 using Proton.Shared.Models;
 
-namespace Proton.Client.Resource.Features.Shop;
+namespace Proton.Client.Resource.Features.Shop.Scripts;
 
 internal class ClothShop : IStartup
 {
@@ -146,27 +146,27 @@ internal class ClothShop : IStartup
                 //TODO: Replace CHAR_BOATSITE2
 
                 notification.DrawNotification(
-                    Image: "CHAR_BOATSITE2",
-                    Header: "Vehicle Cloth",
-                    Details: "OK",
-                    Message: "Cloth bought!"
+                    image: "CHAR_BOATSITE2",
+                    header: "Vehicle Cloth",
+                    details: "OK",
+                    message: "Cloth bought!"
                 );
                 break;
             case ShopStatus.NO_MONEY:
                 notification.DrawNotification(
-                    Image: "CHAR_BOATSITE2",
-                    Header: "Vehicle Cloth",
-                    Details: "Error",
-                    Message: "You dont have enough money to buy this Vehicle!"
+                    image: "CHAR_BOATSITE2",
+                    header: "Vehicle Cloth",
+                    details: "Error",
+                    message: "You dont have enough money to buy this Vehicle!"
                 );
                 break;
             case ShopStatus.ITEM_NOT_FOUND:
             default:
                 notification.DrawNotification(
-                    Image: "CHAR_BOATSITE2",
-                    Header: "Cloth Shop",
-                    Details: "Error",
-                    Message: "The Requested cloth was not found!"
+                    image: "CHAR_BOATSITE2",
+                    header: "Cloth Shop",
+                    details: "Error",
+                    message: "The Requested cloth was not found!"
                 );
                 break;
         }
