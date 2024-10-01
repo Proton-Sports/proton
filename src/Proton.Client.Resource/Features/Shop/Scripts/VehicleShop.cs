@@ -3,15 +3,15 @@ using AltV.Net.Client;
 using AltV.Net.Client.Elements.Data;
 using AltV.Net.Client.Elements.Interfaces;
 using AltV.Net.Shared.Enums;
-using Proton.Client.Infrastructure.Services;
 using Proton.Client.Infrastructure.Utils;
 using Proton.Client.Resource.Features.UiViews.Abstractions;
+using Proton.Client.Resource.Notifications;
 using Proton.Shared.Contants;
 using Proton.Shared.Helpers;
 using Proton.Shared.Interfaces;
 using Proton.Shared.Models;
 
-namespace Proton.Client.Resource.Features.Shop;
+namespace Proton.Client.Resource.Features.Shop.Scripts;
 
 internal class VehicleShop : IStartup
 {
@@ -173,27 +173,27 @@ internal class VehicleShop : IStartup
                 RemovePreview();
 
                 notification.DrawNotification(
-                    Image: "CHAR_LS_CUSTOMS",
-                    Header: "Vehicle Shop",
-                    Details: "OK",
-                    Message: "Vehicle bought!"
+                    image: "CHAR_LS_CUSTOMS",
+                    header: "Vehicle Shop",
+                    details: "OK",
+                    message: "Vehicle bought!"
                 );
                 break;
             case ShopStatus.NO_MONEY:
                 notification.DrawNotification(
-                    Image: "CHAR_LS_CUSTOMS",
-                    Header: "Vehicle Shop",
-                    Details: "Error",
-                    Message: "You dont have enough money to buy this Vehicle!"
+                    image: "CHAR_LS_CUSTOMS",
+                    header: "Vehicle Shop",
+                    details: "Error",
+                    message: "You dont have enough money to buy this Vehicle!"
                 );
                 break;
             case ShopStatus.ITEM_NOT_FOUND:
             default:
                 notification.DrawNotification(
-                    Image: "CHAR_LS_CUSTOMS",
-                    Header: "Vehicle Shop",
-                    Details: "Error",
-                    Message: "The Requested vehicle was not found!"
+                    image: "CHAR_LS_CUSTOMS",
+                    header: "Vehicle Shop",
+                    details: "Error",
+                    message: "The Requested vehicle was not found!"
                 );
                 break;
         }
