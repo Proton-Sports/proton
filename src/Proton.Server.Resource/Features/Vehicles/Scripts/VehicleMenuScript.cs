@@ -33,8 +33,7 @@ public sealed class VehicleMenuScript(IDbContextFactory dbFactory, IGarageServic
 
     private async Task OnSpawnAsync(PPlayer player, long id)
     {
-        var hasSpawnedVehicles = garageService.SpawnedVehicles.TryGetValue(player, out var vehicles);
-        if (hasSpawnedVehicles && vehicles!.Count > 0)
+        if (garageService.SpawnedVehicles.TryGetValue(player, out var vehicles) && vehicles!.Count > 0)
         {
             foreach (var v in vehicles)
             {
@@ -54,7 +53,7 @@ public sealed class VehicleMenuScript(IDbContextFactory dbFactory, IGarageServic
             return;
         }
 
-        if (!hasSpawnedVehicles)
+        if (!garageService.SpawnedVehicles.TryGetValue(player, out vehicles))
         {
             vehicles = [];
             garageService.SpawnedVehicles[player] = vehicles;
