@@ -5,7 +5,7 @@ using AltV.Net.Client.Elements.Interfaces;
 using AltV.Net.Shared.Enums;
 using Proton.Client.Infrastructure.Utils;
 using Proton.Client.Resource.Features.UiViews.Abstractions;
-using Proton.Client.Resource.Notifications;
+using Proton.Client.Resource.Notifications.Abstractions;
 using Proton.Shared.Contants;
 using Proton.Shared.Helpers;
 using Proton.Shared.Interfaces;
@@ -16,7 +16,7 @@ namespace Proton.Client.Resource.Features.Shop.Scripts;
 internal class VehicleShop : IStartup
 {
     private readonly IUiView uiView;
-    private readonly NotificationService notification;
+    private readonly INotificationService notification;
     private ILocalVehicle? previewVehicle;
     private bool isUiOpen;
 
@@ -25,7 +25,7 @@ internal class VehicleShop : IStartup
     private List<SharedShopItem> shopItems = [];
     private List<SharedShopItem> ownedItems = [];
 
-    public VehicleShop(IUiView uiView, NotificationService notification)
+    public VehicleShop(IUiView uiView, INotificationService notification)
     {
         this.uiView = uiView;
         this.notification = notification;

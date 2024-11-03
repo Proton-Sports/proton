@@ -2,7 +2,7 @@
 using AltV.Net.Client;
 using AltV.Net.Client.Elements.Data;
 using Proton.Client.Resource.Features.UiViews.Abstractions;
-using Proton.Client.Resource.Notifications;
+using Proton.Client.Resource.Notifications.Abstractions;
 using Proton.Shared.Contants;
 using Proton.Shared.Helpers;
 using Proton.Shared.Interfaces;
@@ -13,7 +13,7 @@ namespace Proton.Client.Resource.Features.Shop.Scripts;
 internal class ClothShop : IStartup
 {
     private readonly IUiView uiView;
-    private readonly NotificationService notification;
+    private readonly INotificationService notification;
     private bool isUiOpen;
 
     private Dictionary<string, List<SharedClothShopItem>> shopItemsSorted = [];
@@ -21,7 +21,7 @@ internal class ClothShop : IStartup
     private List<SharedClothShopItem> shopItems = [];
     private List<SharedClothShopItem> ownedItems = [];
 
-    public ClothShop(IUiView uiView, NotificationService notification)
+    public ClothShop(IUiView uiView, INotificationService notification)
     {
         this.uiView = uiView;
         this.notification = notification;
