@@ -23,6 +23,7 @@ public sealed class VehicleMenuScript(IDbContextFactory dbFactory, IGarageServic
                 {
                     return Task.CompletedTask;
                 }
+
                 return OnSpawnAsync(pplayer, id);
             }
         );
@@ -32,6 +33,16 @@ public sealed class VehicleMenuScript(IDbContextFactory dbFactory, IGarageServic
 
     private async Task OnSpawnAsync(PPlayer player, long id)
     {
+        var hasSpawnedVehicles = garageService.SpawnedVehicles.TryGetValue(player, out var vehicles);
+        if (hasSpawnedVehicles && vehicles!.Count > 0)
+        {
+            foreach (var v in vehicles)
+            {
+                v.Destroy();
+            }
+            vehicles.Clear();
+        }
+
         await using var db = await dbFactory.CreateDbContextAsync().ConfigureAwait(false);
         var garage = await db
             .Garages.Where(a => a.OwnerId == player.ProtonId && a.Id == id)
@@ -43,7 +54,7 @@ public sealed class VehicleMenuScript(IDbContextFactory dbFactory, IGarageServic
             return;
         }
 
-        if (!garageService.SpawnedVehicles.TryGetValue(player, out var vehicles))
+        if (!hasSpawnedVehicles)
         {
             vehicles = [];
             garageService.SpawnedVehicles[player] = vehicles;
@@ -57,6 +68,7 @@ public sealed class VehicleMenuScript(IDbContextFactory dbFactory, IGarageServic
             Alt.CreateVehicle(model, player.Position, new Rotation(0, 0, player.Rotation.Yaw));
         vehicle.GarageId = garage.Id;
         vehicles.Add(vehicle);
+        player.SetIntoVehicle(vehicle, 0);
         player.Emit("vehicle-menu.spawn", id);
     }
 
