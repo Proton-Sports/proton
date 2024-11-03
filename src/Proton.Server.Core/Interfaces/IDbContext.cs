@@ -16,6 +16,7 @@ public interface IDbContext : IDisposable, IAsyncDisposable
     DbSet<RaceStartPoint> RaceStartPoints { get; }
     DbSet<RacePoint> RacePoints { get; }
     DbSet<UserRaceRestoration> UserRaceRestorations { get; }
+    DbSet<Garage> Garages { get; }
 
     EntityEntry<TEntity> Add<TEntity>(TEntity entity)
         where TEntity : class, IAggregateRoot;

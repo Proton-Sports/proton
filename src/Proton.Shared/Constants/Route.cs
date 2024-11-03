@@ -24,6 +24,7 @@ public sealed class Route : IEquatable<Route>
     public static readonly Route RaceEndTransition = new("race-end-transition");
     public static readonly Route VehicleShop = new("car_shop");
     public static readonly Route ClothShop = new("cloth_shop");
+    public static readonly Route VehicleMenu = new("vehicle-menu");
 
     public override bool Equals(object? obj) => Equals(obj as Route);
 

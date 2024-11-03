@@ -27,7 +27,7 @@ public sealed class RaceCreatorScript(
     {
         Alt.OnPlayerConnect += (player, reason) =>
         {
-            var position = new Position(486.417f, -3339.692f, 6.070f);
+            var position = new Position(443.94177f, 5605.972f, -80.677635f);
             player.Spawn(position);
             player.Emit("race:creator:start");
             player.Model = (uint)PedModel.FreemodeMale01;

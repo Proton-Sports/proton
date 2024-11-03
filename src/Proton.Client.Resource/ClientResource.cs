@@ -37,6 +37,7 @@ public sealed class ClientResource : AsyncResource
             .AddRockstarEditorFeatures()
             .AddNotificationFeatures()
             .AddPlayerFeatures()
+            .AddVehicleFeatures()
             .AddShops();
         serviceProvider = serviceCollection.BuildServiceProvider();
     }
