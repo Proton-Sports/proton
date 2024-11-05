@@ -79,7 +79,7 @@ public sealed class VehicleMenuScript(IDbContextFactory dbFactory, IGarageServic
             return;
         }
 
-        var index = vehicles.FindIndex(a => a is ProtonVehicle protonVehicle && protonVehicle.GarageId == id);
+        var index = vehicles.FindIndex(a => a is IProtonVehicle protonVehicle && protonVehicle.GarageId == id);
         if (index == -1)
         {
             return;
