@@ -6,7 +6,7 @@ public static partial class ServiceCollectionExtensions
 {
     public static IServiceCollection AddPlayerFeatures(this IServiceCollection serviceCollection)
     {
-        serviceCollection.AddHostedService<HoldToShowCursorScript>();
+        serviceCollection.AddHostedService<HoldToShowCursorScript>().AddHostedService<ClothesMenuScript>();
         return serviceCollection;
     }
 }

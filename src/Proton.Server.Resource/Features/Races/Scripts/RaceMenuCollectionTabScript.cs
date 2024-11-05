@@ -3,14 +3,18 @@ using AltV.Net.Elements.Entities;
 using Microsoft.EntityFrameworkCore;
 using Proton.Server.Core.Interfaces;
 using Proton.Server.Infrastructure.Factorys;
+using Proton.Server.Resource.Features.Players.Abstractions;
 using Proton.Server.Resource.Features.Vehicles.Abstractions;
 using Proton.Server.Resource.SharedKernel;
 using Proton.Shared.Dtos;
 
 namespace Proton.Server.Resource.Features.Races.Scripts;
 
-public sealed class RaceMenuCollectionTabScript(IDbContextFactory dbFactory, IGarageService garageService)
-    : HostedService
+public sealed class RaceMenuCollectionTabScript(
+    IDbContextFactory dbFactory,
+    IGarageService garageService,
+    IClosetService closetService
+) : HostedService
 {
     public override Task StartAsync(CancellationToken ct)
     {
@@ -30,7 +34,7 @@ public sealed class RaceMenuCollectionTabScript(IDbContextFactory dbFactory, IGa
             case "cars":
                 return LoadCarsAsync(pplayer);
             case "clothes":
-                break;
+                return LoadClothesAsync(pplayer);
         }
         return Task.CompletedTask;
     }
@@ -55,5 +59,25 @@ public sealed class RaceMenuCollectionTabScript(IDbContextFactory dbFactory, IGa
                 .ToList();
         }
         player.Emit("vehicle-menu.mount", new VehicleMenuMountDto { Items = items, SpawnedIds = spawnedIds });
+    }
+
+    private async Task LoadClothesAsync(PPlayer player)
+    {
+        await using var db = await dbFactory.CreateDbContextAsync().ConfigureAwait(false);
+        var items = await db
+            .Closets.Where(a => a.OwnerId == player.ProtonId)
+            .Select(a => new ClothesMenuItemDto { Id = a.Id, Name = a.ClothItem.DisplayName })
+            .ToListAsync()
+            .ConfigureAwait(false);
+        player.Emit(
+            "clothes-menu.mount",
+            new ClothesMenuMountDto
+            {
+                Items = items,
+                EquippedIds = closetService.TryGetAllEquippedComponents(player, out var components)
+                    ? components.Select(a => a.Value.Id).ToList()
+                    : null
+            }
+        );
     }
 }
