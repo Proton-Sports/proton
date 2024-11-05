@@ -32,7 +32,8 @@ public static partial class ServiceCollectionExtensions
             .AddHostedService<RacePrizePoolScript>()
             .AddHostedService<RaceRewardScript>()
             .AddHostedService<RaceBestLapTimeRewardScript>()
-            .AddHostedService<RaceMenuCollectionTabScript>();
+            .AddHostedService<RaceMenuCollectionTabScript>()
+            .AddHostedService<RaceMenuScript>();
         return serviceCollection;
     }
 }

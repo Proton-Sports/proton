@@ -20,6 +20,8 @@ public sealed class RaceMenuScript(IUiView uiView, IRaceService raceService) : H
         Alt.OnServer<RaceStartDto>("race-start:start", (_) => ToggleCollectionPageConditionally(false));
         Alt.OnServer<Vector3>("race-prepare:enterTransition", (_) => ToggleCollectionPageConditionally(false));
         Alt.OnServer("race:destroy", () => ToggleCollectionPageConditionally(true));
+        uiView.On("race-menu.tokens.get", OnUiGetToken);
+        Alt.OnServer<int>("race-menu.tokens.get", OnServerGetToken);
         return Task.CompletedTask;
     }
 
@@ -82,5 +84,15 @@ public sealed class RaceMenuScript(IUiView uiView, IRaceService raceService) : H
         }
 
         uiView.Emit("race-menu.pages.toggle", "collection", toggle);
+    }
+
+    private void OnUiGetToken()
+    {
+        Alt.EmitServer("race-menu.tokens.get");
+    }
+
+    private void OnServerGetToken(int tokens)
+    {
+        uiView.Emit("race-menu.tokens.get", tokens);
     }
 }
