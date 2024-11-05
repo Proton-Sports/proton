@@ -35,9 +35,10 @@ public sealed class VehicleMenuScript(IDbContextFactory dbFactory, IGarageServic
     {
         if (garageService.SpawnedVehicles.TryGetValue(player, out var vehicles) && vehicles!.Count > 0)
         {
-            foreach (var v in vehicles)
+            foreach (var v in vehicles.Where(a => a is IProtonVehicle).Cast<IProtonVehicle>())
             {
                 v.Destroy();
+                player.Emit("vehicle-menu.despawn", v.GarageId);
             }
             vehicles.Clear();
         }
@@ -67,7 +68,7 @@ public sealed class VehicleMenuScript(IDbContextFactory dbFactory, IGarageServic
             Alt.CreateVehicle(model, player.Position, new Rotation(0, 0, player.Rotation.Yaw));
         vehicle.GarageId = garage.Id;
         vehicles.Add(vehicle);
-        player.SetIntoVehicle(vehicle, 0);
+        player.SetIntoVehicle(vehicle, 1);
         player.Emit("vehicle-menu.spawn", id);
     }
 
