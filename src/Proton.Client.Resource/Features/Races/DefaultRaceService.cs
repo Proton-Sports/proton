@@ -4,21 +4,23 @@ using AltV.Net.Client.Elements.Interfaces;
 using AltV.Net.Data;
 using AltV.Net.Elements.Entities;
 using AltV.Net.Shared.Enums;
+using Proton.Client.Resource.Features.Races.Abstractions;
 using Proton.Shared.Constants;
 using Proton.Shared.Models;
 
 namespace Proton.Client.Resource.Features.Races;
 
-public sealed class DefaultRaceService : IRaceService
+public sealed class DefaultRaceService(IEnumerable<IRacePointResolver> resolvers) : IRaceService
 {
     private const uint BlipSpriteObjective = 146;
     private const uint BlipSpriteArrow = 14;
 
     private readonly List<RacePointDto> racePoints = new();
     private readonly Dictionary<int, Data> indexToDataDictionary = new();
-    private readonly Dictionary<RaceType, IRacePointResolver> raceTypeToResolverDictionary;
+    private readonly Dictionary<RaceType, IRacePointResolver> raceTypeToResolverDictionary = resolvers.ToDictionary(x =>
+        x.SupportedRaceType
+    );
     private readonly HashSet<Action<object>> hitEventHandlers = new();
-    private bool started;
 
     public event Action? Started;
     public event Action? Stopped;
@@ -31,15 +33,10 @@ public sealed class DefaultRaceService : IRaceService
 
     public int Dimension { get; set; }
     public IReadOnlyList<RacePointDto> RacePoints => racePoints;
-    public bool IsStarted => started;
     public RaceType RaceType { get; set; }
     public bool Ghosting { get; set; }
     public string? IplName { get; set; }
-
-    public DefaultRaceService(IEnumerable<IRacePointResolver> resolvers)
-    {
-        raceTypeToResolverDictionary = resolvers.ToDictionary(x => x.SupportedRaceType);
-    }
+    public RaceStatus Status { get; set; }
 
     public void ClearRacePoints()
     {
@@ -121,7 +118,7 @@ public sealed class DefaultRaceService : IRaceService
 
     public void Start()
     {
-        started = true;
+        Status = RaceStatus.Started;
         Alt.OnTick += HandleTick;
         if (Started is not null)
         {
@@ -131,7 +128,7 @@ public sealed class DefaultRaceService : IRaceService
 
     public void Stop()
     {
-        started = false;
+        Status = RaceStatus.None;
         Alt.OnTick -= HandleTick;
         if (Stopped is not null)
         {
@@ -148,7 +145,9 @@ public sealed class DefaultRaceService : IRaceService
     {
         var vehicle = Alt.LocalPlayer.Vehicle;
         if (vehicle is null || hitEventHandlers.Count == 0)
+        {
             return;
+        }
 
         const float offset = 32f;
         var vehiclePosition = vehicle.Position;

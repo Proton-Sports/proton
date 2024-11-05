@@ -7,7 +7,7 @@ using Proton.Client.Core.Interfaces;
 using Proton.Client.Resource.Commons;
 using Proton.Client.Resource.Features.Ipls.Abstractions;
 using Proton.Client.Resource.Features.UiViews.Abstractions;
-using Proton.Shared.Contants;
+using Proton.Shared.Constants;
 using Proton.Shared.Dtos;
 using Proton.Shared.Models;
 
@@ -448,9 +448,9 @@ public sealed class RaceCreatorScript(
 
     private async Task StartAsync()
     {
-        if (uiView.IsMounted(Route.RaceMainMenuList))
+        if (uiView.IsMounted(Route.RaceMenu))
         {
-            uiView.Unmount(Route.RaceMainMenuList);
+            uiView.Unmount(Route.RaceMenu);
         }
         raceCreator.ClearStartPoints();
         raceCreator.ClearRacePoints();

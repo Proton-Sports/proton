@@ -1,7 +1,7 @@
 using AltV.Net.Client;
 using Proton.Client.Resource.Commons;
 using Proton.Client.Resource.Features.UiViews.Abstractions;
-using Proton.Shared.Contants;
+using Proton.Shared.Constants;
 
 namespace Proton.Client.Resource.Features.Races.Scripts;
 
@@ -20,7 +20,7 @@ public sealed class RaceMenuCollectionTabScript(IUiView ui) : HostedService
             return;
         }
 
-        ui.Unmount(Route.RaceMainMenuList);
+        ui.Unmount(Route.RaceMenu);
         Alt.EmitServer("race-menu-collection.option.change", option);
     }
 }

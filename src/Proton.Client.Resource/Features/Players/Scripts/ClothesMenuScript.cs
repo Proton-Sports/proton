@@ -2,7 +2,7 @@ using AltV.Net.Client;
 using AltV.Net.Client.Elements.Data;
 using Proton.Client.Resource.Commons;
 using Proton.Client.Resource.Features.UiViews.Abstractions;
-using Proton.Shared.Contants;
+using Proton.Shared.Constants;
 using Proton.Shared.Dtos;
 
 namespace Proton.Client.Resource.Features.Players.Scripts;
@@ -60,7 +60,7 @@ public sealed class ClothesMenuScript(IUiView ui) : HostedService
         if (key == Key.Escape)
         {
             ui.Unmount(Route.ClothesMenu);
-            ui.Mount(Route.RaceMainMenuList);
+            ui.Mount(Route.RaceMenu, new RaceMenuMountDto { InitialActivePage = "collection" });
             return;
         }
     }

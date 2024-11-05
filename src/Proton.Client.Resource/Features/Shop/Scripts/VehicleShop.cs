@@ -6,7 +6,7 @@ using AltV.Net.Shared.Enums;
 using Proton.Client.Infrastructure.Utils;
 using Proton.Client.Resource.Features.UiViews.Abstractions;
 using Proton.Client.Resource.Notifications.Abstractions;
-using Proton.Shared.Contants;
+using Proton.Shared.Constants;
 using Proton.Shared.Helpers;
 using Proton.Shared.Interfaces;
 using Proton.Shared.Models;

@@ -3,7 +3,7 @@ using AltV.Net.Client;
 using AltV.Net.Client.Elements.Data;
 using Proton.Client.Resource.Features.UiViews.Abstractions;
 using Proton.Client.Resource.Notifications.Abstractions;
-using Proton.Shared.Contants;
+using Proton.Shared.Constants;
 using Proton.Shared.Helpers;
 using Proton.Shared.Interfaces;
 using Proton.Shared.Models;

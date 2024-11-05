@@ -2,7 +2,7 @@ using AltV.Net.Client;
 using AltV.Net.Client.Elements.Data;
 using Proton.Client.Resource.Commons;
 using Proton.Client.Resource.Features.UiViews.Abstractions;
-using Proton.Shared.Contants;
+using Proton.Shared.Constants;
 using Proton.Shared.Dtos;
 
 namespace Proton.Client.Resource.Features.Vehicles.Scripts;
@@ -40,7 +40,7 @@ public sealed class VehicleMenuScript(IUiView ui) : HostedService
         ui.Unfocus();
         Alt.GameControlsEnabled = true;
         Alt.OnKeyUp -= OnKeyUp;
-        ui.Mount(Route.RaceMainMenuList);
+        ui.Mount(Route.RaceMenu, new RaceMenuMountDto { InitialActivePage = "collection" });
     }
 
     private void OnUiSpawn(long id)

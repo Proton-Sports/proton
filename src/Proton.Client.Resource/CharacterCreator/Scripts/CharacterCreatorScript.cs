@@ -8,7 +8,7 @@ using AltV.Net.Data;
 using AltV.Net.Enums;
 using Proton.Client.Resource.Features.UiViews.Abstractions;
 using Proton.Server.Resource.CharacterCreator.Models;
-using Proton.Shared.Contants;
+using Proton.Shared.Constants;
 using Proton.Shared.Interfaces;
 
 namespace Proton.Client.Resource.CharacterCreator.Scripts;
@@ -57,7 +57,7 @@ public class CharacterCreatorScript : IStartup
 
     private void HandleMounting(Route route, MountingEventArgs e)
     {
-        if (route == Route.RaceMainMenuList && uiView.IsMounted(Route.CharacterCreator))
+        if (route == Route.RaceMenu && uiView.IsMounted(Route.CharacterCreator))
         {
             e.Cancel = true;
         }

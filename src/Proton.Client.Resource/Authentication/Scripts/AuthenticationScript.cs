@@ -1,6 +1,6 @@
 ﻿using AltV.Net.Client;
 using Proton.Client.Resource.Features.UiViews.Abstractions;
-using Proton.Shared.Contants;
+using Proton.Shared.Constants;
 using Proton.Shared.Interfaces;
 
 namespace Proton.Client.Resource.Authentication.Scripts;
@@ -27,7 +27,7 @@ public sealed class AuthenticationScript : IStartup
 
     private void HandleMounting(Route route, MountingEventArgs e)
     {
-        if (route == Route.RaceMainMenuList && uiView.IsMounted(Route.Auth))
+        if (route == Route.RaceMenu && uiView.IsMounted(Route.Auth))
         {
             e.Cancel = true;
         }

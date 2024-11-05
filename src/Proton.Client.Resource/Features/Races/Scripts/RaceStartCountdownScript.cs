@@ -1,7 +1,7 @@
 using AltV.Net.Client;
 using Proton.Client.Resource.Commons;
 using Proton.Client.Resource.Features.UiViews.Abstractions;
-using Proton.Shared.Contants;
+using Proton.Shared.Constants;
 
 namespace Proton.Client.Resource.Features.Races.Scripts;
 
@@ -27,9 +27,12 @@ public sealed class RaceStartCountdownScript(IUiView uiView) : HostedService
 
     private void OnRaceStart(long _)
     {
-        Alt.SetTimeout(() =>
-        {
-            uiView.Unmount(Route.RaceStartCountdown);
-        }, 1000);
+        Alt.SetTimeout(
+            () =>
+            {
+                uiView.Unmount(Route.RaceStartCountdown);
+            },
+            1000
+        );
     }
 }

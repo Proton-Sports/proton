@@ -1,4 +1,4 @@
-namespace Proton.Shared.Contants;
+namespace Proton.Shared.Constants;
 
 public sealed class Route : IEquatable<Route>
 {
@@ -10,7 +10,7 @@ public sealed class Route : IEquatable<Route>
     }
 
     public static readonly Route RaceCreator = new("race-creator");
-    public static readonly Route RaceMainMenuList = new("racing_menu_list");
+    public static readonly Route RaceMenu = new("racing_menu_list");
     public static readonly Route Auth = new("auth");
     public static readonly Route RaceCountdown = new("race-countdown");
     public static readonly Route RacePrepare = new("race-prepare");
