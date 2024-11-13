@@ -24,7 +24,7 @@ public interface IRaceService
     void AddRacePoint(RacePointDto point);
     void AddRacePoints(List<RacePointDto> points);
     ICheckpoint LoadRacePoint(CheckpointType checkpointType, int index, int? nextIndex);
-    bool UnloadRacePoint(int index);
+    void UnloadRacePoint();
     bool TryGetPointResolver(out IRacePointResolver resolver);
     void Start();
     void Stop();

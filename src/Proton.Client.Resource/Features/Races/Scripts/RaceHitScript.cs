@@ -1,4 +1,5 @@
 using AltV.Net.Client;
+using AltV.Net.Client.Elements.Interfaces;
 using AltV.Net.Elements.Entities;
 using Proton.Shared.Dtos;
 using Proton.Shared.Interfaces;
@@ -26,8 +27,6 @@ public sealed class RaceHitScript : IStartup
 
     private void HandleRacePointHit(object state)
     {
-        var index = (int)state;
-        raceService.UnloadRacePoint(index);
         Alt.EmitServer("race:hit", (int)state);
     }
 
@@ -40,9 +39,7 @@ public sealed class RaceHitScript : IStartup
         }
 
         raceService.LoadRacePoint(
-            dto.NextIndex is null
-                ? CheckpointType.CylinderCheckerboard
-                : CheckpointType.CylinderDoubleArrow,
+            dto.NextIndex is null ? CheckpointType.CylinderCheckerboard : CheckpointType.CylinderDoubleArrow,
             dto.Index,
             dto.NextIndex
         );
@@ -50,6 +47,7 @@ public sealed class RaceHitScript : IStartup
 
     private void RemoveRacePointHit()
     {
+        raceService.UnloadRacePoint();
         raceService.RacePointHit -= HandleRacePointHit;
     }
 }
