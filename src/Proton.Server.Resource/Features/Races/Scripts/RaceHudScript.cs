@@ -1,5 +1,6 @@
 using System.Numerics;
 using AltV.Net;
+using AltV.Net.Data;
 using AltV.Net.Elements.Entities;
 using AsyncAwaitBestPractices;
 using Proton.Server.Resource.Features.Races.Abstractions;
@@ -122,18 +123,19 @@ public sealed class RaceHudScript(IRaceService raceService, IMapCache mapCache) 
                                 var nextIndex = x.NextRacePointIndex;
                                 if (nextIndex is not null)
                                 {
+                                    var lastPosition = lastIndex is null
+                                        ? map.StartPoints[i].Position
+                                        : map.RacePoints[lastIndex.Value].Position;
                                     var nextPosition = map.RacePoints[nextIndex.Value].Position;
-                                    partialDistance =
-                                        Vector3.Distance(
-                                            lastIndex is null
-                                                ? map.StartPoints[i].Position
-                                                : map.RacePoints[lastIndex.Value].Position,
-                                            nextPosition
+                                    var line = nextPosition - lastPosition;
+                                    var currentPosition = x.Player.Vehicle?.Position ?? x.Player.Position;
+                                    partialDistance = MathF.Sqrt(
+                                        Vector2.Dot(
+                                            new Vector2(line.X, line.Y),
+                                            new Vector2(currentPosition.X, currentPosition.Y)
+                                                - new Vector2(lastPosition.X, lastPosition.Y)
                                         )
-                                        - Vector3.Distance(
-                                            x.Player.Vehicle?.Position ?? x.Player.Position,
-                                            nextPosition
-                                        );
+                                    );
                                 }
                                 return new RaceHudParticipantTickDto
                                 {
