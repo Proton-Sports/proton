@@ -2,7 +2,6 @@ using AltV.Net;
 using AltV.Net.Async;
 using AltV.Net.Data;
 using AltV.Net.Elements.Entities;
-using AltV.Net.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Proton.Server.Core.Interfaces;
@@ -25,13 +24,6 @@ public sealed class RaceCreatorScript(
 
     public override Task StartAsync(CancellationToken ct)
     {
-        Alt.OnPlayerConnect += (player, reason) =>
-        {
-            var position = new Position(443.94177f, 5605.972f, -80.677635f);
-            player.Spawn(position);
-            player.Emit("race:creator:start");
-            player.Model = (uint)PedModel.FreemodeMale01;
-        };
         Alt.OnClient("race:creator:stop", HandleStop);
         Alt.OnClient<IPlayer, string>("race:creator:changeMode", HandleChangeMode);
         AltAsync.OnClient<IPlayer, long, string, Task>("race-menu-creator:editMap", HandleEditMapAsync);

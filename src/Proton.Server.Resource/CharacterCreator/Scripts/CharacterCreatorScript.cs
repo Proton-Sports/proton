@@ -1,6 +1,5 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using AltV.Net;
 using AltV.Net.Async;
 using AltV.Net.Data;
 using AltV.Net.Elements.Entities;
@@ -142,11 +141,11 @@ public class CharacterCreatorScript : IStartup
                 break;
         }
 
-        // player.Dimension = 0;
-        // player.Frozen = false;
-        // player.Position = new Position(486.417f, -3339.692f, 6.070f);
-        // player.Rotation = Rotation.Zero;
-        // player.Visible = true;
+        player.Dimension = 0;
+        player.Frozen = false;
+        player.Position = new Position(486.417f, -3339.692f, 6.070f);
+        player.Rotation = Rotation.Zero;
+        player.Visible = true;
 
         player.Emit("clientNametags:showNametags", true);
         // player.Invincible = true;
