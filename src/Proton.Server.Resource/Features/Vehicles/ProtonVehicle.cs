@@ -9,4 +9,5 @@ public sealed class ProtonVehicle(ICore core, nint nativePointer, uint id)
         IProtonVehicle
 {
     public long GarageId { get; set; }
+    public bool AdminPanelFlag { get; set; }
 }

@@ -11,7 +11,8 @@ public static partial class ServiceCollectionExtensions
         serviceCollection
             .AddSingleton<IClosetService, ClosestService>()
             .AddHostedService<RewardForPlayingScript>()
-            .AddHostedService<ClothesMenuScript>();
+            .AddHostedService<ClothesMenuScript>()
+            .AddHostedService<AdminPanelScript>();
         return serviceCollection;
     }
 }

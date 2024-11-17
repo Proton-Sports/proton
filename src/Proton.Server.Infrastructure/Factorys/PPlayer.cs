@@ -1,6 +1,7 @@
-﻿using AltV.Net;
+using AltV.Net;
 using AltV.Net.Async.Elements.Entities;
 using Proton.Shared.Dtos;
+using Proton.Server.Core.Models;
 
 namespace Proton.Server.Infrastructure.Factorys;
 
@@ -8,6 +9,7 @@ public class PPlayer(ICore core, nint nativePointer, uint id) : AsyncPlayer(core
 {
     //If -1 Player not Loggedin
     public long ProtonId { get; set; } = 1;
+    public UserRole Role { get; set; } = UserRole.Administrator;
 
     public void SendNotification(NotificationDto notify) => Player.Emit("player:sendNotification", notify);
 

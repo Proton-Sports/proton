@@ -20,6 +20,7 @@ public class DefaultDbContext : DbContext, IDbContext
     public DbSet<Garage> Garages => Set<Garage>();
     public DbSet<Cloth> Cloths => Set<Cloth>();
     public DbSet<Closet> Closets => Set<Closet>();
+    public DbSet<BanRecord> BanRecords => Set<BanRecord>();
 
     public DefaultDbContext() { }
 

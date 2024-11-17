@@ -1,19 +1,19 @@
-﻿using Discord.Rest;
+using Discord.Rest;
 using Microsoft.EntityFrameworkCore;
+using Proton.Server.Core.Interfaces;
 using Proton.Server.Core.Models;
 using Proton.Server.Core.Models.Log;
 using Proton.Server.Core.Models.Shop;
-using Proton.Server.Infrastructure.Persistence;
 
 namespace Proton.Server.Infrastructure.Authentication
 {
     public class DiscordAccountHandler(
         DiscordRestClient restClient,
-        IDbContextFactory<DefaultDbContext> defaultDbFactory
+        IDbContextFactory defaultDbFactory
     )
     {
         private readonly DiscordRestClient restClient = restClient;
-        private readonly IDbContextFactory<DefaultDbContext> defaultDbFactory = defaultDbFactory;
+        private readonly IDbContextFactory defaultDbFactory = defaultDbFactory;
 
         public RestSelfUser GetCurrentUser()
         {
@@ -28,7 +28,7 @@ namespace Proton.Server.Infrastructure.Authentication
 
         public async Task<long> Login(string Ip)
         {
-            var defaultDb = defaultDbFactory.CreateDbContext();
+            using var defaultDb = await defaultDbFactory.CreateDbContextAsync().ConfigureAwait(false);
             string[] ipSplited = Ip.Split(':');
             var user = defaultDb.Users.Where(x => x.DiscordId == GetCurrentUser().Id).Single();
             if (user is null)
@@ -55,8 +55,8 @@ namespace Proton.Server.Infrastructure.Authentication
 
         public async Task Register(string Username)
         {
-            var defaultDb = defaultDbFactory.CreateDbContext();
-            var defaultCloths = defaultDb.Cloths.Where(x => x.Price == 0).ToList();
+            using var defaultDb = await defaultDbFactory.CreateDbContextAsync().ConfigureAwait(false);
+            var defaultCloths = await defaultDb.Cloths.Where(x => x.Price == 0).ToListAsync();
 
             var closets = new List<Closet>();
             defaultCloths.ForEach(c => closets.Add(new Closet { ClothId = c.Id, IsEquiped = true }));

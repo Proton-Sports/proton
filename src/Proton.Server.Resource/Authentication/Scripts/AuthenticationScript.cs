@@ -1,36 +1,30 @@
-﻿using AltV.Net;
+using AltV.Net;
 using AltV.Net.Async;
 using AltV.Net.Elements.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Proton.Server.Core.Interfaces;
+using Proton.Server.Core.Models;
 using Proton.Server.Infrastructure.Authentication;
 using Proton.Server.Infrastructure.Factorys;
-using Proton.Server.Infrastructure.Persistence;
-using Proton.Shared.Interfaces;
+using Proton.Server.Resource.SharedKernel;
 
 namespace Proton.Server.Resource.Authentication.Scripts;
 
-public class AuthenticationScript : IStartup
+public class AuthenticationScript(
+    DiscordHandler discord,
+    IDbContextFactory dbContextFactory,
+    IConfiguration configuration
+) : HostedService
 {
-    private readonly DiscordHandler discord;
-    private readonly IDbContextFactory<DefaultDbContext> dbContextFactory;
-    private readonly IConfiguration configuration;
-
     public delegate Task OnAuthenticationDone(IPlayer p);
     public static event OnAuthenticationDone? OnAuthenticationDoneEvent;
 
     private Dictionary<IPlayer, DiscordAccountHandler> playerAuthenticationStore =
         new Dictionary<IPlayer, DiscordAccountHandler>();
 
-    public AuthenticationScript(
-        DiscordHandler discord,
-        IDbContextFactory<DefaultDbContext> dbContextFactory,
-        IConfiguration configuration
-    )
+    public override Task StartAsync(CancellationToken ct)
     {
-        this.discord = discord;
-        this.dbContextFactory = dbContextFactory;
-        this.configuration = configuration;
         //AltAsync.OnPlayerSpawn += OnPlayerConnect;
         AltAsync.OnPlayerConnect += OnPlayerConnect;
         AltAsync.OnPlayerDisconnect += OnPlayerDisconnect;
@@ -40,6 +34,7 @@ public class AuthenticationScript : IStartup
             (player, token) => OnTokenExchange(player, token).GetAwaiter()
         );
         Alt.OnClient("authentication:login", (p) => OnPlayerWantsLogin(p));
+        return Task.CompletedTask;
     }
 
     /// <summary>
@@ -68,9 +63,19 @@ public class AuthenticationScript : IStartup
     private async Task OnTokenExchange(IPlayer p, string token)
     {
         var account = await discord.GetAccountHandler(token, dbContextFactory);
-        playerAuthenticationStore.Add(p, account);
-
         var discordProfile = account.GetCurrentUser();
+
+        await using var db = await dbContextFactory.CreateDbContextAsync().ConfigureAwait(false);
+        var isBanned = await db.BanRecords
+            .AnyAsync(a => a.Kind == BanKind.Discord && a.Value.Equals(discordProfile.Id.ToString()))
+            .ConfigureAwait(false);
+        if (isBanned)
+        {
+            p.Kick("You were banned");
+            return;
+        }
+
+        playerAuthenticationStore.Add(p, account);
         p.Emit("authentication:login:information", discordProfile.GetAvatarUrl(), p.Name);
     }
 
@@ -86,7 +91,19 @@ public class AuthenticationScript : IStartup
         var id = await account.Login(p.Ip);
         if (id != 0)
         {
+            await using var db = await dbContextFactory.CreateDbContextAsync().ConfigureAwait(false);
+            var user = await db.Users
+                .Where(a => a.Id == id)
+                .Select(a => new { a.Role })
+                .FirstOrDefaultAsync()
+                .ConfigureAwait(false);
+            if (user is null)
+            {
+                p.Kick("There was a mistake while logging in!");
+                return;
+            }
             p.ProtonId = id;
+            p.Role = user.Role;
             p.Emit("authentication:login:ok");
 
             // OLD: For compatible

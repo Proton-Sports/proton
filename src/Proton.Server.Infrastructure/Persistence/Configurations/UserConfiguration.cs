@@ -1,5 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Proton.Server.Core.Models;
 
 namespace Proton.Server.Infrastructure.Persistence.Configurations
@@ -14,6 +15,7 @@ namespace Proton.Server.Infrastructure.Persistence.Configurations
                 .HasForeignKey<Character>(e => e.UserId)
                 .IsRequired(false);
             builder.HasKey(x => x.Id);
+            builder.Property(a => a.Role).HasConversion<EnumToStringConverter<UserRole>>().HasMaxLength(24);
         }
     }
 }

@@ -18,6 +18,8 @@ public interface IDbContext : IDisposable, IAsyncDisposable
     DbSet<UserRaceRestoration> UserRaceRestorations { get; }
     DbSet<Garage> Garages { get; }
     DbSet<Closet> Closets { get; }
+    DbSet<Cloth> Cloths { get; }
+    DbSet<BanRecord> BanRecords { get; }
 
     EntityEntry<TEntity> Add<TEntity>(TEntity entity)
         where TEntity : class, IAggregateRoot;

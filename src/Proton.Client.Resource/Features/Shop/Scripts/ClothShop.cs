@@ -1,4 +1,4 @@
-﻿using System.Text.Json;
+using System.Text.Json;
 using AltV.Net.Client;
 using AltV.Net.Client.Elements.Data;
 using Proton.Client.Resource.Features.UiViews.Abstractions;
@@ -48,6 +48,11 @@ internal class ClothShop : IStartup
 
     private void Alt_OnKeyUp(Key key)
     {
+        if (Alt.IsConsoleOpen)
+        {
+            return;
+        }
+
         //If the ui is Open and Escape is pressed close the shop
         if (isUiOpen && key == Key.Escape)
         {
