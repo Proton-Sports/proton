@@ -1,6 +1,6 @@
 using AltV.Net.Client;
 using Proton.Client.Resource.Features.UiViews.Abstractions;
-using Proton.Shared.Contants;
+using Proton.Shared.Constants;
 using Proton.Shared.Dtos;
 using Proton.Shared.Interfaces;
 

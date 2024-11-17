@@ -8,6 +8,8 @@ using Microsoft.Extensions.Hosting;
 using Proton.Server.Infrastructure.Factorys;
 using Proton.Server.Resource.Authentication.Extentions;
 using Proton.Server.Resource.CharacterCreator.Extensions;
+using Proton.Server.Resource.Features.Shop;
+using Proton.Server.Resource.Features.Vehicles;
 using Proton.Shared.Extensions;
 using Proton.Shared.Interfaces;
 
@@ -40,7 +42,9 @@ public sealed class ServerResource : AsyncResource
                     .AddRaceFeatures()
                     .AddTuningFeature()
                     .AddCharacterCreator()
-                    .AddIplFeatures();
+                    .AddIplFeatures()
+                    .AddVehicleFeatures()
+                    .AddShops();
             }
         );
 
@@ -65,6 +69,11 @@ public sealed class ServerResource : AsyncResource
     public override IEntityFactory<IPlayer> GetPlayerFactory()
     {
         return new PPlayerFactory();
+    }
+
+    public override IEntityFactory<IVehicle> GetVehicleFactory()
+    {
+        return new ProtonVehicleFactory();
     }
 
     private sealed class ResourceLifetime : IHostLifetime

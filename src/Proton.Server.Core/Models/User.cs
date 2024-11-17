@@ -1,11 +1,5 @@
-﻿using Proton.Server.Core.Models.Log;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Proton.Server.Core.Models.Log;
+using Proton.Server.Core.Models.Shop;
 
 namespace Proton.Server.Core.Models
 {
@@ -16,8 +10,10 @@ namespace Proton.Server.Core.Models
         public ulong DiscordId { get; set; } = 0;
         public int Money { get; set; } = 0;
         public Character? Character { get; set; }
+        public UserRole Role { get; set; }
 
-        public ICollection<OwnedVehicle> OwnedVehicles { get; set; } = new List<OwnedVehicle>();
+        public List<Garage> Garages { get; set; } = [];
         public ICollection<Session> Sessions { get; set; } = new List<Session>();
+        public List<Closet> Closets { get; set; } = [];
     }
 }

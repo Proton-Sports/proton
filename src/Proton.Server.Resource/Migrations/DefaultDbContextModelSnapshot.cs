@@ -18,10 +18,26 @@ namespace Proton.Server.Resource.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.8")
+                .HasAnnotation("ProductVersion", "8.0.10")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
+
+            modelBuilder.Entity("Proton.Server.Core.Models.BanRecord", b =>
+                {
+                    b.Property<string>("Value")
+                        .HasMaxLength(1024)
+                        .HasColumnType("character varying(1024)");
+
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .HasMaxLength(24)
+                        .HasColumnType("character varying(24)");
+
+                    b.HasKey("Value");
+
+                    b.ToTable("BanRecords");
+                });
 
             modelBuilder.Entity("Proton.Server.Core.Models.Character", b =>
                 {
@@ -259,6 +275,138 @@ namespace Proton.Server.Resource.Migrations
                     b.ToTable("RaceStartPoints");
                 });
 
+            modelBuilder.Entity("Proton.Server.Core.Models.Shop.Closet", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<long>("ClothId")
+                        .HasColumnType("bigint");
+
+                    b.Property<bool>("IsEquiped")
+                        .HasColumnType("boolean");
+
+                    b.Property<long>("OwnerId")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime>("PurchaseTimestamp")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ClothId");
+
+                    b.HasIndex("OwnerId");
+
+                    b.ToTable("Closets");
+                });
+
+            modelBuilder.Entity("Proton.Server.Core.Models.Shop.Cloth", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("Category")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("Component")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("DisplayName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("DlcName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("Drawable")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("IsDlc")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsProp")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("Palette")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Price")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Texture")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Cloths");
+                });
+
+            modelBuilder.Entity("Proton.Server.Core.Models.Shop.Garage", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<int>("AltVColor")
+                        .HasColumnType("integer");
+
+                    b.Property<long>("OwnerId")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime>("PurchasedDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<long>("VehicleId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OwnerId");
+
+                    b.HasIndex("VehicleId");
+
+                    b.ToTable("Garages");
+                });
+
+            modelBuilder.Entity("Proton.Server.Core.Models.Shop.Vehicle", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("AltVHash")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Category")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("DisplayName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("Price")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Vehicles");
+                });
+
             modelBuilder.Entity("Proton.Server.Core.Models.User", b =>
                 {
                     b.Property<long>("Id")
@@ -272,6 +420,11 @@ namespace Proton.Server.Resource.Migrations
 
                     b.Property<int>("Money")
                         .HasColumnType("integer");
+
+                    b.Property<string>("Role")
+                        .IsRequired()
+                        .HasMaxLength(24)
+                        .HasColumnType("character varying(24)");
 
                     b.Property<string>("Username")
                         .IsRequired()
@@ -331,6 +484,7 @@ namespace Proton.Server.Resource.Migrations
                     b.ToTable("UserRaceRestorations");
                 });
 
+<<<<<<< HEAD
             modelBuilder.Entity("Proton.Server.Core.Models.Vehicle", b =>
                 {
                     b.Property<long>("Id")
@@ -414,6 +568,8 @@ namespace Proton.Server.Resource.Migrations
                     b.HasDiscriminator().HasValue("OwnedVehicle");
                 });
 
+=======
+>>>>>>> 10f8164571fb7aec57ac8c49f85f305ccbd1793a
             modelBuilder.Entity("Proton.Server.Core.Models.Character", b =>
                 {
                     b.HasOne("Proton.Server.Core.Models.User", "User")
@@ -463,6 +619,44 @@ namespace Proton.Server.Resource.Migrations
                     b.Navigation("Map");
                 });
 
+            modelBuilder.Entity("Proton.Server.Core.Models.Shop.Closet", b =>
+                {
+                    b.HasOne("Proton.Server.Core.Models.Shop.Cloth", "ClothItem")
+                        .WithMany("Closets")
+                        .HasForeignKey("ClothId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Proton.Server.Core.Models.User", "Owner")
+                        .WithMany("Closets")
+                        .HasForeignKey("OwnerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ClothItem");
+
+                    b.Navigation("Owner");
+                });
+
+            modelBuilder.Entity("Proton.Server.Core.Models.Shop.Garage", b =>
+                {
+                    b.HasOne("Proton.Server.Core.Models.User", "Owner")
+                        .WithMany("Garages")
+                        .HasForeignKey("OwnerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Proton.Server.Core.Models.Shop.Vehicle", "VehicleItem")
+                        .WithMany("Garages")
+                        .HasForeignKey("VehicleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Owner");
+
+                    b.Navigation("VehicleItem");
+                });
+
             modelBuilder.Entity("Proton.Server.Core.Models.UserRaceRestoration", b =>
                 {
                     b.HasOne("Proton.Server.Core.Models.User", "User")
@@ -498,13 +692,6 @@ namespace Proton.Server.Resource.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("Proton.Server.Core.Models.OwnedVehicle", b =>
-                {
-                    b.HasOne("Proton.Server.Core.Models.User", null)
-                        .WithMany("OwnedVehicles")
-                        .HasForeignKey("UserId");
-                });
-
             modelBuilder.Entity("Proton.Server.Core.Models.RaceMap", b =>
                 {
                     b.Navigation("RacePoints");
@@ -512,11 +699,23 @@ namespace Proton.Server.Resource.Migrations
                     b.Navigation("StartPoints");
                 });
 
+            modelBuilder.Entity("Proton.Server.Core.Models.Shop.Cloth", b =>
+                {
+                    b.Navigation("Closets");
+                });
+
+            modelBuilder.Entity("Proton.Server.Core.Models.Shop.Vehicle", b =>
+                {
+                    b.Navigation("Garages");
+                });
+
             modelBuilder.Entity("Proton.Server.Core.Models.User", b =>
                 {
                     b.Navigation("Character");
 
-                    b.Navigation("OwnedVehicles");
+                    b.Navigation("Closets");
+
+                    b.Navigation("Garages");
 
                     b.Navigation("Sessions");
                 });

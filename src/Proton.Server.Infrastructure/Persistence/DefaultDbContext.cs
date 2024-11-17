@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Proton.Server.Core.Interfaces;
 using Proton.Server.Core.Models;
 using Proton.Server.Core.Models.Log;
+using Proton.Server.Core.Models.Shop;
 
 namespace Proton.Server.Infrastructure.Persistence;
 
@@ -16,7 +17,14 @@ public class DefaultDbContext : DbContext, IDbContext
     public DbSet<RacePoint> RacePoints => Set<RacePoint>();
     public DbSet<Vehicle> Vehicles => Set<Vehicle>();
     public DbSet<UserRaceRestoration> UserRaceRestorations => Set<UserRaceRestoration>();
+<<<<<<< HEAD
     public DbSet<VehicleTuning> VehicleTunings => Set<VehicleTuning>();
+=======
+    public DbSet<Garage> Garages => Set<Garage>();
+    public DbSet<Cloth> Cloths => Set<Cloth>();
+    public DbSet<Closet> Closets => Set<Closet>();
+    public DbSet<BanRecord> BanRecords => Set<BanRecord>();
+>>>>>>> 10f8164571fb7aec57ac8c49f85f305ccbd1793a
 
     public DefaultDbContext() { }
 

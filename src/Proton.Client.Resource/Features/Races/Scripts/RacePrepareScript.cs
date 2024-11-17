@@ -5,9 +5,9 @@ using AsyncAwaitBestPractices;
 using Proton.Client.Core.Interfaces;
 using Proton.Client.Resource.Commons;
 using Proton.Client.Resource.Features.Ipls.Abstractions;
+using Proton.Client.Resource.Features.Races.Abstractions;
 using Proton.Client.Resource.Features.UiViews.Abstractions;
 using Proton.Shared.Constants;
-using Proton.Shared.Contants;
 using Proton.Shared.Dtos;
 
 namespace Proton.Client.Resource.Features.Races.Scripts;
@@ -33,6 +33,7 @@ public sealed class RacePrepareScript(IUiView uiView, IRaceService raceService, 
 
     private void OnEnterTransition(Vector3 position)
     {
+        raceService.Status = RaceStatus.Preparing;
         uiView.Mount(Route.RacePrepareTransition);
         Alt.OnTick += DisableVehicleMovement;
         Alt.Natives.DoScreenFadeOut(1000);

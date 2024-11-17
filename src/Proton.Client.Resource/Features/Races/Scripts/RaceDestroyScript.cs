@@ -2,8 +2,9 @@ using AltV.Net.Client;
 using AsyncAwaitBestPractices;
 using Proton.Client.Resource.Commons;
 using Proton.Client.Resource.Features.Ipls.Abstractions;
+using Proton.Client.Resource.Features.Races.Abstractions;
 using Proton.Client.Resource.Features.UiViews.Abstractions;
-using Proton.Shared.Contants;
+using Proton.Shared.Constants;
 
 namespace Proton.Client.Resource.Features.Races.Scripts;
 
@@ -35,7 +36,7 @@ public sealed class RaceDestroyScript(IRaceService raceService, IIplService iplS
 
     private async Task OnDestroyAsync()
     {
-        if (raceService.IsStarted)
+        if (raceService.Status == RaceStatus.Started)
         {
             raceService.Stop();
         }

@@ -15,7 +15,7 @@ public static partial class ServiceCollectionExtensions
             .AddSingleton<IRacePointResolver, RacePointLapResolver>()
             .AddSingleton<IRacePointResolver, RacePointRallyResolver>()
             .AddHostedService<RaceCreatorScript>()
-            .AddStartup<RaceMenuScript>()
+            .AddHostedService<RaceMenuScript>()
             .AddStartup<RaceMenuRacesTabScript>()
             .AddStartup<RaceHostScript>()
             .AddStartup<RaceCountdownScript>()
@@ -29,7 +29,8 @@ public static partial class ServiceCollectionExtensions
             .AddHostedService<RaceFinishScript>()
             .AddHostedService<RaceStartCountdownScript>()
             .AddHostedService<RaceDestroyScript>()
-            .AddHostedService<RaceRespawnScript>();
+            .AddHostedService<RaceRespawnScript>()
+            .AddHostedService<RaceMenuCollectionTabScript>();
         return serviceCollection;
     }
 }

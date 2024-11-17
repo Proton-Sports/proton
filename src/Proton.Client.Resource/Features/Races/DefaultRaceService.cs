@@ -4,21 +4,30 @@ using AltV.Net.Client.Elements.Interfaces;
 using AltV.Net.Data;
 using AltV.Net.Elements.Entities;
 using AltV.Net.Shared.Enums;
+using Proton.Client.Resource.Features.Races.Abstractions;
 using Proton.Shared.Constants;
 using Proton.Shared.Models;
 
 namespace Proton.Client.Resource.Features.Races;
 
-public sealed class DefaultRaceService : IRaceService
+public sealed class DefaultRaceService(IEnumerable<IRacePointResolver> resolvers) : IRaceService
 {
     private const uint BlipSpriteObjective = 146;
     private const uint BlipSpriteArrow = 14;
 
-    private readonly List<RacePointDto> racePoints = new();
-    private readonly Dictionary<int, Data> indexToDataDictionary = new();
-    private readonly Dictionary<RaceType, IRacePointResolver> raceTypeToResolverDictionary;
-    private readonly HashSet<Action<object>> hitEventHandlers = new();
-    private bool started;
+    private readonly List<RacePointDto> racePoints = [];
+    private readonly Dictionary<RaceType, IRacePointResolver> raceTypeToResolverDictionary = resolvers.ToDictionary(x =>
+        x.SupportedRaceType
+    );
+    private readonly HashSet<Action<object>> hitEventHandlers = [];
+
+    private bool hit;
+    private int index;
+    private ICheckpoint? checkpoint;
+    private IBlip? blip;
+    private IBlip? arrowBlip;
+    private IMarker? nextMarker;
+    private IBlip? nextBlip;
 
     public event Action? Started;
     public event Action? Stopped;
@@ -31,15 +40,10 @@ public sealed class DefaultRaceService : IRaceService
 
     public int Dimension { get; set; }
     public IReadOnlyList<RacePointDto> RacePoints => racePoints;
-    public bool IsStarted => started;
     public RaceType RaceType { get; set; }
     public bool Ghosting { get; set; }
     public string? IplName { get; set; }
-
-    public DefaultRaceService(IEnumerable<IRacePointResolver> resolvers)
-    {
-        raceTypeToResolverDictionary = resolvers.ToDictionary(x => x.SupportedRaceType);
-    }
+    public RaceStatus Status { get; set; }
 
     public void ClearRacePoints()
     {
@@ -63,65 +67,140 @@ public sealed class DefaultRaceService : IRaceService
 
     public ICheckpoint LoadRacePoint(CheckpointType checkpointType, int index, int? nextIndex)
     {
+        hit = false;
+        this.index = index;
         var nextPoint = nextIndex is not null ? racePoints[(int)nextIndex] : default;
         var point = racePoints[index];
-        var checkpoint = Alt.CreateCheckpoint(
-            checkpointType,
-            point.Position - new Position(0, 0, point.Radius / 2),
-            nextPoint is null ? Position.Zero : nextPoint.Position - new Position(0, 0, nextPoint.Radius / 2),
-            point.Radius,
-            point.Radius,
-            new Rgba(251, 251, 181, 128),
-            new Rgba(0, 197, 252, 255),
-            512
-        );
-        checkpoint.Dimension = Dimension;
-        var blip = Alt.CreatePointBlip(point.Position);
-        blip.Sprite = BlipSpriteObjective;
-        blip.ScaleXY = new Vector2(1f);
-        blip.Color = 5;
-        blip.Dimension = Dimension;
-        var arrowBlip = Alt.CreatePointBlip(point.Position);
-        arrowBlip.Sprite = BlipSpriteArrow;
-        arrowBlip.ScaleXY = new Vector2(1f);
-        arrowBlip.Color = 5;
-        arrowBlip.Dimension = Dimension;
-
-        IMarker? nextMarker = default;
-        IBlip? nextBlip = default;
-        if (nextPoint is not null)
+        if (checkpoint is null)
         {
-            nextMarker = Alt.CreateMarker(
-                MarkerType.MarkerCylinder,
-                nextPoint.Position,
-                new Rgba(251, 251, 181, 32),
-                true,
+            checkpoint = Alt.CreateCheckpoint(
+                checkpointType,
+                point.Position - new Position(0, 0, point.Radius / 2),
+                nextPoint is null ? Position.Zero : nextPoint.Position - new Position(0, 0, nextPoint.Radius / 2),
+                point.Radius,
+                point.Radius,
+                new Rgba(251, 251, 181, 128),
+                new Rgba(0, 197, 252, 255),
                 512
             );
-            nextMarker.Scale = new Position(nextPoint.Radius * 2, nextPoint.Radius * 2, nextPoint.Radius);
-            nextMarker.Dimension = Dimension;
-            nextBlip = Alt.CreatePointBlip(nextPoint.Position);
-            nextBlip.Sprite = BlipSpriteObjective;
-            nextBlip.Color = 5;
-            nextBlip.ScaleXY = new Vector2(0.5f);
-            nextBlip.Dimension = Dimension;
+            checkpoint.Dimension = Dimension;
         }
-        indexToDataDictionary[index] = new Data(checkpoint, blip, arrowBlip, nextMarker, nextBlip);
+        else
+        {
+            checkpoint.CheckpointType = (byte)checkpointType;
+            checkpoint.Position = point.Position - new Position(0, 0, point.Radius / 2);
+            checkpoint.NextPosition = nextPoint is null
+                ? Position.Zero
+                : nextPoint.Position - new Position(0, 0, nextPoint.Radius / 2);
+            checkpoint.Radius = point.Radius;
+        }
+
+        if (nextPoint is null)
+        {
+            if (nextMarker is not null)
+            {
+                nextMarker.Destroy();
+                nextMarker = null;
+            }
+            if (nextBlip is not null)
+            {
+                nextBlip.Destroy();
+                nextBlip = null;
+            }
+        }
+        else
+        {
+            if (nextMarker is null)
+            {
+                nextMarker = Alt.CreateMarker(
+                    MarkerType.MarkerCylinder,
+                    nextPoint.Position,
+                    new Rgba(251, 251, 181, 32),
+                    true,
+                    512
+                );
+                nextMarker.Dimension = Dimension;
+            }
+            else
+            {
+                nextMarker.Position = nextPoint.Position;
+            }
+            nextMarker.Scale = new Position(nextPoint.Radius * 2, nextPoint.Radius * 2, nextPoint.Radius);
+
+            if (nextBlip is null)
+            {
+                nextBlip = Alt.CreatePointBlip(nextPoint.Position);
+                nextBlip.Sprite = BlipSpriteObjective;
+                nextBlip.Color = 5;
+                nextBlip.ScaleXY = new Vector2(0.5f);
+                nextBlip.Dimension = Dimension;
+            }
+            else
+            {
+                nextBlip.Position = nextPoint.Position;
+            }
+        }
+
+        if (blip is null)
+        {
+            blip = Alt.CreatePointBlip(point.Position);
+            blip.Sprite = BlipSpriteObjective;
+            blip.ScaleXY = new Vector2(1f);
+            blip.Color = 5;
+            blip.Dimension = Dimension;
+        }
+        else
+        {
+            blip.Position = point.Position;
+        }
+
+        if (arrowBlip is null)
+        {
+            arrowBlip = Alt.CreatePointBlip(point.Position);
+            arrowBlip.Sprite = BlipSpriteArrow;
+            arrowBlip.ScaleXY = new Vector2(1f);
+            arrowBlip.Color = 5;
+            arrowBlip.Dimension = Dimension;
+        }
+        else
+        {
+            arrowBlip.Position = point.Position;
+        }
         return checkpoint;
     }
 
-    public bool UnloadRacePoint(int index)
+    public void UnloadRacePoint()
     {
-        if (!indexToDataDictionary.TryGetValue(index, out var data))
-            return false;
-        data.Destroy();
-        indexToDataDictionary.Remove(index);
-        return true;
+        if (checkpoint is not null)
+        {
+            checkpoint.Destroy();
+            checkpoint = null;
+        }
+        if (blip is not null)
+        {
+            blip.Destroy();
+            blip = null;
+        }
+        if (arrowBlip is not null)
+        {
+            arrowBlip.Destroy();
+            arrowBlip = null;
+        }
+        if (nextMarker is not null)
+        {
+            nextMarker.Destroy();
+            nextMarker = null;
+        }
+        if (nextBlip is not null)
+        {
+            nextBlip.Destroy();
+            nextBlip = null;
+        }
     }
 
     public void Start()
     {
-        started = true;
+        Status = RaceStatus.Started;
         Alt.OnTick += HandleTick;
         if (Started is not null)
         {
@@ -131,7 +210,7 @@ public sealed class DefaultRaceService : IRaceService
 
     public void Stop()
     {
-        started = false;
+        Status = RaceStatus.None;
         Alt.OnTick -= HandleTick;
         if (Stopped is not null)
         {
@@ -146,51 +225,27 @@ public sealed class DefaultRaceService : IRaceService
 
     private void HandleTick()
     {
-        var vehicle = Alt.LocalPlayer.Vehicle;
-        if (vehicle is null || hitEventHandlers.Count == 0)
+        if (hit || checkpoint is null || hitEventHandlers.Count == 0)
+        {
             return;
+        }
+
+        var vehicle = Alt.LocalPlayer.Vehicle;
+        if (vehicle is null)
+        {
+            return;
+        }
 
         const float offset = 32f;
         var vehiclePosition = vehicle.Position;
-        foreach (var pair in indexToDataDictionary)
+        var radiusSquared = checkpoint.Radius * checkpoint.Radius;
+        if (vehiclePosition.GetDistanceSquaredTo(checkpoint.Position) <= radiusSquared + offset)
         {
-            var checkpoint = pair.Value.Checkpoint;
-            var radiusSquared = checkpoint.Radius * checkpoint.Radius;
-            if (vehiclePosition.GetDistanceSquaredTo(checkpoint.Position) <= radiusSquared + offset)
+            hit = true;
+            foreach (var handler in hitEventHandlers)
             {
-                foreach (var handler in hitEventHandlers)
-                {
-                    handler(pair.Key);
-                }
-                break;
+                handler(index);
             }
-        }
-    }
-
-    private class Data
-    {
-        public readonly ICheckpoint Checkpoint;
-        public readonly IBlip Blip;
-        public readonly IBlip ArrowBlip;
-        public readonly IMarker? NextMarker;
-        public readonly IBlip? NextBlip;
-
-        public Data(ICheckpoint checkpoint, IBlip blip, IBlip arrowBlip, IMarker? nextMarker, IBlip? nextBlip)
-        {
-            Checkpoint = checkpoint;
-            Blip = blip;
-            ArrowBlip = arrowBlip;
-            NextMarker = nextMarker;
-            NextBlip = nextBlip;
-        }
-
-        public void Destroy()
-        {
-            Checkpoint.Destroy();
-            Blip.Destroy();
-            ArrowBlip.Destroy();
-            NextMarker?.Destroy();
-            NextBlip?.Destroy();
         }
     }
 }

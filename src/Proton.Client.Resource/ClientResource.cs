@@ -6,6 +6,7 @@ using Proton.Client.Infrastructure.Extensions;
 using Proton.Client.Resource.Authentication.Extentions;
 using Proton.Client.Resource.CharacterCreator.Extensions;
 using Proton.Client.Resource.Commons.Abstractions;
+using Proton.Client.Resource.Features.Shop.Extentions;
 using Proton.Client.Resource.Features.UiViews.Abstractions;
 using Proton.Client.Resource.Hud.Extensions;
 using Proton.Client.Resource.Nametags.Extensions;
@@ -36,7 +37,9 @@ public sealed class ClientResource : AsyncResource
             .AddIplFeatures()
             .AddRockstarEditorFeatures()
             .AddNotificationFeatures()
-            .AddPlayerFeatures();
+            .AddPlayerFeatures()
+            .AddVehicleFeatures()
+            .AddShops();
         serviceProvider = serviceCollection.BuildServiceProvider();
     }
 
