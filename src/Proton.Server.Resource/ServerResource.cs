@@ -38,6 +38,7 @@ public sealed class ServerResource : AsyncResource
                     .AddAuthentication()
                     .AddPlayerFeatures()
                     .AddRaceFeatures()
+                    .AddTuningFeature()
                     .AddCharacterCreator()
                     .AddIplFeatures();
             }

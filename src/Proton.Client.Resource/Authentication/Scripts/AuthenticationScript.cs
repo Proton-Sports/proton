@@ -1,4 +1,4 @@
-﻿using AltV.Net.Client;
+using AltV.Net.Client;
 using Proton.Client.Resource.Features.UiViews.Abstractions;
 using Proton.Shared.Contants;
 using Proton.Shared.Interfaces;
@@ -37,7 +37,7 @@ public sealed class AuthenticationScript : IStartup
 
     private void Alt_OnConsoleCommand(string name, string[] args)
     {
-        uiView.Mount(Route.Auth);
+        //uiView.Mount(Route.Auth);
     }
 
     /// <summary>
@@ -87,6 +87,7 @@ public sealed class AuthenticationScript : IStartup
         Alt.GameControlsEnabled = true;
         uiView.Unfocus();
         uiView.Unmount(Route.Auth);
+        Alt.EmitServer("auth:complete");
         return Task.CompletedTask;
     }
 }

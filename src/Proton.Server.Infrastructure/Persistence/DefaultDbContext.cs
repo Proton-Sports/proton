@@ -16,6 +16,7 @@ public class DefaultDbContext : DbContext, IDbContext
     public DbSet<RacePoint> RacePoints => Set<RacePoint>();
     public DbSet<Vehicle> Vehicles => Set<Vehicle>();
     public DbSet<UserRaceRestoration> UserRaceRestorations => Set<UserRaceRestoration>();
+    public DbSet<VehicleTuning> VehicleTunings => Set<VehicleTuning>();
 
     public DefaultDbContext() { }
 

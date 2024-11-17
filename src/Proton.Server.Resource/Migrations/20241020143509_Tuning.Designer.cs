@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Proton.Server.Infrastructure.Persistence;
@@ -12,9 +13,11 @@ using Proton.Server.Infrastructure.Persistence;
 namespace Proton.Server.Resource.Migrations
 {
     [DbContext(typeof(DefaultDbContext))]
-    partial class DefaultDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241020143509_Tuning")]
+    partial class Tuning
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -138,38 +141,6 @@ namespace Proton.Server.Resource.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("Sessions");
-                });
-
-            modelBuilder.Entity("Proton.Server.Core.Models.OwnedVehicleTuning", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
-
-                    b.Property<int>("CategoryId")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("DisplayName")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<long?>("OwnedVehicleId")
-                        .HasColumnType("bigint");
-
-                    b.Property<string>("Value")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<bool>("isEquiped")
-                        .HasColumnType("boolean");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("OwnedVehicleId");
-
-                    b.ToTable("OwnedVehicleTuning");
                 });
 
             modelBuilder.Entity("Proton.Server.Core.Models.RaceMap", b =>
@@ -434,13 +405,6 @@ namespace Proton.Server.Resource.Migrations
                     b.Navigation("_User");
                 });
 
-            modelBuilder.Entity("Proton.Server.Core.Models.OwnedVehicleTuning", b =>
-                {
-                    b.HasOne("Proton.Server.Core.Models.OwnedVehicle", null)
-                        .WithMany("Tunings")
-                        .HasForeignKey("OwnedVehicleId");
-                });
-
             modelBuilder.Entity("Proton.Server.Core.Models.RacePoint", b =>
                 {
                     b.HasOne("Proton.Server.Core.Models.RaceMap", "Map")
@@ -519,11 +483,6 @@ namespace Proton.Server.Resource.Migrations
                     b.Navigation("OwnedVehicles");
 
                     b.Navigation("Sessions");
-                });
-
-            modelBuilder.Entity("Proton.Server.Core.Models.OwnedVehicle", b =>
-                {
-                    b.Navigation("Tunings");
                 });
 #pragma warning restore 612, 618
         }
