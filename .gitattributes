@@ -1,0 +1,2 @@
+resources/dlc_mpexample/dlc.rpf filter=lfs diff=lfs merge=lfs -text
+resources/dlc_sport_scaleform_core/dlc.rpf filter=lfs diff=lfs merge=lfs -text
