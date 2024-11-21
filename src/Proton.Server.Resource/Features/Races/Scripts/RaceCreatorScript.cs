@@ -17,7 +17,8 @@ namespace Proton.Server.Resource.Features.Races.Scripts;
 public sealed class RaceCreatorScript(
     INoClip noClip,
     IDbContextFactory dbContextFactory,
-    IOptionsMonitor<IplOptions> iplOptions
+    IOptionsMonitor<IplOptions> iplOptions,
+    IRaceService raceService
 ) : HostedService
 {
     private readonly Dictionary<IPlayer, WorldState> playerWorldStates = [];
@@ -180,6 +181,11 @@ public sealed class RaceCreatorScript(
 
     private async Task HandleEditMapAsync(IPlayer player, long id, string type)
     {
+        if (raceService.Races.Any(a => a.MapId == id) || raceService.TryGetRaceByParticipant(player, out _))
+        {
+            return;
+        }
+
         await using var ctx = await dbContextFactory.CreateDbContextAsync().ConfigureAwait(false);
         var query = ctx.RaceMaps.Where(x => x.Id == id);
         query = type switch
