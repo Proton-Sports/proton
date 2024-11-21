@@ -1,4 +1,5 @@
 using AltV.Net;
+using AltV.Net.Data;
 using AltV.Net.Elements.Entities;
 using AsyncAwaitBestPractices;
 using Proton.Server.Resource.Features.Races.Abstractions;
@@ -28,10 +29,10 @@ public sealed class RaceDestroyScript(IRaceService raceService) : HostedService
 
     private void HandleParticipantLeft(Race race, IPlayer player)
     {
-        // if (race.Participants.Count == 0)
-        // {
-        //     raceService.DestroyRace(race);
-        // }
+        if (race.Participants.Count == 0)
+        {
+            raceService.DestroyRace(race);
+        }
     }
 
     private Task OnRaceFinished(Race race)
@@ -56,6 +57,11 @@ public sealed class RaceDestroyScript(IRaceService raceService) : HostedService
             await Task.Delay(1000).ConfigureAwait(false);
 
             Alt.EmitClients(players, "race:destroy");
+            foreach (var player in players)
+            {
+                player.Position = new Position(551.916f, 5562.336f, -96.042f);
+                player.Dimension = 0;
+            }
             raceService.DestroyRace(race);
         }
     }

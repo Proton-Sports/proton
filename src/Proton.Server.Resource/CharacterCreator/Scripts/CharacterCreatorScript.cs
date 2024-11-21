@@ -143,7 +143,9 @@ public class CharacterCreatorScript : IStartup
 
         player.Dimension = 0;
         player.Frozen = false;
-        player.Position = new Position(486.417f, -3339.692f, 6.070f);
+        player.Position = new Position(551.916f, 5562.336f, -96.042f);
+
+
         player.Rotation = Rotation.Zero;
         player.Visible = true;
 

@@ -23,14 +23,6 @@ public sealed class AdminPanelScript(IUiView ui) : HostedService
         Alt.OnServer<List<AdminPanelVehicleDto>>("admin-panel.vehicles.get", OnServerVehiclesGet);
         Alt.OnServer<AdminPanelVehicleDto>("admin-panel.vehicles.create", OnServerVehiclesCreate);
         Alt.OnServer<uint>("admin-panel.vehicles.destroy", OnServerVehiclesDestroy);
-
-        Alt.OnConsoleCommand += (cmd, args) =>
-        {
-            if (cmd == "test")
-            {
-                Alt.EmitServer("admin-panel.mount");
-            }
-        };
         return Task.CompletedTask;
     }
 
