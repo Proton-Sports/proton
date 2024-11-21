@@ -5,6 +5,8 @@ modules/
 resources/*
 !resources/proton-client
 !resources/proton-server
+!resources/dlc_mpexample
+!resources/dlc_sport_scaleform_core
 resources/proton-client/*
 resources/proton-server/*
 resources/proton-ui/*
