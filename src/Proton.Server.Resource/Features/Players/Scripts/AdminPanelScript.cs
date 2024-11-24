@@ -1,4 +1,5 @@
 using AltV.Net;
+using AltV.Net.Async;
 using AltV.Net.Enums;
 using Proton.Server.Resource.SharedKernel;
 using Proton.Shared.Dtos;
@@ -22,6 +23,8 @@ public sealed class AdminPanelScript(IDbContextFactory dbFactory) : HostedServic
         Alt.OnClient<PPlayer, uint, string>("admin-panel.players.action", OnPlayersAction);
         Alt.OnClient<PPlayer, string>("admin-panel.vehicles.create", OnVehiclesCreate);
         Alt.OnClient<PPlayer, uint>("admin-panel.vehicles.destroy", OnVehiclesDestroy);
+        AltAsync.OnClient<PPlayer, Task>("admin-panel.ban.getPlayers", OnBanGetPlayers);
+        Alt.OnClient<PPlayer, string, string>("admin-panel.ban.action", OnBanAction);
         return Task.CompletedTask;
     }
 
@@ -110,7 +113,7 @@ public sealed class AdminPanelScript(IDbContextFactory dbFactory) : HostedServic
         await using var db = await dbFactory.CreateDbContextAsync().ConfigureAwait(false);
         var user = await db.Users
             .Where(a => a.Id == player.ProtonId)
-            .Select(a => new { a.DiscordId })
+            .Select(a => new { a.DiscordId, a.Username })
             .FirstOrDefaultAsync()
             .ConfigureAwait(false);
         if (user is null)
@@ -123,7 +126,8 @@ public sealed class AdminPanelScript(IDbContextFactory dbFactory) : HostedServic
         db.Add(new BanRecord
         {
             Kind = BanKind.Discord,
-            Value = user.DiscordId.ToString()
+            Id = user.DiscordId.ToString(),
+            Name = user.Username
         });
         await db.SaveChangesAsync().ConfigureAwait(false);
     }
@@ -155,5 +159,44 @@ public sealed class AdminPanelScript(IDbContextFactory dbFactory) : HostedServic
 
         vehicle.Destroy();
         player.Emit("admin-panel.vehicles.destroy", id);
+    }
+
+    private async Task OnBanGetPlayers(PPlayer player)
+    {
+        if (!IsModOrAdmin(player)) return;
+        await using var db = await dbFactory.CreateDbContextAsync().ConfigureAwait(false);
+        var dtos = await db.BanRecords
+            .Select(a => new AdminPanelBanPlayerDto
+            {
+                Id = a.Id,
+                Name = a.Name
+            })
+            .ToListAsync()
+            .ConfigureAwait(false);
+        player.Emit("admin-panel.ban.getPlayers", dtos);
+    }
+
+    private void OnBanAction(PPlayer player, string id, string action)
+    {
+        if (!IsModOrAdmin(player)) return;
+        switch (action)
+        {
+            case "unban":
+                UnbanAsync(player, id).SafeFireAndForget(e => Alt.LogError(e.ToString()));
+                break;
+        }
+    }
+
+    private async Task UnbanAsync(PPlayer player, string id)
+    {
+        await using var db = await dbFactory.CreateDbContextAsync().ConfigureAwait(false);
+        var rows = await db.BanRecords
+            .Where(a => a.Id.Equals(id))
+            .ExecuteDeleteAsync()
+            .ConfigureAwait(false);
+        if (rows > 0)
+        {
+            player.Emit("admin-panel.ban.removePlayer", id);
+        }
     }
 }

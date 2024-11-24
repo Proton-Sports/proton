@@ -19,10 +19,14 @@ public sealed class AdminPanelScript(IUiView ui) : HostedService
         ui.On<uint, string>("admin-panel.players.action", OnUiPlayersAction);
         ui.On<string>("admin-panel.vehicles.create", OnUiVehiclesCreate);
         ui.On<uint>("admin-panel.vehicles.destroy", OnUiVehiclesDestroy);
+        ui.On<string, string>("admin-panel.ban.action", OnUiBanAction);
+        ui.On("admin-panel.ban.getPlayers", OnUiBanGetPlayers);
         Alt.OnServer<List<AdminPanelPlayerDto>>("admin-panel.players.get", OnServerPlayersGet);
         Alt.OnServer<List<AdminPanelVehicleDto>>("admin-panel.vehicles.get", OnServerVehiclesGet);
         Alt.OnServer<AdminPanelVehicleDto>("admin-panel.vehicles.create", OnServerVehiclesCreate);
         Alt.OnServer<uint>("admin-panel.vehicles.destroy", OnServerVehiclesDestroy);
+        Alt.OnServer<List<AdminPanelBanPlayerDto>>("admin-panel.ban.getPlayers", OnServerBanGetPlayers);
+        Alt.OnServer<string>("admin-panel.ban.removePlayer", OnServerBanRemovePlayer);
         return Task.CompletedTask;
     }
 
@@ -109,5 +113,30 @@ public sealed class AdminPanelScript(IUiView ui) : HostedService
         {
             ui.Unmount(Route.AdminPanel);
         }
+    }
+
+    private void OnUiBanGetPlayers()
+    {
+        Alt.EmitServer("admin-panel.ban.getPlayers");
+    }
+
+    private void OnUiBanAction(string id, string action)
+    {
+        if (!action.Equals("unban", StringComparison.Ordinal))
+        {
+            return;
+        }
+
+        Alt.EmitServer("admin-panel.ban.action", id, action);
+    }
+
+    private void OnServerBanGetPlayers(List<AdminPanelBanPlayerDto> dtos)
+    {
+        ui.Emit("admin-panel.ban.getPlayers", dtos);
+    }
+
+    private void OnServerBanRemovePlayer(string id)
+    {
+        ui.Emit("admin-panel.ban.removePlayer", id);
     }
 }

@@ -1,6 +1,10 @@
+using Proton.Server.Core.Interfaces;
+
 namespace Proton.Server.Core.Models;
 
-public enum BanKind
+public sealed record BanRecord : IAggregateRoot
 {
-    Discord,
+    public required BanKind Kind { get; set; }
+    public required string Id { get; set; }
+    public required string Name { get; set; }
 }

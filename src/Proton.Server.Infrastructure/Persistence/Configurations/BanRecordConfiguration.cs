@@ -10,7 +10,8 @@ public sealed class BanRecordConfiguration : IEntityTypeConfiguration<BanRecord>
     public void Configure(EntityTypeBuilder<BanRecord> builder)
     {
         builder.Property(a => a.Kind).HasConversion<EnumToStringConverter<BanKind>>().HasMaxLength(24);
-        builder.Property(a => a.Value).HasMaxLength(1024);
-        builder.HasKey(a => a.Value);
+        builder.Property(a => a.Id).HasMaxLength(1024);
+        builder.Property(a => a.Name).HasMaxLength(64);
+        builder.HasKey(a => a.Id);
     }
 }

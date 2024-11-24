@@ -67,7 +67,7 @@ public class AuthenticationScript(
 
         await using var db = await dbContextFactory.CreateDbContextAsync().ConfigureAwait(false);
         var isBanned = await db.BanRecords
-            .AnyAsync(a => a.Kind == BanKind.Discord && a.Value.Equals(discordProfile.Id.ToString()))
+            .AnyAsync(a => a.Kind == BanKind.Discord && a.Id.Equals(discordProfile.Id.ToString()))
             .ConfigureAwait(false);
         if (isBanned)
         {
