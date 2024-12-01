@@ -75,7 +75,14 @@ public class CharacterCreatorScript : IStartup
         Alt.Natives.DoScreenFadeOut(1000);
         uiView.Unfocus();
 
-        await AltAsync.WaitFor(() => Alt.Natives.IsScreenFadedOut(), timeout: 10000);
+        try
+        {
+            await AltAsync.WaitFor(Alt.Natives.IsScreenFadedOut, timeout: 10000, interval: 100).ConfigureAwait(false);
+        }
+        catch (TimeoutException)
+        {
+            // TODO: Handle this
+        }
 
         DeleteCharacter();
         DeleteCharacterCreatorCamera();
@@ -319,23 +326,33 @@ public class CharacterCreatorScript : IStartup
         characterPed.Frozen = true;
 
         Alt.Natives.RequestAnimDict("anim@heists@heist_corona@single_team");
-        await AltAsync.WaitFor(
-            () => Alt.Natives.HasAnimDictLoaded("anim@heists@heist_corona@single_team") && characterPed.Spawned
-        );
-
-        Alt.Natives.TaskPlayAnim(
-            characterPed.ScriptId,
-            "anim@heists@heist_corona@single_team",
-            "single_team_loop_boss",
-            1,
-            1,
-            -1,
-            1,
-            0,
-            false,
-            false,
-            false
-        );
+        try
+        {
+            await AltAsync
+                .WaitFor(
+                    () => Alt.Natives.HasAnimDictLoaded("anim@heists@heist_corona@single_team") && characterPed.Spawned,
+                    timeout: 10000,
+                    interval: 100
+                )
+                .ConfigureAwait(false);
+            Alt.Natives.TaskPlayAnim(
+                characterPed.ScriptId,
+                "anim@heists@heist_corona@single_team",
+                "single_team_loop_boss",
+                1,
+                1,
+                -1,
+                1,
+                0,
+                false,
+                false,
+                false
+            );
+        }
+        catch (TimeoutException)
+        {
+            // TODO: Handle this
+        }
 
         SetCharacterClothes(characterModel);
     }
