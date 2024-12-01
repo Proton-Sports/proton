@@ -144,10 +144,18 @@ public class CharacterCreatorScript : IStartup
         player.Dimension = 0;
         player.Frozen = false;
         player.Position = new Position(551.916f, 5562.336f, -96.042f);
-
-
+        player.Frozen = true;
+        player.Invincible = true;
         player.Rotation = Rotation.Zero;
-        player.Visible = true;
+        player.Visible = false;
+
+        _ = Task.Run(async () =>
+        {
+            await Task.Delay(2000).ConfigureAwait(false);
+            player.Frozen = false;
+            player.Invincible = false;
+            player.Visible = true;
+        });
 
         player.Emit("clientNametags:showNametags", true);
         // player.Invincible = true;
