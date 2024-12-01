@@ -1,9 +1,9 @@
 using AltV.Net.Client;
+using AltV.Net.Client.Elements.Data;
 using Proton.Client.Resource.Commons;
 using Proton.Client.Resource.Features.UiViews.Abstractions;
-using Proton.Shared.Dtos;
 using Proton.Shared.Constants;
-using AltV.Net.Client.Elements.Data;
+using Proton.Shared.Dtos;
 
 namespace Proton.Client.Resource.Features.Players.Scripts;
 
@@ -11,6 +11,7 @@ public sealed class AdminPanelScript(IUiView ui) : HostedService
 {
     public override Task StartAsync(CancellationToken ct)
     {
+        Alt.OnKeyUp += GlobalOnKeyUp;
         Alt.OnServer<AdminPanelMountDto>("admin-panel.mount", OnServerMount);
         ui.OnMount(Route.AdminPanel, OnUiMount);
         ui.OnUnmount(Route.AdminPanel, OnUiUnmount);
@@ -105,6 +106,14 @@ public sealed class AdminPanelScript(IUiView ui) : HostedService
     private void OnServerVehiclesDestroy(uint id)
     {
         ui.Emit("admin-panel.vehicles.destroy", id);
+    }
+
+    private void GlobalOnKeyUp(Key key)
+    {
+        if (!Alt.IsConsoleOpen && key == Key.F4)
+        {
+            Alt.EmitServer("admin-panel.mount");
+        }
     }
 
     private void OnKeyUp(Key key)
