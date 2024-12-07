@@ -160,25 +160,25 @@ public class NametagsScript : IStartup
         {
             if (!areNametagsShown || !clientSettingValue)
             {
-                if (!nametagTextLabel.Visible)
-                    return;
-
-                nametagTextLabel.Visible = false;
-                return;
+                if (nametagTextLabel.Visible)
+                {
+                    nametagTextLabel.Visible = false;
+                }
+                continue;
             }
 
             var distanceBetween = Alt.LocalPlayer.Position.Distance(nametagEntity.Position);
             if (distanceBetween > 15)
             {
                 nametagTextLabel.Visible = false;
-                return;
+                continue;
             }
 
             var isPointOnScreen = Alt.IsPointOnScreen(nametagEntity.Position);
             if (!isPointOnScreen)
             {
                 nametagTextLabel.Visible = false;
-                return;
+                continue;
             }
 
             nametagTextLabel.Position = new Position(
