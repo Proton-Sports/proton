@@ -10,6 +10,9 @@ public static partial class ServiceCollectionExtensions
     {
         serviceCollection.AddSingleton<IUiViewFactory, DefaultUiViewFactory>();
         serviceCollection.AddSingleton(provider => (IUiView)Alt.CreateWebView("http://localhost:5173"));
+        // serviceCollection.AddSingleton(provider =>
+        //     (IUiView)Alt.CreateWebView("http://assets/proton-ui/dist/index.html")
+        // );
         return serviceCollection;
     }
 }

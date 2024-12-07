@@ -44,7 +44,6 @@ public sealed class RaceCreatorScript(
         uiView.On<long, string>("race-menu-creator:editMap", HandleEditMap);
         uiView.On("race:creator:submit", HandleSubmit);
         uiView.On("race:creator:stop", HandleStop);
-        Alt.OnWindowFocusChange += HandleWindowFocusChange;
         return Task.CompletedTask;
     }
 
@@ -128,78 +127,152 @@ public sealed class RaceCreatorScript(
         switch (key)
         {
             case Key.LButton:
+            {
+                if (!noClip.IsStarted || focusing)
                 {
-                    if (!noClip.IsStarted || focusing)
-                    {
-                        break;
-                    }
-
-                    var camera = noClip.Camera!;
-                    var position = camera.Position;
-                    var data = await raycastService
-                        .RaycastAsync(position, position + camera.ForwardVector * 1000)
-                        .ConfigureAwait(false);
-                    if (data is { IsHit: true })
-                    {
-                        AltAsync.RunOnMainThread(
-                            (state) =>
-                            {
-                                switch (pointType)
-                                {
-                                    case PointType.Start:
-                                        raceCreator.AddStartPoint(
-                                            (Position)state,
-                                            new Rotation(0, 0, camera.Rotation.Z * MathF.PI / 180)
-                                        );
-                                        break;
-                                    case PointType.Race:
-                                        raceCreator.AddRacePoint((Position)state, 4f);
-                                        break;
-                                }
-                            },
-                            (Position)data.EndPosition
-                        );
-                    }
                     break;
                 }
-            case Key.RButton:
-                {
-                    if (
-                        !noClip.IsStarted
-                        || focusing
-                        || !noClip.TryGetRaycastData(out var data)
-                        || data is not { IsHit: true }
-                    )
-                    {
-                        break;
-                    }
 
-                    switch (pointType)
-                    {
-                        case PointType.Start:
-                            raceCreator.TryRemoveStartPoint(data.EndPosition, out var _);
-                            break;
-                        case PointType.Race:
-                            if (
-                                raceCreator.TryRemoveRacePoint(data.EndPosition, out var removed)
-                                && removed.Checkpoint == movingRaceCheckpoint
-                            )
+                var camera = noClip.Camera!;
+                var position = camera.Position;
+                var data = await raycastService
+                    .RaycastAsync(position, position + camera.ForwardVector * 1000)
+                    .ConfigureAwait(false);
+                if (data is { IsHit: true })
+                {
+                    AltAsync.RunOnMainThread(
+                        (state) =>
+                        {
+                            switch (pointType)
                             {
-                                movingRaceCheckpoint = null;
+                                case PointType.Start:
+                                    raceCreator.AddStartPoint(
+                                        (Position)state,
+                                        new Rotation(0, 0, camera.Rotation.Z * MathF.PI / 180)
+                                    );
+                                    break;
+                                case PointType.Race:
+                                    raceCreator.AddRacePoint((Position)state, 4f);
+                                    break;
                             }
-                            break;
-                    }
+                        },
+                        (Position)data.EndPosition
+                    );
+                }
+                break;
+            }
+            case Key.RButton:
+            {
+                if (
+                    !noClip.IsStarted
+                    || focusing
+                    || !noClip.TryGetRaycastData(out var data)
+                    || data is not { IsHit: true }
+                )
+                {
                     break;
                 }
-            case Key.Z:
-                {
-                    if (noClip.IsStarted)
-                    {
-                        break;
-                    }
 
-                    var player = Alt.LocalPlayer;
-                    var position = Alt.LocalPlayer.Position;
+                switch (pointType)
+                {
+                    case PointType.Start:
+                        raceCreator.TryRemoveStartPoint(data.EndPosition, out var _);
+                        break;
+                    case PointType.Race:
+                        if (
+                            raceCreator.TryRemoveRacePoint(data.EndPosition, out var removed)
+                            && removed.Checkpoint == movingRaceCheckpoint
+                        )
+                        {
+                            movingRaceCheckpoint = null;
+                        }
+                        break;
+                }
+                break;
+            }
+            case Key.Z:
+            {
+                if (noClip.IsStarted)
+                {
+                    break;
+                }
+
+                var player = Alt.LocalPlayer;
+                var position = Alt.LocalPlayer.Position;
+                if (
+                    !Alt.Natives.GetGroundZExcludingObjectsFor3dCoord(
+                        position.X,
+                        position.Y,
+                        position.Z,
+                        ref position.Z,
+                        true,
+                        true
+                    )
+                )
+                {
+                    return;
+                }
+                switch (pointType)
+                {
+                    case PointType.Start:
+                        raceCreator.AddStartPoint(position, player.Rotation);
+                        break;
+                    case PointType.Race:
+                        raceCreator.AddRacePoint(position, 4f);
+                        break;
+                }
+                break;
+            }
+            case Key.X:
+            {
+                if (noClip.IsStarted)
+                {
+                    break;
+                }
+
+                switch (pointType)
+                {
+                    case PointType.Start:
+                        raceCreator.TryRemoveStartPoint(Alt.LocalPlayer.Position, out var _);
+                        break;
+                    case PointType.Race:
+                        if (
+                            raceCreator.TryRemoveRacePoint(Alt.LocalPlayer.Position, out var removed)
+                            && removed.Checkpoint == movingRaceCheckpoint
+                        )
+                        {
+                            movingRaceCheckpoint = null;
+                        }
+                        break;
+                }
+                break;
+            }
+            case Key.D1:
+            {
+                if (!canSwitch || pointType == PointType.Start)
+                {
+                    return;
+                }
+
+                pointType = PointType.Start;
+                break;
+            }
+            case Key.D2:
+            {
+                if (!canSwitch || pointType == PointType.Race)
+                {
+                    return;
+                }
+
+                pointType = PointType.Race;
+                break;
+            }
+            case Key.U:
+            {
+                Position position = Alt.LocalPlayer.Position;
+                if (!noClip.IsStarted)
+                {
+                    position = Alt.LocalPlayer.Position;
                     if (
                         !Alt.Natives.GetGroundZExcludingObjectsFor3dCoord(
                             position.X,
@@ -213,185 +286,111 @@ public sealed class RaceCreatorScript(
                     {
                         return;
                     }
-                    switch (pointType)
-                    {
-                        case PointType.Start:
-                            raceCreator.AddStartPoint(position, player.Rotation);
-                            break;
-                        case PointType.Race:
-                            raceCreator.AddRacePoint(position, 4f);
-                            break;
-                    }
-                    break;
                 }
-            case Key.X:
+                else if (noClip.TryGetRaycastData(out var data) && data is { IsHit: true })
                 {
-                    if (noClip.IsStarted)
-                    {
-                        break;
-                    }
-
-                    switch (pointType)
-                    {
-                        case PointType.Start:
-                            raceCreator.TryRemoveStartPoint(Alt.LocalPlayer.Position, out var _);
-                            break;
-                        case PointType.Race:
-                            if (
-                                raceCreator.TryRemoveRacePoint(Alt.LocalPlayer.Position, out var removed)
-                                && removed.Checkpoint == movingRaceCheckpoint
-                            )
-                            {
-                                movingRaceCheckpoint = null;
-                            }
-                            break;
-                    }
-                    break;
+                    position = data.EndPosition;
                 }
-            case Key.D1:
+                else
                 {
-                    if (!canSwitch || pointType == PointType.Start)
-                    {
-                        return;
-                    }
-
-                    pointType = PointType.Start;
                     break;
                 }
-            case Key.D2:
+
+                if (raceCreator.TryGetClosestRaceCheckpointTo(position, out var checkpoint))
                 {
-                    if (!canSwitch || pointType == PointType.Race)
-                    {
-                        return;
-                    }
-
-                    pointType = PointType.Race;
-                    break;
+                    checkpoint.Radius += 0.5f;
                 }
-            case Key.U:
-                {
-                    Position position = Alt.LocalPlayer.Position;
-                    if (!noClip.IsStarted)
-                    {
-                        position = Alt.LocalPlayer.Position;
-                        if (
-                            !Alt.Natives.GetGroundZExcludingObjectsFor3dCoord(
-                                position.X,
-                                position.Y,
-                                position.Z,
-                                ref position.Z,
-                                true,
-                                true
-                            )
-                        )
-                        {
-                            return;
-                        }
-                    }
-                    else if (noClip.TryGetRaycastData(out var data) && data is { IsHit: true })
-                    {
-                        position = data.EndPosition;
-                    }
-                    else
-                    {
-                        break;
-                    }
-
-                    if (raceCreator.TryGetClosestRaceCheckpointTo(position, out var checkpoint))
-                    {
-                        checkpoint.Radius += 0.5f;
-                    }
-                    break;
-                }
+                break;
+            }
             case Key.N:
+            {
+                Position position = Alt.LocalPlayer.Position;
+                if (!noClip.IsStarted)
                 {
-                    Position position = Alt.LocalPlayer.Position;
-                    if (!noClip.IsStarted)
-                    {
-                        position = Alt.LocalPlayer.Position;
-                        if (
-                            !Alt.Natives.GetGroundZExcludingObjectsFor3dCoord(
-                                position.X,
-                                position.Y,
-                                position.Z,
-                                ref position.Z,
-                                true,
-                                true
-                            )
+                    position = Alt.LocalPlayer.Position;
+                    if (
+                        !Alt.Natives.GetGroundZExcludingObjectsFor3dCoord(
+                            position.X,
+                            position.Y,
+                            position.Z,
+                            ref position.Z,
+                            true,
+                            true
                         )
-                        {
-                            return;
-                        }
-                    }
-                    else if (noClip.TryGetRaycastData(out var data) && data is { IsHit: true })
+                    )
                     {
-                        position = data.EndPosition;
+                        return;
                     }
-                    else
-                    {
-                        break;
-                    }
-
-                    if (raceCreator.TryGetClosestRaceCheckpointTo(position, out var checkpoint))
-                    {
-                        checkpoint.Radius = Math.Max(1, checkpoint.Radius - 0.5f);
-                    }
+                }
+                else if (noClip.TryGetRaycastData(out var data) && data is { IsHit: true })
+                {
+                    position = data.EndPosition;
+                }
+                else
+                {
                     break;
                 }
+
+                if (raceCreator.TryGetClosestRaceCheckpointTo(position, out var checkpoint))
+                {
+                    checkpoint.Radius = Math.Max(1, checkpoint.Radius - 0.5f);
+                }
+                break;
+            }
             case Key.M:
+            {
+                var position = Alt.LocalPlayer.Position;
+                if (!noClip.IsStarted)
                 {
-                    var position = Alt.LocalPlayer.Position;
-                    if (!noClip.IsStarted)
-                    {
-                        position = Alt.LocalPlayer.Position;
-                        if (
-                            !Alt.Natives.GetGroundZExcludingObjectsFor3dCoord(
-                                position.X,
-                                position.Y,
-                                position.Z,
-                                ref position.Z,
-                                true,
-                                true
-                            )
+                    position = Alt.LocalPlayer.Position;
+                    if (
+                        !Alt.Natives.GetGroundZExcludingObjectsFor3dCoord(
+                            position.X,
+                            position.Y,
+                            position.Z,
+                            ref position.Z,
+                            true,
+                            true
                         )
-                        {
-                            return;
-                        }
-                    }
-                    else if (noClip.TryGetRaycastData(out var data) && data is { IsHit: true })
+                    )
                     {
-                        position = data.EndPosition;
+                        return;
                     }
-                    else
-                    {
-                        break;
-                    }
-
-                    if (raceCreator.TryGetClosestRaceCheckpointTo(position, out var checkpoint))
-                    {
-                        if (movingRaceCheckpoint is not null)
-                        {
-                            movingRaceCheckpoint.Color = new Rgba(255, 255, 255, 255);
-                        }
-                        movingRaceCheckpoint = checkpoint;
-                        movingRaceCheckpoint.Color = new Rgba(0, 255, 0, 255);
-                    }
-                    else if (movingRaceCheckpoint is not null)
-                    {
-                        raceCreator.UpdateRacePointPosition(movingRaceCheckpoint, position);
-                        movingRaceCheckpoint.Color = new Rgba(255, 255, 255, 255);
-                        movingRaceCheckpoint = default;
-                    }
-                    break;
                 }
-            case Key.Menu:
+                else if (noClip.TryGetRaycastData(out var data) && data is { IsHit: true })
                 {
-                    if (focusing)
-                    {
-                        Unfocus();
-                    }
+                    position = data.EndPosition;
+                }
+                else
+                {
                     break;
                 }
+
+                if (raceCreator.TryGetClosestRaceCheckpointTo(position, out var checkpoint))
+                {
+                    if (movingRaceCheckpoint is not null)
+                    {
+                        movingRaceCheckpoint.Color = new Rgba(255, 255, 255, 255);
+                    }
+                    movingRaceCheckpoint = checkpoint;
+                    movingRaceCheckpoint.Color = new Rgba(0, 255, 0, 255);
+                }
+                else if (movingRaceCheckpoint is not null)
+                {
+                    raceCreator.UpdateRacePointPosition(movingRaceCheckpoint, position);
+                    movingRaceCheckpoint.Color = new Rgba(255, 255, 255, 255);
+                    movingRaceCheckpoint = default;
+                }
+                break;
+            }
+            case Key.Menu:
+            {
+                if (focusing)
+                {
+                    Unfocus();
+                }
+                break;
+            }
         }
     }
 
@@ -416,14 +415,6 @@ public sealed class RaceCreatorScript(
         if (key == Key.Menu)
         {
             Focus();
-        }
-    }
-
-    private void HandleWindowFocusChange(bool state)
-    {
-        if (!state && focusing)
-        {
-            Unfocus();
         }
     }
 

@@ -38,6 +38,7 @@ public sealed class ClientResource : AsyncResource
             .AddNotificationFeatures()
             .AddPlayerFeatures()
             .AddVehicleFeatures()
+            .AddGameFeatures()
             .AddShops();
         serviceProvider = serviceCollection.BuildServiceProvider();
     }
