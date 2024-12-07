@@ -36,7 +36,10 @@ public sealed class RaceHostScript(IRaceService raceService, IDbContextFactory d
         var models = new VehicleModel[names.Length];
         for (var i = 0; i != names.Length; ++i)
         {
-            if (!Enum.TryParse<VehicleModel>(names[i], true, out var model))
+            if (
+                !Enum.TryParse<VehicleModel>(names[i], true, out var model)
+                || !Enum.GetValues<VehicleModel>().Any(a => a == model)
+            )
             {
                 return;
             }
