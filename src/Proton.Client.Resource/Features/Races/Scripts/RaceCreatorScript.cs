@@ -38,10 +38,7 @@ public sealed class RaceCreatorScript(
         Alt.OnServer<RaceCreatorDto>("race-menu-creator:data", HandleServerData);
         Alt.OnServer<RaceMapDto, Task>("race-menu-creator:editMap", HandleServerEditMap);
         Alt.OnServer<int>("race-menu-creator:deleteMap", HandleServerDeleteMap);
-        Alt.OnServer<RaceCreatorCreateMapDto>(
-            "race-menu-creator:createMap",
-            (dto) => OnServerCreateMap(dto).SafeFireAndForget(e => Alt.LogError(e.ToString()))
-        );
+        Alt.OnServer<RaceCreatorCreateMapDto>("race-menu-creator:createMap", OnServerCreateMap);
         uiView.On("race-menu-creator:data", HandleData);
         uiView.On<string>("race:creator:changeMode", HandleChangeMode);
         uiView.On<string, string>("race-menu-creator:createMap", HandleCreateMap);
@@ -61,11 +58,11 @@ public sealed class RaceCreatorScript(
         Alt.EmitServer("race-menu-creator:createMap", mapName, iplName);
     }
 
-    private Task OnServerCreateMap(RaceCreatorCreateMapDto dto)
+    private void OnServerCreateMap(RaceCreatorCreateMapDto dto)
     {
         name = dto.MapName;
         iplName = dto.IplName;
-        return StartAsync();
+        Start();
     }
 
     private void HandleDeleteMap(int id)
@@ -450,10 +447,10 @@ public sealed class RaceCreatorScript(
         iplName = map.IplName;
         raceCreator.ImportStartPoints(map.StartPoints);
         raceCreator.ImportRacePoints(map.RacePoints);
-        await StartAsync().ConfigureAwait(false);
+        Start();
     }
 
-    private async Task StartAsync()
+    private void Start()
     {
         if (uiView.IsMounted(Route.RaceMenu))
         {
@@ -461,11 +458,6 @@ public sealed class RaceCreatorScript(
         }
         raceCreator.ClearStartPoints();
         raceCreator.ClearRacePoints();
-
-        if (!string.IsNullOrEmpty(iplName))
-        {
-            await iplService.LoadAsync(iplName).ConfigureAwait(false);
-        }
         uiView.Mount(Route.RaceCreator);
         Alt.OnKeyUp += HandleKeyUp;
         Alt.OnKeyDown += HandleKeyDown;

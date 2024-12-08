@@ -22,7 +22,8 @@ public sealed class RaceCreatorScript(
     IIplService iplService
 ) : HostedService
 {
-    private readonly Dictionary<IPlayer, WorldState> playerWorldStates = [];
+    private readonly Dictionary<IPlayer, Position> playerLastPositions = [];
+    private readonly Dictionary<IPlayer, NoClipState> playerNoClipStates = [];
 
     public override Task StartAsync(CancellationToken ct)
     {
@@ -47,6 +48,7 @@ public sealed class RaceCreatorScript(
             {
                 return;
             }
+            playerLastPositions[player] = player.Position;
             player.Position = new Position(entry.Position.X, entry.Position.Y, entry.Position.Z);
         }
         player.Emit(
@@ -57,7 +59,16 @@ public sealed class RaceCreatorScript(
 
     private void HandleStop(IPlayer player)
     {
-        TryStopNoClip(player);
+        player.Visible = true;
+        player.Invincible = false;
+        player.Frozen = false;
+        player.Collision = true;
+        noClip.Stop(player);
+        playerNoClipStates.Remove(player);
+        if (playerLastPositions.Remove(player, out var position))
+        {
+            player.Position = position;
+        }
         player.Emit("race:creator:stop");
     }
 
@@ -75,7 +86,7 @@ public sealed class RaceCreatorScript(
                 player.Invincible = true;
                 player.Frozen = true;
                 player.Collision = false;
-                playerWorldStates[player] = new() { Position = player.Position, Rotation = player.Rotation, };
+                playerNoClipStates[player] = new() { Position = player.Position, Rotation = player.Rotation, };
                 noClip.Start(player);
                 break;
             case "normal":
@@ -178,7 +189,7 @@ public sealed class RaceCreatorScript(
         player.Invincible = false;
         player.Frozen = false;
         player.Collision = true;
-        if (playerWorldStates.Remove(player, out var state))
+        if (playerNoClipStates.Remove(player, out var state))
         {
             player.Position = state.Position;
             player.Rotation = state.Rotation;
@@ -246,7 +257,7 @@ public sealed class RaceCreatorScript(
         }
     }
 
-    private sealed class WorldState
+    private sealed class NoClipState
     {
         public Position Position { get; set; }
         public Rotation Rotation { get; set; }
