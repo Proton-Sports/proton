@@ -3,6 +3,7 @@ using AltV.Net.Client.Async;
 using AltV.Net.Client.Elements.Data;
 using AltV.Net.Client.Elements.Interfaces;
 using AltV.Net.Data;
+using AsyncAwaitBestPractices;
 using Proton.Client.Core.Interfaces;
 using Proton.Client.Resource.Commons;
 using Proton.Client.Resource.Features.Ipls.Abstractions;
@@ -37,9 +38,13 @@ public sealed class RaceCreatorScript(
         Alt.OnServer<RaceCreatorDto>("race-menu-creator:data", HandleServerData);
         Alt.OnServer<RaceMapDto, Task>("race-menu-creator:editMap", HandleServerEditMap);
         Alt.OnServer<int>("race-menu-creator:deleteMap", HandleServerDeleteMap);
+        Alt.OnServer<RaceCreatorCreateMapDto>(
+            "race-menu-creator:createMap",
+            (dto) => OnServerCreateMap(dto).SafeFireAndForget(e => Alt.LogError(e.ToString()))
+        );
         uiView.On("race-menu-creator:data", HandleData);
         uiView.On<string>("race:creator:changeMode", HandleChangeMode);
-        uiView.On<string, string, Task>("race-menu-creator:createMap", HandleCreateMap);
+        uiView.On<string, string>("race-menu-creator:createMap", HandleCreateMap);
         uiView.On<int>("race-menu-creator:deleteMap", HandleDeleteMap);
         uiView.On<long, string>("race-menu-creator:editMap", HandleEditMap);
         uiView.On("race:creator:submit", HandleSubmit);
@@ -47,15 +52,19 @@ public sealed class RaceCreatorScript(
         return Task.CompletedTask;
     }
 
-    private Task HandleCreateMap(string mapName, string iplName)
+    private void HandleCreateMap(string mapName, string iplName)
     {
         if (raceService.Status != RaceStatus.None)
         {
-            return Task.CompletedTask;
+            return;
         }
+        Alt.EmitServer("race-menu-creator:createMap", mapName, iplName);
+    }
 
-        name = mapName;
-        this.iplName = iplName;
+    private Task OnServerCreateMap(RaceCreatorCreateMapDto dto)
+    {
+        name = dto.MapName;
+        iplName = dto.IplName;
         return StartAsync();
     }
 

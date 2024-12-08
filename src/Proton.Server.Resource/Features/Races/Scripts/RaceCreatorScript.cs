@@ -18,7 +18,8 @@ public sealed class RaceCreatorScript(
     INoClip noClip,
     IDbContextFactory dbContextFactory,
     IOptionsMonitor<IplOptions> iplOptions,
-    IRaceService raceService
+    IRaceService raceService,
+    IIplService iplService
 ) : HostedService
 {
     private readonly Dictionary<IPlayer, WorldState> playerWorldStates = [];
@@ -31,7 +32,27 @@ public sealed class RaceCreatorScript(
         AltAsync.OnClient<IPlayer, Task>("race-menu-creator:data", HandleDataAsync);
         AltAsync.OnClient<IPlayer, SharedRaceCreatorData, Task>("race:creator:submit", HandleSubmitAsync);
         AltAsync.OnClient<IPlayer, int, Task>("race-menu-creator:deleteMap", HandleDeleteMapAsync);
+        AltAsync.OnClient<IPlayer, string, string, Task>("race-menu-creator:createMap", OnCreateMapAsync);
         return Task.CompletedTask;
+    }
+
+    private async Task OnCreateMapAsync(IPlayer player, string mapName, string iplName)
+    {
+        var entry = iplOptions.CurrentValue.Entries.FirstOrDefault(a =>
+            a.Name.Equals(iplName, StringComparison.OrdinalIgnoreCase)
+        );
+        if (entry is not null)
+        {
+            if (!await iplService.LoadAsync([player], iplName).ConfigureAwait(false))
+            {
+                return;
+            }
+            player.Position = new Position(entry.Position.X, entry.Position.Y, entry.Position.Z);
+        }
+        player.Emit(
+            "race-menu-creator:createMap",
+            new RaceCreatorCreateMapDto { MapName = mapName, IplName = entry is null ? string.Empty : entry.Name }
+        );
     }
 
     private void HandleStop(IPlayer player)
