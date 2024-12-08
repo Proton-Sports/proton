@@ -48,24 +48,16 @@ internal class VehicleShop : IStartup
 
         Alt.OnKeyUp += Alt_OnKeyUp;
 
-        var c = Alt.CreateColShapeSphere(new Position(443.94177f, 5605.972f, -96.5f), 3f);
-        var m = Alt.CreateMarker(
-            MarkerType.MarkerMoney,
-            new Position(443.94177f, 5605.972f, -96.5f),
-            new Rgba(255, 0, 0, 255),
-            true,
-            128
-        );
-        m.Visible = true;
+        var purchasePosition = new Position(443.94177f, 5605.972f, -96.5f);
+        var purchaseColshape = Alt.CreateColShapeSphere(purchasePosition, 3f);
+        Alt.CreateMarker(MarkerType.MarkerMoney, purchasePosition, new Rgba(255, 0, 0, 255), true, 128);
 
         Alt.OnColShape += (colShape, target, state) =>
         {
-            Console.WriteLine($"OnColShape {target.Position.X} {target.Position.Y} {target.Position.Z}");
-            if (!state && colShape != c || target != Alt.LocalPlayer)
+            if (!isUiOpen && state && colShape == purchaseColshape && target == Alt.LocalPlayer)
             {
-                return;
+                ToggleUi();
             }
-            ToggleUi();
         };
     }
 

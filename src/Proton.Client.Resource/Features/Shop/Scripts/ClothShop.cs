@@ -1,6 +1,8 @@
 using System.Text.Json;
 using AltV.Net.Client;
 using AltV.Net.Client.Elements.Data;
+using AltV.Net.Data;
+using AltV.Net.Shared.Enums;
 using Proton.Client.Resource.Features.UiViews.Abstractions;
 using Proton.Client.Resource.Notifications.Abstractions;
 using Proton.Shared.Constants;
@@ -44,6 +46,16 @@ internal class ClothShop : IStartup
         this.uiView.On<bool, long>("shop:cloth:equip", (state, id) => Alt.EmitServer("shop:cloth:equip", state, id));
 
         Alt.OnKeyUp += Alt_OnKeyUp;
+        var purchasePosition = new Position(547.337f, 5515.422f, -90.64761f);
+        Alt.CreateMarker(MarkerType.MarkerMoney, purchasePosition, new Rgba(255, 0, 0, 128), true, 64);
+        var purchaseColshape = Alt.CreateColShapeSphere(purchasePosition, 3f);
+        Alt.OnColShape += (colshape, target, state) =>
+        {
+            if (!isUiOpen && state && colshape == purchaseColshape && target == Alt.LocalPlayer)
+            {
+                ToggleUi();
+            }
+        };
     }
 
     private void Alt_OnKeyUp(Key key)
@@ -51,6 +63,11 @@ internal class ClothShop : IStartup
         if (Alt.IsConsoleOpen)
         {
             return;
+        }
+
+        if (isUiOpen && key == Key.Escape)
+        {
+            ToggleUi();
         }
     }
 
