@@ -1,15 +1,12 @@
 using AltV.Net.Client;
 using AltV.Net.Client.Elements.Data;
-using CnR.Client.Features.Games.Abstractions;
 using Proton.Client.Resource.Commons;
 using Proton.Client.Resource.Features.UiViews.Abstractions;
 
 namespace Proton.Client.Resource.Features.Players.Scripts;
 
-public sealed class HoldToShowCursorScript(IUiView uiView, IGame game) : HostedService
+public sealed class HoldToShowCursorScript(IUiView uiView) : HostedService
 {
-    private bool focusing;
-
     public override Task StartAsync(CancellationToken ct)
     {
         Alt.OnKeyUp += OnKeyUp;
@@ -21,27 +18,25 @@ public sealed class HoldToShowCursorScript(IUiView uiView, IGame game) : HostedS
     {
         if (key == Key.Menu)
         {
-            if (focusing)
+            if (Alt.IsCursorVisible)
             {
                 uiView.Unfocus();
-                game.ToggleCursor(false);
+                Alt.ShowCursor(false);
             }
             else
             {
                 uiView.Focus();
-                game.ToggleCursor(true);
+                Alt.ShowCursor(true);
             }
-            focusing = !focusing;
         }
     }
 
     private void OnWindowFocusChange(bool state)
     {
-        if (focusing)
+        if (Alt.IsCursorVisible)
         {
             uiView.Unfocus();
-            game.ToggleCursor(false);
-            focusing = false;
+            Alt.ShowCursor(false);
         }
     }
 }
