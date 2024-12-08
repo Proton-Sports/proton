@@ -63,8 +63,7 @@ public class CharacterCreatorScript : IStartup
         player.Model = characterAppearance.CharacterGender switch
         {
             0 => (uint)PedModel.FreemodeFemale01,
-            1 => (uint)PedModel.FreemodeMale01,
-            _ => player.Model
+            _ => (uint)PedModel.FreemodeMale01,
         };
 
         player.SetHeadBlendData(
@@ -202,6 +201,7 @@ public class CharacterCreatorScript : IStartup
         player.Frozen = true;
         player.Position = new Position(402.90833f, -996.61365f, -99.00013f);
         player.Rotation = new Rotation(0, 0, 3.14f);
+        player.Model = (uint)PedModel.FreemodeMale01;
         player.Visible = false;
 
         player.Emit("characterClient:startCharacterCreator");

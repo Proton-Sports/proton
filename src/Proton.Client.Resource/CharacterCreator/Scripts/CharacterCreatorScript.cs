@@ -135,12 +135,12 @@ public class CharacterCreatorScript : IStartup
 
         uint selectedModelUint = selectedModel switch
         {
-            1 => (uint)PedModel.FreemodeMale01,
             0 => (uint)PedModel.FreemodeFemale01,
-            _ => 0
+            _ => (uint)PedModel.FreemodeMale01,
         };
 
         var currentModel = characterPed.Model;
+        Console.WriteLine($"current vs selected, {currentModel} vs {selectedModelUint}");
         if (currentModel == selectedModelUint)
             return;
 
@@ -177,6 +177,7 @@ public class CharacterCreatorScript : IStartup
 
     private void SetAppearance(string appearanceJson)
     {
+        Console.WriteLine("Set Appearance: " + appearanceJson);
         if (characterPed == null)
             return;
 
@@ -281,7 +282,7 @@ public class CharacterCreatorScript : IStartup
         Alt.Natives.PinInteriorInMemory(locationInterior);
         Alt.FocusData.OverrideFocusPosition(locationPosition, Vector3.Zero);
 
-        var currentModel = Alt.LocalPlayer.Model;
+        var currentModel = (uint)PedModel.FreemodeMale01;
 
         CreateCharacter(currentModel);
         CreateCharacterCreatorCamera();
