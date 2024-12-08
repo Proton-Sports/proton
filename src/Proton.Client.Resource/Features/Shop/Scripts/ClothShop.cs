@@ -52,18 +52,6 @@ internal class ClothShop : IStartup
         {
             return;
         }
-
-        //If the ui is Open and Escape is pressed close the shop
-        if (isUiOpen && key == Key.Escape)
-        {
-            //RemovePreview();
-            ToggleUi();
-        }
-
-        if (key == Key.N)
-        {
-            ToggleUi();
-        }
     }
 
     private void ToggleUi()

@@ -2,8 +2,8 @@
 using AltV.Net.Client;
 using AltV.Net.Client.Elements.Data;
 using AltV.Net.Client.Elements.Interfaces;
+using AltV.Net.Data;
 using AltV.Net.Shared.Enums;
-using Proton.Client.Infrastructure.Utils;
 using Proton.Client.Resource.Features.UiViews.Abstractions;
 using Proton.Client.Resource.Notifications.Abstractions;
 using Proton.Shared.Constants;
@@ -48,51 +48,33 @@ internal class VehicleShop : IStartup
 
         Alt.OnKeyUp += Alt_OnKeyUp;
 
-        Alt.OnConsoleCommand += Alt_OnConsoleCommand;
-
-        var m = new Marker(
-            new AltV.Net.Data.Position(443.94177f, 5605.972f, -80.677635f),
+        var c = Alt.CreateColShapeSphere(new Position(443.94177f, 5605.972f, -96.5f), 3f);
+        var m = Alt.CreateMarker(
             MarkerType.MarkerMoney,
-            new AltV.Net.Data.Rgba(255, 0, 0, 100)
+            new Position(443.94177f, 5605.972f, -96.5f),
+            new Rgba(255, 0, 0, 255),
+            true,
+            128
         );
+        m.Visible = true;
 
-        m.onEnter += M_onEnter;
-    }
-
-    private void M_onEnter(IWorldObject target)
-    {
-        ToggleUi();
-    }
-
-    private void Alt_OnConsoleCommand(string name, string[] args)
-    {
-        if (name == "req")
+        Alt.OnColShape += (colShape, target, state) =>
         {
-            Alt.RequestIpl("sport_hangar_lobby_display");
-        }
-
-        if (name == "pos")
-        {
-            Alt.Log(
-                $"Position X: {Alt.LocalPlayer.Position.X} Y: {Alt.LocalPlayer.Position.Y} Z:{Alt.LocalPlayer.Position.Z}"
-            );
-            Alt.Log(
-                $"Rotation Roll:{Alt.LocalPlayer.Rotation.Roll} Yaw: {Alt.LocalPlayer.Rotation.Yaw} Pitch:{Alt.LocalPlayer.Rotation.Pitch}"
-            );
-        }
+            Console.WriteLine($"OnColShape {target.Position.X} {target.Position.Y} {target.Position.Z}");
+            if (!state && colShape != c || target != Alt.LocalPlayer)
+            {
+                return;
+            }
+            ToggleUi();
+        };
     }
 
     private void Alt_OnKeyUp(Key key)
     {
         //If the ui is Open and Escape is pressed close the shop
-        if (isUiOpen && key == Key.Escape)
+        if (isUiOpen && !Alt.IsConsoleOpen && key == Key.Escape)
         {
             RemovePreview();
-            ToggleUi();
-        }
-
-        if (key == Key.O)
-        {
             ToggleUi();
         }
     }
