@@ -1,5 +1,6 @@
 using AltV.Net;
 using AltV.Net.Async;
+using AltV.Net.Data;
 using AltV.Net.Elements.Entities;
 using AltV.Net.Enums;
 using AsyncAwaitBestPractices;
@@ -60,14 +61,10 @@ public sealed class RacePrepareScript(IRaceService raceService, IMapCache mapCac
 
         await Task.Delay(3000).ConfigureAwait(false);
 
-        foreach (var (participant, vehicle) in participants.Zip(await Task.WhenAll(createTasks).ConfigureAwait(false)))
+        foreach (var (point, participant) in map.StartPoints.Zip(participants))
         {
-            participant.Player.Position = vehicle.Position;
+            participant.Player.Position = point.Position;
             participant.Player.Dimension = (int)race.Id;
-
-            participant.Vehicle = vehicle;
-            vehicle.Dimension = (int)race.Id;
-
             var now = DateTimeOffset.UtcNow;
             participant.Player.SetDateTime(
                 now.Day - 1,
@@ -86,6 +83,24 @@ public sealed class RacePrepareScript(IRaceService raceService, IMapCache mapCac
                     _ => WeatherType.Clear
                 }
             );
+        }
+
+        foreach (var (participant, vehicle) in participants.Zip(await Task.WhenAll(createTasks).ConfigureAwait(false)))
+        {
+            participant.Vehicle = vehicle;
+            vehicle.PrimaryColorRgb = new Rgba(
+                (byte)Random.Shared.NextInt64(0, 255),
+                (byte)Random.Shared.NextInt64(0, 255),
+                (byte)Random.Shared.NextInt64(0, 255),
+                255
+            );
+            vehicle.SecondaryColorRgb = new Rgba(
+                (byte)Random.Shared.NextInt64(0, 255),
+                (byte)Random.Shared.NextInt64(0, 255),
+                (byte)Random.Shared.NextInt64(0, 255),
+                255
+            );
+            vehicle.Dimension = (int)race.Id;
             participant.Player.SetIntoVehicle(participant.Vehicle, 1);
         }
 
