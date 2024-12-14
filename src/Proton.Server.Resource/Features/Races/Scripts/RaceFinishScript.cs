@@ -45,11 +45,29 @@ public sealed class RaceFinishScript(IRaceService raceService, IMapCache mapCach
                     {
                         Name = x.Player.Name,
                         Team = "Proton Sports",
-                        TimeMs = x.FinishTime - race.StartTime.ToUnixTimeMilliseconds(),
+                        TimeMs = x.FinishTime == 0 ? 0 : x.FinishTime - race.StartTime.ToUnixTimeMilliseconds(),
                     })
-                    .OrderBy(x => x.TimeMs)
+                    .OrderBy(x => x.TimeMs, FinishTimeComparer.Instance)
             ]
         };
         Alt.EmitClients([.. race.Participants.Select(x => x.Player)], "race-finish:mountScoreboard", dto);
+    }
+
+    private class FinishTimeComparer : IComparer<long>
+    {
+        public static readonly FinishTimeComparer Instance = new();
+
+        public int Compare(long x, long y)
+        {
+            if (x == 0)
+            {
+                return 1;
+            }
+            return x > y
+                ? 1
+                : x < y
+                    ? -1
+                    : 0;
+        }
     }
 }
