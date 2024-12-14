@@ -142,7 +142,7 @@ public sealed class RaceCountdownScript(IRaceService raceService, IMapCache mapC
                 Alt.EmitClients(
                     race.Participants.Select(a => a.Player).ToArray(),
                     "race-countdown.countdown.set",
-                    (DateTimeOffset.UtcNow + TimeSpan.FromSeconds(race.CountdownSeconds)).ToUnixTimeMilliseconds()
+                    race.CountdownSeconds
                 );
                 countdownTimers[race] = new Timer(
                     (state) =>

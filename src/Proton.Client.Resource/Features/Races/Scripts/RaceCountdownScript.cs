@@ -54,9 +54,9 @@ public sealed class RaceCountdownScript : IStartup
         uiView.Emit("race-countdown.ready.change", id, ready);
     }
 
-    private void OnServerSetCountdown(long endTimeMs)
+    private void OnServerSetCountdown(long seconds)
     {
-        uiView.Emit("race-countdown.countdown.set", endTimeMs);
+        uiView.Emit("race-countdown.countdown.set", seconds);
     }
 
     private void OnUiVehicleChange(string name)
