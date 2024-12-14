@@ -1,8 +1,6 @@
-using System.ComponentModel.DataAnnotations;
-using AltV.Net.Data;
-using Microsoft.Extensions.Configuration;
 using Proton.Server.Resource.Features.Ipls;
 using Proton.Server.Resource.Features.Ipls.Abstractions;
+using Proton.Server.Resource.Features.Ipls.Scripts;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -15,7 +13,7 @@ public static partial class ServiceCollectionExtensions
             .BindConfiguration(IplOptions.Section)
             .ValidateDataAnnotations()
             .ValidateOnStart();
-        serviceCollection.AddSingleton<IIplService, IplService>();
+        serviceCollection.AddSingleton<IIplService, IplService>().AddHostedService<UnloadIplsScript>();
         return serviceCollection;
     }
 }

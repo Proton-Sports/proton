@@ -11,6 +11,29 @@ public sealed class IplService : IIplService
         Alt.OnServer<string>("ipl:load", HandleLoadIpl);
         Alt.OnServer<long, string, Task>("ipl:loadAsync", HandleLoadIplAsync);
         Alt.OnServer<string>("ipl:unload", HandleUnloadIpl);
+        Alt.OnConsoleCommand += (_, _2) =>
+        {
+            Alt.LogInfo("sport_zancudo_01: " + Alt.Natives.IsIplActive("sport_zancudo_01"));
+            Alt.LogInfo(
+                "sport_vinewood_hills_racetrack_01: " + Alt.Natives.IsIplActive("sport_vinewood_hills_racetrack_01")
+            );
+            Alt.LogInfo("sport_tongva_road_course_01: " + Alt.Natives.IsIplActive("sport_tongva_road_course_01"));
+            Alt.LogInfo("sport_senora_raceway_01: " + Alt.Natives.IsIplActive("sport_senora_raceway_01"));
+            Alt.LogInfo("sport_santa_monica_pier_gp_01: " + Alt.Natives.IsIplActive("sport_santa_monica_pier_gp_01"));
+            Alt.LogInfo("sport_rheinland_grand_prix_01: " + Alt.Natives.IsIplActive("sport_rheinland_grand_prix_01"));
+            Alt.LogInfo("sport_redwood_light_raceway_01: " + Alt.Natives.IsIplActive("sport_redwood_light_raceway_01"));
+            Alt.LogInfo("sport_paleto_bay_gp_01: " + Alt.Natives.IsIplActive("sport_paleto_bay_gp_01"));
+            Alt.LogInfo("sport_harbor_500_01: " + Alt.Natives.IsIplActive("sport_harbor_500_01"));
+            Alt.LogInfo(
+                "sport_eastlossantosrallyss_02_01: " + Alt.Natives.IsIplActive("sport_eastlossantosrallyss_02_01")
+            );
+            Alt.LogInfo(
+                "sport_east_los_santos_rally_ss2_01: " + Alt.Natives.IsIplActive("sport_east_los_santos_rally_ss2_01")
+            );
+            Alt.LogInfo("sport_del_perro_racetrack_01: " + Alt.Natives.IsIplActive("sport_del_perro_racetrack_01"));
+            Alt.LogInfo("sport_bolingbroke_rx_01: " + Alt.Natives.IsIplActive("sport_bolingbroke_rx_01"));
+            Alt.LogInfo("sport_atomic_downtown_gp_01: " + Alt.Natives.IsIplActive("sport_atomic_downtown_gp_01"));
+        };
     }
 
     public bool IsLoaded(string name)
