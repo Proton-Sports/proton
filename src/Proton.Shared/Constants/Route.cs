@@ -23,6 +23,7 @@ public sealed class Route : IEquatable<Route>
     public static readonly Route RaceStartCountdown = new("race-start-countdown");
     public static readonly Route RaceEndTransition = new("race-end-transition");
 <<<<<<< HEAD
+<<<<<<< HEAD
     public static readonly Route TuningMenu = new("tuning_menu");
 =======
     public static readonly Route VehicleShop = new("car_shop");
@@ -31,6 +32,10 @@ public sealed class Route : IEquatable<Route>
     public static readonly Route ClothesMenu = new("clothes-menu");
     public static readonly Route AdminPanel = new("admin-panel");
 >>>>>>> 10f8164571fb7aec57ac8c49f85f305ccbd1793a
+=======
+    public static readonly Route VehicleShop = new("car_shop");
+    public static readonly Route ClothShop = new("cloth_shop");
+>>>>>>> fa66636fead8b440ddf791e624522826101fdfe1
 
     public override bool Equals(object? obj) => Equals(obj as Route);
 

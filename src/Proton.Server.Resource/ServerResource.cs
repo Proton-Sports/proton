@@ -9,7 +9,10 @@ using Proton.Server.Infrastructure.Factorys;
 using Proton.Server.Resource.Authentication.Extentions;
 using Proton.Server.Resource.CharacterCreator.Extensions;
 using Proton.Server.Resource.Features.Shop;
+<<<<<<< HEAD
 using Proton.Server.Resource.Features.Vehicles;
+=======
+>>>>>>> fa66636fead8b440ddf791e624522826101fdfe1
 using Proton.Shared.Extensions;
 using Proton.Shared.Interfaces;
 
@@ -43,7 +46,10 @@ public sealed class ServerResource : AsyncResource
                     .AddTuningFeature()
                     .AddCharacterCreator()
                     .AddIplFeatures()
+<<<<<<< HEAD
                     .AddVehicleFeatures()
+=======
+>>>>>>> fa66636fead8b440ddf791e624522826101fdfe1
                     .AddShops();
             }
         );

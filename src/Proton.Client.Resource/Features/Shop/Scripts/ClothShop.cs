@@ -1,9 +1,18 @@
+<<<<<<< HEAD
 using System.Text.Json;
 using AltV.Net.Client;
 using AltV.Net.Client.Elements.Data;
 using Proton.Client.Resource.Features.UiViews.Abstractions;
 using Proton.Client.Resource.Notifications.Abstractions;
 using Proton.Shared.Constants;
+=======
+﻿using System.Text.Json;
+using AltV.Net.Client;
+using AltV.Net.Client.Elements.Data;
+using Proton.Client.Resource.Features.UiViews.Abstractions;
+using Proton.Client.Resource.Notifications;
+using Proton.Shared.Contants;
+>>>>>>> fa66636fead8b440ddf791e624522826101fdfe1
 using Proton.Shared.Helpers;
 using Proton.Shared.Interfaces;
 using Proton.Shared.Models;
@@ -13,7 +22,11 @@ namespace Proton.Client.Resource.Features.Shop.Scripts;
 internal class ClothShop : IStartup
 {
     private readonly IUiView uiView;
+<<<<<<< HEAD
     private readonly INotificationService notification;
+=======
+    private readonly NotificationService notification;
+>>>>>>> fa66636fead8b440ddf791e624522826101fdfe1
     private bool isUiOpen;
 
     private Dictionary<string, List<SharedClothShopItem>> shopItemsSorted = [];
@@ -21,7 +34,11 @@ internal class ClothShop : IStartup
     private List<SharedClothShopItem> shopItems = [];
     private List<SharedClothShopItem> ownedItems = [];
 
+<<<<<<< HEAD
     public ClothShop(IUiView uiView, INotificationService notification)
+=======
+    public ClothShop(IUiView uiView, NotificationService notification)
+>>>>>>> fa66636fead8b440ddf791e624522826101fdfe1
     {
         this.uiView = uiView;
         this.notification = notification;
@@ -48,11 +65,14 @@ internal class ClothShop : IStartup
 
     private void Alt_OnKeyUp(Key key)
     {
+<<<<<<< HEAD
         if (Alt.IsConsoleOpen)
         {
             return;
         }
 
+=======
+>>>>>>> fa66636fead8b440ddf791e624522826101fdfe1
         //If the ui is Open and Escape is pressed close the shop
         if (isUiOpen && key == Key.Escape)
         {

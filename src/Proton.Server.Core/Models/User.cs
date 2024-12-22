@@ -1,5 +1,17 @@
+<<<<<<< HEAD
 using Proton.Server.Core.Models.Log;
 using Proton.Server.Core.Models.Shop;
+=======
+﻿using Proton.Server.Core.Models.Log;
+using Proton.Server.Core.Models.Shop;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+>>>>>>> fa66636fead8b440ddf791e624522826101fdfe1
 
 namespace Proton.Server.Core.Models
 {

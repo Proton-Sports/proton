@@ -34,6 +34,7 @@ public sealed class AuthenticationScript : IStartup
     }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
     private void Alt_OnConsoleCommand(string name, string[] args)
     {
         //uiView.Mount(Route.Auth);
@@ -41,6 +42,8 @@ public sealed class AuthenticationScript : IStartup
 
 =======
 >>>>>>> 10f8164571fb7aec57ac8c49f85f305ccbd1793a
+=======
+>>>>>>> fa66636fead8b440ddf791e624522826101fdfe1
     /// <summary>
     /// Checking if the OAuth Token is still valid and offer to login as User
     /// </summary>
@@ -92,10 +95,14 @@ public sealed class AuthenticationScript : IStartup
         uiView.Unfocus();
         uiView.Unmount(Route.Auth);
 <<<<<<< HEAD
+<<<<<<< HEAD
         Alt.EmitServer("auth:complete");
 =======
         Alt.EmitClient("authentication:done");
 >>>>>>> 10f8164571fb7aec57ac8c49f85f305ccbd1793a
+=======
+        Alt.EmitClient("authentication:done");
+>>>>>>> fa66636fead8b440ddf791e624522826101fdfe1
         return Task.CompletedTask;
     }
 }

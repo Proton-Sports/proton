@@ -18,6 +18,7 @@ public class DefaultDbContext : DbContext, IDbContext
     public DbSet<Vehicle> Vehicles => Set<Vehicle>();
     public DbSet<UserRaceRestoration> UserRaceRestorations => Set<UserRaceRestoration>();
 <<<<<<< HEAD
+<<<<<<< HEAD
     public DbSet<VehicleTuning> VehicleTunings => Set<VehicleTuning>();
 =======
     public DbSet<Garage> Garages => Set<Garage>();
@@ -25,6 +26,11 @@ public class DefaultDbContext : DbContext, IDbContext
     public DbSet<Closet> Closets => Set<Closet>();
     public DbSet<BanRecord> BanRecords => Set<BanRecord>();
 >>>>>>> 10f8164571fb7aec57ac8c49f85f305ccbd1793a
+=======
+    public DbSet<Garage> Garages => Set<Garage>();
+    public DbSet<Cloth> Cloths => Set<Cloth>();
+    public DbSet<Closet> Closets => Set<Closet>();
+>>>>>>> fa66636fead8b440ddf791e624522826101fdfe1
 
     public DefaultDbContext() { }
 

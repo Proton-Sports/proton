@@ -1,10 +1,17 @@
+<<<<<<< HEAD
 using AltV.Net;
+=======
+﻿using AltV.Net;
+>>>>>>> fa66636fead8b440ddf791e624522826101fdfe1
 using AltV.Net.Async;
 using AltV.Net.Elements.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+<<<<<<< HEAD
 using Proton.Server.Core.Interfaces;
 using Proton.Server.Core.Models;
+=======
+>>>>>>> fa66636fead8b440ddf791e624522826101fdfe1
 using Proton.Server.Infrastructure.Authentication;
 using Proton.Server.Infrastructure.Factorys;
 using Proton.Server.Resource.SharedKernel;
@@ -17,6 +24,9 @@ public class AuthenticationScript(
     IConfiguration configuration
 ) : HostedService
 {
+    public delegate Task OnAuthenticationDone(IPlayer p);
+    public static event OnAuthenticationDone? OnAuthenticationDoneEvent;
+
     public delegate Task OnAuthenticationDone(IPlayer p);
     public static event OnAuthenticationDone? OnAuthenticationDoneEvent;
 

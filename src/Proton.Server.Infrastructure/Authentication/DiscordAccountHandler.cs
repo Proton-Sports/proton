@@ -4,6 +4,10 @@ using Proton.Server.Core.Interfaces;
 using Proton.Server.Core.Models;
 using Proton.Server.Core.Models.Log;
 using Proton.Server.Core.Models.Shop;
+<<<<<<< HEAD
+=======
+using Proton.Server.Infrastructure.Persistence;
+>>>>>>> fa66636fead8b440ddf791e624522826101fdfe1
 
 namespace Proton.Server.Infrastructure.Authentication
 {
@@ -55,8 +59,13 @@ namespace Proton.Server.Infrastructure.Authentication
 
         public async Task Register(string Username)
         {
+<<<<<<< HEAD
             using var defaultDb = await defaultDbFactory.CreateDbContextAsync().ConfigureAwait(false);
             var defaultCloths = await defaultDb.Cloths.Where(x => x.Price == 0).ToListAsync();
+=======
+            var defaultDb = defaultDbFactory.CreateDbContext();
+            var defaultCloths = defaultDb.Cloths.Where(x => x.Price == 0).ToList();
+>>>>>>> fa66636fead8b440ddf791e624522826101fdfe1
 
             var closets = new List<Closet>();
             defaultCloths.ForEach(c => closets.Add(new Closet { ClothId = c.Id, IsEquiped = true }));

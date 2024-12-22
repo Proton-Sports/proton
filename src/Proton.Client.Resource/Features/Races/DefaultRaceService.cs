@@ -248,4 +248,34 @@ public sealed class DefaultRaceService(IEnumerable<IRacePointResolver> resolvers
             }
         }
     }
+<<<<<<< HEAD
+=======
+
+    private sealed class Data
+    {
+        public readonly ICheckpoint Checkpoint;
+        public readonly IBlip Blip;
+        public readonly IBlip ArrowBlip;
+        public readonly IMarker? NextMarker;
+        public readonly IBlip? NextBlip;
+
+        public Data(ICheckpoint checkpoint, IBlip blip, IBlip arrowBlip, IMarker? nextMarker, IBlip? nextBlip)
+        {
+            Checkpoint = checkpoint;
+            Blip = blip;
+            ArrowBlip = arrowBlip;
+            NextMarker = nextMarker;
+            NextBlip = nextBlip;
+        }
+
+        public void Destroy()
+        {
+            Checkpoint.Destroy();
+            Blip.Destroy();
+            ArrowBlip.Destroy();
+            NextMarker?.Destroy();
+            NextBlip?.Destroy();
+        }
+    }
+>>>>>>> fa66636fead8b440ddf791e624522826101fdfe1
 }
