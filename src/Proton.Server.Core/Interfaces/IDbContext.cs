@@ -11,12 +11,12 @@ public interface IDbContext : IDisposable, IAsyncDisposable
     DbSet<User> Users { get; }
     DbSet<Character> Characters { get; }
     DbSet<Session> Sessions { get; }
-    DbSet<Vehicle> Vehicles { get; }
+    DbSet<StockVehicle> StockVehicles { get; }
     DbSet<RaceMap> RaceMaps { get; }
     DbSet<RaceStartPoint> RaceStartPoints { get; }
     DbSet<RacePoint> RacePoints { get; }
     DbSet<UserRaceRestoration> UserRaceRestorations { get; }
-    DbSet<Garage> Garages { get; }
+    DbSet<PlayerVehicle> PlayerVehicles { get; }
     DbSet<Closet> Closets { get; }
     DbSet<Cloth> Cloths { get; }
     DbSet<BanRecord> BanRecords { get; }

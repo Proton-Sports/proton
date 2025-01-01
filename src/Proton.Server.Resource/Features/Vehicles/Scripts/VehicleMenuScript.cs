@@ -45,11 +45,11 @@ public sealed class VehicleMenuScript(IDbContextFactory dbFactory, IGarageServic
 
         await using var db = await dbFactory.CreateDbContextAsync().ConfigureAwait(false);
         var garage = await db
-            .Garages.Where(a => a.OwnerId == player.ProtonId && a.Id == id)
-            .Select(a => new { Id = a.Id, Model = a.VehicleItem.AltVHash })
+            .PlayerVehicles.Where(a => a.PlayerId == player.ProtonId && a.Id == id)
+            .Select(a => new { a.Id, a.Model })
             .FirstOrDefaultAsync()
             .ConfigureAwait(false);
-        if (garage is null || !Enum.TryParse<VehicleModel>(garage.Model, out var model))
+        if (garage is null)
         {
             return;
         }
@@ -65,7 +65,7 @@ public sealed class VehicleMenuScript(IDbContextFactory dbFactory, IGarageServic
         }
 
         var vehicle = (IProtonVehicle)
-            Alt.CreateVehicle(model, player.Position, new Rotation(0, 0, player.Rotation.Yaw));
+            Alt.CreateVehicle(garage.Model, player.Position, new Rotation(0, 0, player.Rotation.Yaw));
         vehicle.GarageId = garage.Id;
         vehicles.Add(vehicle);
         player.SetIntoVehicle(vehicle, 1);

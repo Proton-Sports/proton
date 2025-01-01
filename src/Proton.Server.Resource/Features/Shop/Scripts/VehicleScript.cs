@@ -1,6 +1,8 @@
 ﻿using AltV.Net;
 using AltV.Net.Elements.Entities;
+using AltV.Net.Enums;
 using Microsoft.EntityFrameworkCore;
+using Proton.Server.Core.Models.Shop;
 using Proton.Server.Infrastructure.Factorys;
 using Proton.Server.Infrastructure.Persistence;
 using Proton.Server.Resource.Features.Shop.Extentions;
@@ -25,25 +27,42 @@ internal class VehicleScript : IStartup
 
     public async Task BuyItem(IPlayer player, string Name, int Color)
     {
+        if (!Enum.TryParse(Name, out VehicleModel model))
+        {
+            return;
+        }
+
         var Player = (PPlayer)player;
-        var db = dbContext.CreateDbContext();
-        var vehicle = db.Vehicles.Where(x => x.AltVHash == Name).FirstOrDefault();
-        var dbUser = db.Users.Where(x => x.Id == Player.Id).FirstOrDefault();
+        await using var db = await dbContext.CreateDbContextAsync().ConfigureAwait(false);
+        var vehicle = await db.StockVehicles.FirstOrDefaultAsync(a => a.Model == model).ConfigureAwait(false);
+        var dbUser = await db.Users.FirstOrDefaultAsync(x => x.Id == Player.Id).ConfigureAwait(false);
 
         if (vehicle != null && dbUser != null)
         {
             if (dbUser.Money >= vehicle.Price)
+            {
                 dbUser.Money -= vehicle.Price;
+            }
             else
             {
                 Player.Emit("shop:vehicle:purchase", (int)ShopStatus.NO_MONEY);
                 return;
             }
 
-            dbUser.Garages.Add(new Core.Models.Shop.Garage { VehicleId = vehicle.Id, AltVColor = Color, });
+            dbUser.Vehicles.Add(
+                new PlayerVehicle
+                {
+                    Model = vehicle.Model,
+                    Price = vehicle.Price,
+                    VehicleId = vehicle.Id,
+                    AltVColor = Color,
+                    Category = vehicle.Category,
+                    DisplayName = vehicle.DisplayName,
+                }
+            );
 
             db.Users.Update(dbUser);
-            await db.SaveChangesAsync();
+            await db.SaveChangesAsync().ConfigureAwait(false);
             Player.Emit("shop:vehicle:purchase", (int)ShopStatus.OK);
         }
         else
@@ -52,56 +71,42 @@ internal class VehicleScript : IStartup
         }
     }
 
-    public Task GetAllItems(IPlayer player)
+    public async Task GetAllItems(IPlayer player)
     {
         var Player = (PPlayer)player;
         var db = dbContext.CreateDbContext();
-        var user = db
+        var user = await db
             .Users.Where(x => x.Id == Player.ProtonId)
-            .Include(x => x.Garages)
-            .ThenInclude(x => x.VehicleItem)
-            .FirstOrDefault();
+            .Select(a => new { a.Vehicles })
+            .Include(x => x.Vehicles)
+            .FirstOrDefaultAsync()
+            .ConfigureAwait(false);
 
-        var vehicles = db.Vehicles.ToList();
-
-        if (user != null)
+        var query = db.StockVehicles.AsQueryable();
+        if (user is not null)
         {
-            var garageVehicles = user.Garages.Select(x => x.VehicleItem.ToShopItem()).ToList();
-            foreach (var gv in garageVehicles)
-            {
-                var alreadyOwned = vehicles.Where(x => x.AltVHash == gv.ItemName).FirstOrDefault();
-                if (alreadyOwned != null)
-                {
-                    vehicles.Remove(alreadyOwned);
-                    Alt.LogWarning("Removed Already owned vehicle ID: " + gv.ItemName);
-                }
-            }
+            var models = user.Vehicles.Select(a => a.Model).ToArray();
+            query = query.Where(a => !models.Contains(a.Model));
         }
+        var vehicles = await query.ToListAsync().ConfigureAwait(false);
 
         Alt.LogInfo("Sending Vehicles: " + vehicles.Count);
         Player.Emit("shop:vehicle:all", (int)ShopStatus.OK, vehicles.ToShopItems());
-        return Task.CompletedTask;
     }
 
-    public Task GetOwnedItems(IPlayer _Player)
+    public async Task GetOwnedItems(IPlayer _Player)
     {
         var Player = (PPlayer)_Player;
         var db = dbContext.CreateDbContext();
-        var user = db
-            .Users.Where(x => x.Id == Player.ProtonId)
-            .Include(x => x.Garages)
-            .ThenInclude(x => x.VehicleItem)
-            .FirstOrDefault();
+        var vehicles = await db.PlayerVehicles.Where(x => x.Id == Player.ProtonId).ToListAsync().ConfigureAwait(false);
 
-        if (user != null)
+        if (vehicles.Count == 0)
         {
-            var vehicles = user.Garages.Select(x => x.VehicleItem.ToShopItem()).ToList();
-            Player.Emit("shop:vehicle:owned", (int)ShopStatus.OK, vehicles);
-            return Task.CompletedTask;
+            Player.Emit("shop:vehicle:owned", (int)ShopStatus.ITEM_NOT_FOUND, new List<SharedShopItem>());
         }
-
-        Player.Emit("shop:vehicle:owned", (int)ShopStatus.ITEM_NOT_FOUND, new List<SharedShopItem>());
-
-        return Task.CompletedTask;
+        else
+        {
+            Player.Emit("shop:vehicle:owned", (int)ShopStatus.OK, vehicles.Select(x => x.ToShopItem()).ToList());
+        }
     }
 }

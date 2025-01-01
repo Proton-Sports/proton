@@ -1,19 +1,18 @@
 using Proton.Server.Core.Models.Log;
 using Proton.Server.Core.Models.Shop;
 
-namespace Proton.Server.Core.Models
-{
-    public class User
-    {
-        public long Id { get; set; }
-        public string Username { get; set; } = "";
-        public ulong DiscordId { get; set; } = 0;
-        public int Money { get; set; } = 0;
-        public Character? Character { get; set; }
-        public UserRole Role { get; set; }
+namespace Proton.Server.Core.Models;
 
-        public List<Garage> Garages { get; set; } = [];
-        public ICollection<Session> Sessions { get; set; } = new List<Session>();
-        public List<Closet> Closets { get; set; } = [];
-    }
+public class User
+{
+    public long Id { get; set; }
+    public string Username { get; set; } = string.Empty;
+    public ulong DiscordId { get; set; }
+    public int Money { get; set; }
+    public Character? Character { get; set; }
+    public UserRole Role { get; set; }
+
+    public List<PlayerVehicle> Vehicles { get; set; } = [];
+    public ICollection<Session> Sessions { get; set; } = [];
+    public List<Closet> Closets { get; set; } = [];
 }

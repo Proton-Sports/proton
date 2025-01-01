@@ -15,9 +15,9 @@ public class DefaultDbContext : DbContext, IDbContext
     public DbSet<RaceMap> RaceMaps => Set<RaceMap>();
     public DbSet<RaceStartPoint> RaceStartPoints => Set<RaceStartPoint>();
     public DbSet<RacePoint> RacePoints => Set<RacePoint>();
-    public DbSet<Vehicle> Vehicles => Set<Vehicle>();
+    public DbSet<StockVehicle> StockVehicles => Set<StockVehicle>();
     public DbSet<UserRaceRestoration> UserRaceRestorations => Set<UserRaceRestoration>();
-    public DbSet<Garage> Garages => Set<Garage>();
+    public DbSet<PlayerVehicle> PlayerVehicles => Set<PlayerVehicle>();
     public DbSet<Cloth> Cloths => Set<Cloth>();
     public DbSet<Closet> Closets => Set<Closet>();
     public DbSet<BanRecord> BanRecords => Set<BanRecord>();

@@ -29,14 +29,12 @@ public sealed class RaceMenuCollectionTabScript(
             return Task.CompletedTask;
         }
 
-        switch (option)
+        return option switch
         {
-            case "cars":
-                return LoadCarsAsync(pplayer);
-            case "clothes":
-                return LoadClothesAsync(pplayer);
-        }
-        return Task.CompletedTask;
+            "cars" => LoadCarsAsync(pplayer),
+            "clothes" => LoadClothesAsync(pplayer),
+            _ => Task.CompletedTask,
+        };
     }
 
     private async Task LoadCarsAsync(PPlayer player)
@@ -44,8 +42,8 @@ public sealed class RaceMenuCollectionTabScript(
         // TODO: move this to IVehicleMenuService
         await using var db = await dbFactory.CreateDbContextAsync().ConfigureAwait(false);
         var items = await db
-            .Garages.Where(a => a.OwnerId == player.ProtonId)
-            .Select(a => new VehicleMenuItemDto { Id = a.Id, Name = a.VehicleItem.DisplayName })
+            .PlayerVehicles.Where(a => a.PlayerId == player.ProtonId)
+            .Select(a => new VehicleMenuItemDto { Id = a.Id, Name = a.DisplayName })
             .ToListAsync()
             .ConfigureAwait(false);
 
