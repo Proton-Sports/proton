@@ -53,8 +53,10 @@ public class AuthenticationScript(
     /// </summary>
     public async Task OnPlayerDisconnect(IPlayer p, string reason)
     {
-        await playerAuthenticationStore[p].Logout();
-        playerAuthenticationStore.Remove(p);
+        if (playerAuthenticationStore.Remove(p, out var handler))
+        {
+            await handler.Logout().ConfigureAwait(false);
+        }
     }
 
     /// <summary>
@@ -66,8 +68,8 @@ public class AuthenticationScript(
         var discordProfile = account.GetCurrentUser();
 
         await using var db = await dbContextFactory.CreateDbContextAsync().ConfigureAwait(false);
-        var isBanned = await db.BanRecords
-            .AnyAsync(a => a.Kind == BanKind.Discord && a.Id.Equals(discordProfile.Id.ToString()))
+        var isBanned = await db
+            .BanRecords.AnyAsync(a => a.Kind == BanKind.Discord && a.Id.Equals(discordProfile.Id.ToString()))
             .ConfigureAwait(false);
         if (isBanned)
         {
@@ -92,8 +94,8 @@ public class AuthenticationScript(
         if (id != 0)
         {
             await using var db = await dbContextFactory.CreateDbContextAsync().ConfigureAwait(false);
-            var user = await db.Users
-                .Where(a => a.Id == id)
+            var user = await db
+                .Users.Where(a => a.Id == id)
                 .Select(a => new { a.Role })
                 .FirstOrDefaultAsync()
                 .ConfigureAwait(false);
