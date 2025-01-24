@@ -16,6 +16,7 @@ public sealed class UnloadIplsScript(IOptionsMonitor<IplOptions> options) : Host
 
     private Task OnAuthenticationDone(IPlayer player)
     {
+        player.Emit("ipl:load", "dlc_mpexample");
         player.Emit("ipl.unload", [options.CurrentValue.Entries.Select(a => a.Name).ToArray()]);
         return Task.CompletedTask;
     }

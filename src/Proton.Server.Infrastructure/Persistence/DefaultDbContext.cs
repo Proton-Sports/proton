@@ -21,6 +21,13 @@ public class DefaultDbContext : DbContext, IDbContext
     public DbSet<Cloth> Cloths => Set<Cloth>();
     public DbSet<Closet> Closets => Set<Closet>();
     public DbSet<BanRecord> BanRecords => Set<BanRecord>();
+    public DbSet<Mod> Mods => Set<Mod>();
+    public DbSet<PlayerVehicleMod> PlayerVehicleMods => Set<PlayerVehicleMod>();
+    public DbSet<PlayerVehicleActiveMod> PlayerVehicleActiveMods => Set<PlayerVehicleActiveMod>();
+    public DbSet<WheelVariation> WheelVariations => Set<WheelVariation>();
+    public DbSet<PlayerVehicleWheelVariation> PlayerVehicleWheelVariations => Set<PlayerVehicleWheelVariation>();
+    public DbSet<PlayerVehicleActiveWheelVariation> PlayerVehicleActiveWheelVariations =>
+        Set<PlayerVehicleActiveWheelVariation>();
 
     public DefaultDbContext() { }
 

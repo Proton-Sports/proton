@@ -37,7 +37,7 @@ public sealed class ServerResource : AsyncResource
                     .AddMemoryCache()
                     .AddSingleton<IHostLifetime, ResourceLifetime>()
                     .AddInfrastructure()
-                    .AddAuthentication()
+                    // .AddAuthentication()
                     .AddPlayerFeatures()
                     .AddRaceFeatures()
                     .AddCharacterCreator()

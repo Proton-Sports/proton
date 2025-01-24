@@ -1,4 +1,5 @@
-﻿using AltV.Net.Enums;
+﻿using AltV.Net.Data;
+using AltV.Net.Enums;
 using Proton.Server.Core.Interfaces;
 
 namespace Proton.Server.Core.Models.Shop;
@@ -15,4 +16,8 @@ public class PlayerVehicle : IAggregateRoot
     public int AltVColor { get; init; }
     public string Category { get; init; } = string.Empty;
     public DateTime PurchasedDate { get; init; } = DateTime.UtcNow;
+    public Rgba PrimaryColor { get; init; }
+    public Rgba SecondaryColor { get; init; }
+    public ICollection<PlayerVehicleMod> Mods { get; init; } = null!;
+    public ICollection<PlayerVehicleWheelVariation> WheelVariations { get; init; } = null!;
 }

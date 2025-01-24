@@ -3,7 +3,6 @@ using AltV.Net.Client.Async;
 using AltV.Net.Client.Elements.Data;
 using AltV.Net.Client.Elements.Interfaces;
 using AltV.Net.Data;
-using AsyncAwaitBestPractices;
 using Proton.Client.Core.Interfaces;
 using Proton.Client.Resource.Commons;
 using Proton.Client.Resource.Features.Ipls.Abstractions;

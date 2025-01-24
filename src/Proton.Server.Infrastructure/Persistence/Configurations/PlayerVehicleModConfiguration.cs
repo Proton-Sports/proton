@@ -12,7 +12,7 @@ public sealed class PlayerVehicleModConfiguration : IEntityTypeConfiguration<Pla
         builder.Property(a => a.PlayerVehicleId);
         builder.Property(a => a.ModId);
 
-        builder.HasOne(a => a.PlayerVehicle).WithMany().HasForeignKey(a => a.PlayerVehicleId);
+        builder.HasOne(a => a.PlayerVehicle).WithMany(a => a.Mods).HasForeignKey(a => a.PlayerVehicleId);
         builder.HasOne(a => a.Mod).WithMany().HasForeignKey(a => a.ModId);
 
         builder.HasKey(a => a.Id);

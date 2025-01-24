@@ -21,7 +21,7 @@ resources = [
 debug = true
 spawnAfterConnect = false
 enableSyncedMetaData = true
-resourceContainerizerMode = true
+resourceContainerizerMode = false
 
 [csharp-module]
 disableDependencyDownload = true

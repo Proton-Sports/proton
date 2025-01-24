@@ -2,6 +2,10 @@ set windows-shell := ["cmd.exe", "/C"]
 
 default: publish run
 
+dev:
+    just publish -c Debug
+    just run
+
 build: build-client build-server
 
 build-server:
@@ -13,13 +17,15 @@ build-client:
 run: publish
     altv-server
 
-publish: publish-client publish-server
+publish *rest:
+    just publish-client {{rest}}
+    just publish-server {{rest}}
 
-publish-server:
-    dotnet publish ./src/Proton.Server.Resource/Proton.Server.Resource.csproj
+publish-server *rest:
+    dotnet publish ./src/Proton.Server.Resource/Proton.Server.Resource.csproj {{rest}}
 
-publish-client:
-    dotnet publish ./src/Proton.Client.Resource/Proton.Client.Resource.csproj
+publish-client *rest:
+    dotnet publish ./src/Proton.Client.Resource/Proton.Client.Resource.csproj {{rest}}
 
 update: update-server update-modules update-data
 

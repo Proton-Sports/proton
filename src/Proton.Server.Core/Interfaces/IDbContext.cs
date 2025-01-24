@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Proton.Server.Core.Models;
 using Proton.Server.Core.Models.Log;
 using Proton.Server.Core.Models.Shop;
@@ -20,6 +21,14 @@ public interface IDbContext : IDisposable, IAsyncDisposable
     DbSet<Closet> Closets { get; }
     DbSet<Cloth> Cloths { get; }
     DbSet<BanRecord> BanRecords { get; }
+    DbSet<Mod> Mods { get; }
+    DbSet<PlayerVehicleMod> PlayerVehicleMods { get; }
+    DbSet<PlayerVehicleActiveMod> PlayerVehicleActiveMods { get; }
+    DbSet<WheelVariation> WheelVariations { get; }
+    DbSet<PlayerVehicleWheelVariation> PlayerVehicleWheelVariations { get; }
+    DbSet<PlayerVehicleActiveWheelVariation> PlayerVehicleActiveWheelVariations { get; }
+
+    DatabaseFacade Database { get; }
 
     EntityEntry<TEntity> Add<TEntity>(TEntity entity)
         where TEntity : class, IAggregateRoot;

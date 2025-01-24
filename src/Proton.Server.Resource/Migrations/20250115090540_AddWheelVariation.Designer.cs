@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Proton.Server.Infrastructure.Persistence;
@@ -12,9 +13,11 @@ using Proton.Server.Infrastructure.Persistence;
 namespace Proton.Server.Resource.Migrations
 {
     [DbContext(typeof(DefaultDbContext))]
-    partial class DefaultDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250115090540_AddWheelVariation")]
+    partial class AddWheelVariation
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -205,16 +208,6 @@ namespace Proton.Server.Resource.Migrations
                     b.ToTable("PlayerVehicleActiveMods");
                 });
 
-            modelBuilder.Entity("Proton.Server.Core.Models.PlayerVehicleActiveWheelVariation", b =>
-                {
-                    b.Property<long>("PlayerVehicleWheelVariationId")
-                        .HasColumnType("bigint");
-
-                    b.HasKey("PlayerVehicleWheelVariationId");
-
-                    b.ToTable("PlayerVehicleActiveWheelVariations");
-                });
-
             modelBuilder.Entity("Proton.Server.Core.Models.PlayerVehicleMod", b =>
                 {
                     b.Property<long>("Id")
@@ -237,30 +230,6 @@ namespace Proton.Server.Resource.Migrations
                         .IsUnique();
 
                     b.ToTable("PlayerVehicleMods");
-                });
-
-            modelBuilder.Entity("Proton.Server.Core.Models.PlayerVehicleWheelVariation", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
-
-                    b.Property<long>("PlayerVehicleId")
-                        .HasColumnType("bigint");
-
-                    b.Property<long>("WheelVariationId")
-                        .HasColumnType("bigint");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("WheelVariationId");
-
-                    b.HasIndex("PlayerVehicleId", "WheelVariationId")
-                        .IsUnique();
-
-                    b.ToTable("PlayerVehicleWheelVariations");
                 });
 
             modelBuilder.Entity("Proton.Server.Core.Models.RaceMap", b =>
@@ -665,17 +634,6 @@ namespace Proton.Server.Resource.Migrations
                     b.Navigation("PlayerVehicleMod");
                 });
 
-            modelBuilder.Entity("Proton.Server.Core.Models.PlayerVehicleActiveWheelVariation", b =>
-                {
-                    b.HasOne("Proton.Server.Core.Models.PlayerVehicleWheelVariation", "PlayerVehicleWheelVariation")
-                        .WithOne("PlayerVehicleActiveWheelVariation")
-                        .HasForeignKey("Proton.Server.Core.Models.PlayerVehicleActiveWheelVariation", "PlayerVehicleWheelVariationId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("PlayerVehicleWheelVariation");
-                });
-
             modelBuilder.Entity("Proton.Server.Core.Models.PlayerVehicleMod", b =>
                 {
                     b.HasOne("Proton.Server.Core.Models.Mod", "Mod")
@@ -693,25 +651,6 @@ namespace Proton.Server.Resource.Migrations
                     b.Navigation("Mod");
 
                     b.Navigation("PlayerVehicle");
-                });
-
-            modelBuilder.Entity("Proton.Server.Core.Models.PlayerVehicleWheelVariation", b =>
-                {
-                    b.HasOne("Proton.Server.Core.Models.Shop.PlayerVehicle", "PlayerVehicle")
-                        .WithMany("WheelVariations")
-                        .HasForeignKey("PlayerVehicleId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Proton.Server.Core.Models.WheelVariation", "WheelVariation")
-                        .WithMany()
-                        .HasForeignKey("WheelVariationId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("PlayerVehicle");
-
-                    b.Navigation("WheelVariation");
                 });
 
             modelBuilder.Entity("Proton.Server.Core.Models.RacePoint", b =>
@@ -806,11 +745,6 @@ namespace Proton.Server.Resource.Migrations
                     b.Navigation("PlayerVehicleActiveMod");
                 });
 
-            modelBuilder.Entity("Proton.Server.Core.Models.PlayerVehicleWheelVariation", b =>
-                {
-                    b.Navigation("PlayerVehicleActiveWheelVariation");
-                });
-
             modelBuilder.Entity("Proton.Server.Core.Models.RaceMap", b =>
                 {
                     b.Navigation("RacePoints");
@@ -826,8 +760,6 @@ namespace Proton.Server.Resource.Migrations
             modelBuilder.Entity("Proton.Server.Core.Models.Shop.PlayerVehicle", b =>
                 {
                     b.Navigation("Mods");
-
-                    b.Navigation("WheelVariations");
                 });
 
             modelBuilder.Entity("Proton.Server.Core.Models.User", b =>

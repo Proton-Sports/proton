@@ -10,7 +10,8 @@ public static class ServiceCollectionExtensions
         serviceCollection
             .AddStartup<VehicleScript>()
             .AddStartup<OutfitScript>()
-            .AddStartup<ClothScript>();
+            .AddStartup<ClothScript>()
+            .AddHostedService<TuningShopScript>();
         return serviceCollection;
     }
 }
