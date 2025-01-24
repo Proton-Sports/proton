@@ -322,9 +322,32 @@ public sealed class TuningShopScript(IDbContextFactory dbFactory) : HostedServic
 #pragma warning disable CA2007 // Consider calling ConfigureAwait on the awaited task
         await using var db = await dbFactory.CreateDbContextAsync().ConfigureAwait(false);
         await using var transaction = await db
-            .Database.BeginTransactionAsync(IsolationLevel.ReadCommitted)
+            .Database.BeginTransactionAsync(IsolationLevel.RepeatableRead)
             .ConfigureAwait(false);
 #pragma warning restore CA2007 // Consider calling ConfigureAwait on the awaited task
+
+        var mod = await db
+            .Mods.Where(a => a.Id == modId)
+            .Select(a => new { a.Price })
+            .FirstOrDefaultAsync()
+            .ConfigureAwait(false);
+        if (mod is null)
+        {
+            player.Emit("tuning-shop.buy", category, modId, false);
+            return;
+        }
+
+        var user = await db
+            .Users.Where(a => a.Id == player.ProtonId)
+            .Select(a => new { a.Money })
+            .FirstOrDefaultAsync()
+            .ConfigureAwait(false);
+        if (user is null || user.Money < mod.Price)
+        {
+            player.Emit("tuning-shop.buy", category, modId, false);
+            return;
+        }
+
         db.Add(
             new PlayerVehicleMod
             {
@@ -341,6 +364,10 @@ public sealed class TuningShopScript(IDbContextFactory dbFactory) : HostedServic
                     && a.PlayerVehicleMod.Mod.Category == category
                 )
                 .ExecuteDeleteAsync()
+                .ConfigureAwait(false);
+            await db
+                .Users.Where(a => a.Id == player.ProtonId)
+                .ExecuteUpdateAsync(a => a.SetProperty(b => b.Money, b => b.Money - mod.Price))
                 .ConfigureAwait(false);
             await db.SaveChangesAsync().ConfigureAwait(false);
             await transaction.CommitAsync().ConfigureAwait(false);
@@ -369,7 +396,23 @@ public sealed class TuningShopScript(IDbContextFactory dbFactory) : HostedServic
 
 #pragma warning disable CA2007 // Consider calling ConfigureAwait on the awaited task
         await using var db = await dbFactory.CreateDbContextAsync().ConfigureAwait(false);
+        await using var transaction = await db
+            .Database.BeginTransactionAsync(IsolationLevel.RepeatableRead)
+            .ConfigureAwait(false);
 #pragma warning restore CA2007 // Consider calling ConfigureAwait on the awaited task
+
+        const int price = 50;
+        var user = await db
+            .Users.Where(a => a.Id == player.ProtonId)
+            .Select(a => new { a.Money })
+            .FirstOrDefaultAsync()
+            .ConfigureAwait(false);
+        if (user is null || user.Money < price)
+        {
+            player.Emit("tuning-shop.colors.buy", category, hex, false);
+            return;
+        }
+
         var color = new Rgba(r, g, b, 255);
         Expression<Func<SetPropertyCalls<PlayerVehicle>, SetPropertyCalls<PlayerVehicle>>> expression =
             category == 66
@@ -381,22 +424,34 @@ public sealed class TuningShopScript(IDbContextFactory dbFactory) : HostedServic
                     a.SetProperty(b => b.SecondaryColor.R, color.R)
                         .SetProperty(b => b.SecondaryColor.G, color.G)
                         .SetProperty(b => b.SecondaryColor.B, color.B);
-        var count = await db
-            .PlayerVehicles.Where(a => a.Id == vehicle.GarageId)
-            .ExecuteUpdateAsync(expression)
-            .ConfigureAwait(false);
-        if (count > 0)
+        try
         {
-            if (category == 66)
+            var count = await db
+                .PlayerVehicles.Where(a => a.Id == vehicle.GarageId)
+                .ExecuteUpdateAsync(expression)
+                .ConfigureAwait(false);
+            await db
+                .Users.Where(a => a.Id == player.ProtonId)
+                .ExecuteUpdateAsync(a => a.SetProperty(b => b.Money, b => b.Money - price))
+                .ConfigureAwait(false);
+            if (count > 0)
             {
-                vehicle.PrimaryColorRgb = color;
+                if (category == 66)
+                {
+                    vehicle.PrimaryColorRgb = color;
+                }
+                else
+                {
+                    vehicle.SecondaryColorRgb = color;
+                }
             }
-            else
-            {
-                vehicle.SecondaryColorRgb = color;
-            }
+            await transaction.CommitAsync().ConfigureAwait(false);
+            player.Emit("tuning-shop.colors.buy", category, hex, count > 0);
         }
-        player.Emit("tuning-shop.colors.buy", category, hex, count > 0);
+        catch
+        {
+            player.Emit("tuning-shop.colors.buy", category, hex, false);
+        }
     }
 
     async Task OnToggleAsync(PPlayer player, int category, long modId, bool value)
@@ -526,12 +581,31 @@ public sealed class TuningShopScript(IDbContextFactory dbFactory) : HostedServic
         {
             return;
         }
+
 #pragma warning disable CA2007 // Consider calling ConfigureAwait on the awaited task
         await using var db = await dbFactory.CreateDbContextAsync().ConfigureAwait(false);
         await using var transaction = await db
-            .Database.BeginTransactionAsync(IsolationLevel.ReadCommitted)
+            .Database.BeginTransactionAsync(IsolationLevel.RepeatableRead)
             .ConfigureAwait(false);
 #pragma warning restore CA2007 // Consider calling ConfigureAwait on the awaited task
+
+        var wheelVariation = await db
+            .WheelVariations.Where(a => a.Id == wheelVariationId)
+            .Select(a => new { a.Price })
+            .FirstOrDefaultAsync()
+            .ConfigureAwait(false);
+        var user = await db
+            .Users.Where(a => a.Id == player.ProtonId)
+            .Select(a => new { a.Money })
+            .FirstOrDefaultAsync()
+            .ConfigureAwait(false);
+        if (wheelVariation is null || user is null || user.Money < wheelVariation.Price)
+        {
+            player.Emit("tuning-shop.wheels.buy", wheelVariationId, false);
+            await transaction.CommitAsync().ConfigureAwait(false);
+            return;
+        }
+
         db.Add(
             new PlayerVehicleWheelVariation
             {
@@ -547,6 +621,10 @@ public sealed class TuningShopScript(IDbContextFactory dbFactory) : HostedServic
                     a.PlayerVehicleWheelVariation.PlayerVehicleId == vehicle.GarageId
                 )
                 .ExecuteDeleteAsync()
+                .ConfigureAwait(false);
+            await db
+                .Users.Where(a => a.Id == player.ProtonId)
+                .ExecuteUpdateAsync(a => a.SetProperty(b => b.Money, b => b.Money - wheelVariation.Price))
                 .ConfigureAwait(false);
             await db.SaveChangesAsync().ConfigureAwait(false);
             await transaction.CommitAsync().ConfigureAwait(false);
