@@ -1,6 +1,8 @@
 using AltV.Net.Client;
 using AltV.Net.Client.Elements.Data;
 using AltV.Net.Client.Elements.Interfaces;
+using AltV.Net.Data;
+using AltV.Net.Shared.Enums;
 using Proton.Client.Resource.Commons;
 using Proton.Client.Resource.Features.UiViews.Abstractions;
 using Proton.Shared.Constants;
@@ -10,8 +12,20 @@ namespace Proton.Client.Resource.Features.Shop.Scripts;
 
 public sealed class TuningShopScript(IUiView ui) : HostedService
 {
+    readonly List<Position> markerPositions =
+        new()
+        {
+            new(451.07782f, 5611.5645f, -80.02029f),
+            new(461.65985f, 5611.215f, -80.02029f),
+            new(471.04004f, 5611.1133f, -80.020294f)
+        };
+
     public override Task StartAsync(CancellationToken ct)
     {
+        foreach (var pos in markerPositions)
+        {
+            Alt.CreateMarker(MarkerType.MarkerMoney, pos, new Rgba(255, 0, 0, 255), true, 128);
+        }
         Alt.OnServer<TuningShopMountDto>("tuning-shop.mount", OnServerMount);
         Alt.OnConsoleCommand += (cmd, args) =>
         {
@@ -19,32 +33,16 @@ public sealed class TuningShopScript(IUiView ui) : HostedService
             {
                 Alt.EmitServer("tuning-shop.mount");
             }
+            else if (cmd.Equals("pos"))
+            {
+                Console.WriteLine($"{Alt.LocalPlayer.Position}");
+                Console.WriteLine(
+                    $"{Alt.LocalPlayer.Position.X}, {Alt.LocalPlayer.Position.Y}, {Alt.LocalPlayer.Position.Z}"
+                );
+            }
             else if (cmd.Equals("spawn") && long.TryParse(args[0], out var id))
             {
                 Alt.EmitServer("tuning-shop.dev.spawn", id);
-            }
-            else if (cmd.Equals("m"))
-            {
-                if (int.TryParse(args[0], out var a) && int.TryParse(args[1], out var b))
-                {
-                    OnUiValueChange(a, b);
-                }
-            }
-            else if (cmd.Equals("w"))
-            {
-                if (int.TryParse(args[0], out var a) && int.TryParse(args[1], out var b))
-                {
-                    Alt.EmitServer("tuning-shop.dev.wheel", a, b);
-                    Alt.Log($"{Alt.Natives.GetNumVehicleMods(Alt.LocalPlayer.Vehicle, 23)}");
-                }
-            }
-            else if (cmd.Equals("testw"))
-            {
-                for (var i = 0; i != 20; ++i)
-                {
-                    Alt.Natives.SetVehicleWheelType(Alt.LocalPlayer.Vehicle, i);
-                    Alt.Log($"{i}, {Alt.Natives.GetNumVehicleMods(Alt.LocalPlayer.Vehicle, 23)}");
-                }
             }
             else if (cmd.Equals("generate"))
             {
@@ -75,6 +73,7 @@ public sealed class TuningShopScript(IUiView ui) : HostedService
                 );
             }
         };
+        Alt.OnKeyUp += GlobalOnKeyUp;
         ui.On<int, int>("tuning-shop.values.change", OnUiValueChange);
         ui.On<int, string>("tuning-shop.colors.change", OnUiColorsChange);
         ui.On<int, long>("tuning-shop.buy", OnUiBuy);
@@ -134,6 +133,24 @@ public sealed class TuningShopScript(IUiView ui) : HostedService
             case Key.Menu:
                 Alt.GameControlsEnabled = !Alt.IsCursorVisible;
                 break;
+        }
+    }
+
+    void GlobalOnKeyUp(Key key)
+    {
+        if (key != Key.E || ui.IsMounted(Route.TuningShop))
+        {
+            return;
+        }
+
+        var playerPos = Alt.LocalPlayer.Position;
+        foreach (var pos in markerPositions)
+        {
+            if (playerPos.GetDistanceSquaredTo(pos) < 16)
+            {
+                Alt.EmitServer("tuning-shop.mount");
+                break;
+            }
         }
     }
 

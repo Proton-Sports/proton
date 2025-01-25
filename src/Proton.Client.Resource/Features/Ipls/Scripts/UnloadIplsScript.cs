@@ -13,8 +13,10 @@ public sealed class UnloadIplsScript : HostedService
 
     private void UnloadIpls(string[] names)
     {
+        Alt.Log($"UnloadIpls");
         foreach (var name in names)
         {
+            Alt.Log($"Unload {name}");
             Alt.RemoveIpl(name);
         }
     }

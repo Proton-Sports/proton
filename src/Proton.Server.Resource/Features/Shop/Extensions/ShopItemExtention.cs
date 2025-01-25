@@ -1,7 +1,7 @@
 ﻿using Proton.Server.Core.Models.Shop;
 using Proton.Shared.Models;
 
-namespace Proton.Server.Resource.Features.Shop.Extentions;
+namespace Proton.Server.Resource.Features.Shop.Extensions;
 
 internal static class ShopItemExtention
 {

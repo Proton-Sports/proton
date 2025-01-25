@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Proton.Server.Infrastructure.Factorys;
 using Proton.Server.Infrastructure.Persistence;
 using Proton.Server.Infrastructure.Services;
-using Proton.Server.Resource.Features.Shop.Extentions;
+using Proton.Server.Resource.Features.Shop.Extensions;
 using Proton.Shared.Helpers;
 using Proton.Shared.Interfaces;
 using Proton.Shared.Models;

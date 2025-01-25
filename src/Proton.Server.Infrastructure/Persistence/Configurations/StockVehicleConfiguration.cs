@@ -10,7 +10,7 @@ public sealed class StockVehicleConfiguration : IEntityTypeConfiguration<StockVe
 {
     public void Configure(EntityTypeBuilder<StockVehicle> builder)
     {
-        builder.Property(a => a.Model).HasConversion<EnumToNumberConverter<VehicleModel, int>>();
+        builder.Property(a => a.Model).HasConversion<EnumToNumberConverter<VehicleModel, uint>>();
         builder.HasKey(x => x.Id);
     }
 }

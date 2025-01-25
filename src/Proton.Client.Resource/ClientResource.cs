@@ -27,7 +27,7 @@ public sealed class ClientResource : AsyncResource
             .AddInfrastructure()
             .AddUiViews()
             .AddNoClips()
-            // .AddAuthentication()
+            .AddAuthentication()
             .AddRaceFeatures()
             .AddNametags()
             .AddHud()

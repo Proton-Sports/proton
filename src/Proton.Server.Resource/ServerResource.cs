@@ -8,7 +8,7 @@ using Microsoft.Extensions.Hosting;
 using Proton.Server.Infrastructure.Factorys;
 using Proton.Server.Resource.Authentication.Extentions;
 using Proton.Server.Resource.CharacterCreator.Extensions;
-using Proton.Server.Resource.Features.Shop;
+using Proton.Server.Resource.Features.Shop.Extensions;
 using Proton.Server.Resource.Features.Vehicles;
 using Proton.Shared.Extensions;
 using Proton.Shared.Interfaces;
@@ -37,7 +37,7 @@ public sealed class ServerResource : AsyncResource
                     .AddMemoryCache()
                     .AddSingleton<IHostLifetime, ResourceLifetime>()
                     .AddInfrastructure()
-                    // .AddAuthentication()
+                    .AddAuthentication()
                     .AddPlayerFeatures()
                     .AddRaceFeatures()
                     .AddCharacterCreator()

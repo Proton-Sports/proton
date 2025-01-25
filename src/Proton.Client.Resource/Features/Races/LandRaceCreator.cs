@@ -21,8 +21,10 @@ public class LandRaceCreator : IRaceCreator
     private const uint BlipColorSecondary = 4;
 
     public string Name { get; set; } = string.Empty;
-    public IEnumerable<SharedRacePoint> RacePoints => racePointDatas.Select(x => new SharedRacePoint(x.Position, x.Checkpoint.Radius));
-    public IEnumerable<SharedRaceStartPoint> StartPoints => startPointDatas.Select(x => new SharedRaceStartPoint(x.Position, x.Rotation));
+    public IEnumerable<SharedRacePoint> RacePoints =>
+        racePointDatas.Select(x => new SharedRacePoint(x.Position, x.Checkpoint.Radius));
+    public IEnumerable<SharedRaceStartPoint> StartPoints =>
+        startPointDatas.Select(x => new SharedRaceStartPoint(x.Position, x.Rotation));
 
     public void ClearRacePoints()
     {
@@ -47,7 +49,15 @@ public class LandRaceCreator : IRaceCreator
         var lastData = racePointDatas.Last?.Value;
         if (lastData is null)
         {
-            racePointDatas.AddLast(CreateRacePositionData(CheckpointType.CylinderCheckerboard, BlipSpriteRadarRaceLand, position, position, radius));
+            racePointDatas.AddLast(
+                CreateRacePositionData(
+                    CheckpointType.CylinderCheckerboard,
+                    BlipSpriteRadarRaceLand,
+                    position,
+                    position,
+                    radius
+                )
+            );
             return;
         }
 
@@ -56,7 +66,15 @@ public class LandRaceCreator : IRaceCreator
         lastData.Blip.Sprite = BlipSpriteRadarPlaceholder6;
         lastData.Blip.Color = BlipColorSecondary;
 
-        racePointDatas.AddLast(CreateRacePositionData(CheckpointType.CylinderCheckerboard, BlipSpriteRadarRaceLand, position, position, radius));
+        racePointDatas.AddLast(
+            CreateRacePositionData(
+                CheckpointType.CylinderCheckerboard,
+                BlipSpriteRadarRaceLand,
+                position,
+                position,
+                radius
+            )
+        );
     }
 
     public bool TryRemoveRacePoint(Position position, out RacePointData removed)
@@ -122,7 +140,8 @@ public class LandRaceCreator : IRaceCreator
         for (var node = racePointDatas.First; node is not null; node = node.Next)
         {
             var current = node.Value;
-            if (current.Checkpoint != checkpoint) continue;
+            if (current.Checkpoint != checkpoint)
+                continue;
 
             current.Checkpoint.Position = position;
             current.Blip.Position = position;
@@ -163,7 +182,10 @@ public class LandRaceCreator : IRaceCreator
         MarkerType previousMarkerType = closestNode.Value.NumberMarker.MarkerType;
         for (var node = closestNode.Next; node is not null; node = node.Next)
         {
-            (previousMarkerType, node.Value.NumberMarker.MarkerType) = (node.Value.NumberMarker.MarkerType, previousMarkerType);
+            (previousMarkerType, node.Value.NumberMarker.MarkerType) = (
+                node.Value.NumberMarker.MarkerType,
+                previousMarkerType
+            );
         }
         closestNode.Value.Destroy();
         startPointDatas.Remove(closestNode);
@@ -171,7 +193,13 @@ public class LandRaceCreator : IRaceCreator
         return true;
     }
 
-    private RacePointData CreateRacePositionData(CheckpointType checkpointType, uint blipSprite, Position position, Position nextPosition, float radius)
+    private RacePointData CreateRacePositionData(
+        CheckpointType checkpointType,
+        uint blipSprite,
+        Position position,
+        Position nextPosition,
+        float radius
+    )
     {
         var blip = Alt.CreatePointBlip(position);
         blip.Sprite = blipSprite;
@@ -179,26 +207,40 @@ public class LandRaceCreator : IRaceCreator
 
         return new RacePointData(
             position,
-            Alt.CreateCheckpoint(checkpointType, position, nextPosition, racePointDatas.Last?.Value.Checkpoint.Radius ?? radius, 6f, new Rgba(255, 255, 255, 255), new Rgba(255, 0, 0, 255), 256),
-            blip);
+            Alt.CreateCheckpoint(
+                checkpointType,
+                position,
+                nextPosition,
+                racePointDatas.Last?.Value.Checkpoint.Radius ?? radius,
+                6f,
+                new Rgba(255, 255, 255, 255),
+                new Rgba(255, 0, 0, 255),
+                256
+            ),
+            blip
+        );
     }
 
     private static StartPositionData CreateStartPositionData(int ordinal, Position position, Rotation rotation)
     {
         var blip = Alt.CreatePointBlip(position);
         blip.Sprite = RadarRaceOpenWheel;
-        var numberMarker = Alt.CreateMarker(MarkerType.MarkerNum0 + ordinal, position + new Position(0, 0, 2), new Rgba(255, 0, 0, 255), true, 64);
+        blip.Dimension = Alt.LocalPlayer.Dimension;
+        var numberMarker = Alt.CreateMarker(
+            MarkerType.MarkerNum0 + ordinal,
+            position + new Position(0, 0, 2),
+            new Rgba(255, 0, 0, 255),
+            true,
+            64
+        );
         numberMarker.IsFaceCamera = true;
+        numberMarker.Dimension = Alt.LocalPlayer.Dimension;
 
         var boxMarker = Alt.CreateMarker(MarkerType.MarkerBoxes, position, new Rgba(255, 0, 0, 64), true, 64);
         boxMarker.Rotation = rotation;
         boxMarker.Scale = new Position(3, 6, 3);
-        return new StartPositionData(
-            position,
-            rotation,
-            numberMarker,
-            boxMarker,
-            blip);
+        boxMarker.Dimension = Alt.LocalPlayer.Dimension;
+        return new StartPositionData(position, rotation, numberMarker, boxMarker, blip);
     }
 
     public void ImportStartPoints(IEnumerable<SharedRaceStartPoint> points)

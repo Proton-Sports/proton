@@ -5,6 +5,7 @@ using AltV.Net;
 using AltV.Net.Async;
 using AltV.Net.Data;
 using AltV.Net.Enums;
+using AltV.Net.Shared.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
 using Proton.Server.Core.Interfaces;
@@ -22,11 +23,6 @@ public sealed class TuningShopScript(IDbContextFactory dbFactory) : HostedServic
 {
     public override Task StartAsync(CancellationToken ct)
     {
-        Alt.OnPlayerConnect += (player, reason) =>
-        {
-            player.Model = (uint)PedModel.FreemodeMale01;
-            player.Spawn(new Position(443.94177f, 5605.972f, -96.5f), 0);
-        };
         AltAsync.OnClient<PPlayer, Task>("tuning-shop.mount", OnMountAsync);
         Alt.OnClient<PPlayer, int, int>("tuning-shop.values.change", OnValuesChange);
         Alt.OnClient<PPlayer, int, int>("tuning-shop.wheels.change", OnWheelsChange);
@@ -84,7 +80,6 @@ public sealed class TuningShopScript(IDbContextFactory dbFactory) : HostedServic
             "tuning-shop.dev.generate",
             async (player, dto) =>
             {
-                Console.WriteLine(dto);
                 var vehicle = player.Vehicle;
                 if (vehicle is null)
                 {

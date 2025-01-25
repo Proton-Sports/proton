@@ -15,25 +15,14 @@ public sealed class VehicleMenuScript(IDbContextFactory dbFactory, IGarageServic
 {
     public override Task StartAsync(CancellationToken ct)
     {
-        AltAsync.OnClient<IPlayer, long, Task>(
-            "vehicle-menu.spawn",
-            (player, id) =>
-            {
-                if (player is not PPlayer pplayer)
-                {
-                    return Task.CompletedTask;
-                }
-
-                return OnSpawnAsync(pplayer, id);
-            }
-        );
+        AltAsync.OnClient<PPlayer, long, Task>("vehicle-menu.spawn", OnSpawnAsync);
         Alt.OnClient<IPlayer, long>("vehicle-menu.despawn", OnDespawn);
         return Task.CompletedTask;
     }
 
     private async Task OnSpawnAsync(PPlayer player, long id)
     {
-        if (garageService.SpawnedVehicles.TryGetValue(player, out var vehicles) && vehicles!.Count > 0)
+        if (garageService.SpawnedVehicles.TryGetValue(player, out var vehicles) && vehicles.Count > 0)
         {
             foreach (var v in vehicles.Where(a => a is IProtonVehicle).Cast<IProtonVehicle>())
             {
@@ -43,13 +32,27 @@ public sealed class VehicleMenuScript(IDbContextFactory dbFactory, IGarageServic
             vehicles.Clear();
         }
 
+#pragma warning disable CA2007 // Consider calling ConfigureAwait on the awaited task
         await using var db = await dbFactory.CreateDbContextAsync().ConfigureAwait(false);
-        var garage = await db
-            .PlayerVehicles.Where(a => a.PlayerId == player.ProtonId && a.Id == id)
-            .Select(a => new { a.Id, a.Model })
+#pragma warning restore CA2007 // Consider calling ConfigureAwait on the awaited task
+        var playerVehicle = await db
+            .PlayerVehicles.Where(a => a.Id == id)
+            .Select(a => new
+            {
+                a.Id,
+                a.Model,
+                a.PrimaryColor,
+                a.SecondaryColor,
+                Mods = a
+                    .Mods.Where(b => b.PlayerVehicleActiveMod != null)
+                    .Select(a => new { a.Mod.Category, a.Mod.Value }),
+                WheelVariations = a
+                    .WheelVariations.Where(b => b.PlayerVehicleActiveWheelVariation != null)
+                    .Select(a => new { a.WheelVariation.Type, a.WheelVariation.Value })
+            })
             .FirstOrDefaultAsync()
             .ConfigureAwait(false);
-        if (garage is null)
+        if (playerVehicle is null)
         {
             return;
         }
@@ -64,10 +67,24 @@ public sealed class VehicleMenuScript(IDbContextFactory dbFactory, IGarageServic
             return;
         }
 
-        var vehicle = (IProtonVehicle)
-            Alt.CreateVehicle(garage.Model, player.Position, new Rotation(0, 0, player.Rotation.Yaw));
-        vehicle.GarageId = garage.Id;
+        var vehicle = (IProtonVehicle)(
+            await AltAsync.CreateVehicle(playerVehicle.Model, player.Position, player.Rotation).ConfigureAwait(false)
+        );
         vehicles.Add(vehicle);
+        vehicle.GarageId = playerVehicle.Id;
+        vehicle.Dimension = player.Dimension;
+        vehicle.ModKit = 1;
+        var wheel = playerVehicle.WheelVariations.FirstOrDefault();
+        if (wheel is not null)
+        {
+            vehicle.SetWheels((byte)wheel.Type, (byte)wheel.Value);
+        }
+        foreach (var mod in playerVehicle.Mods)
+        {
+            vehicle.SetMod((byte)mod.Category, (byte)mod.Value);
+        }
+        vehicle.PrimaryColorRgb = playerVehicle.PrimaryColor;
+        vehicle.SecondaryColorRgb = playerVehicle.SecondaryColor;
         player.SetIntoVehicle(vehicle, 1);
         player.Emit("vehicle-menu.spawn", id);
     }

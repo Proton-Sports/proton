@@ -23,7 +23,7 @@ public class ClientOnlyNoClip(
     private const int ActionShift = 21;
     private const int ActionNextCamera = 0;
 
-    private RaycastData? raycastData = default;
+    private RaycastData? raycastData;
 
     public IScriptCamera? Camera { get; protected set; }
     public bool IsStarted { get; protected set; }

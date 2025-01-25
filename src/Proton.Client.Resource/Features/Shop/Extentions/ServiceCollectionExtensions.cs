@@ -7,7 +7,7 @@ internal static class ServiceCollectionExtensions
 {
     public static IServiceCollection AddShops(this IServiceCollection services)
     {
-        services.AddStartup<VehicleShop>().AddStartup<ClothShop>().AddHostedService<TuningShopScript>();
+        services.AddHostedService<VehicleShopScript>().AddStartup<ClothShop>().AddHostedService<TuningShopScript>();
         return services;
     }
 }
