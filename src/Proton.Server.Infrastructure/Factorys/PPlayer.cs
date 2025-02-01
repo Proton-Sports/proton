@@ -8,7 +8,7 @@ namespace Proton.Server.Infrastructure.Factorys;
 public class PPlayer(ICore core, nint nativePointer, uint id) : AsyncPlayer(core, nativePointer, id)
 {
     //If -1 Player not Loggedin
-    public long ProtonId { get; set; } = 1;
+    public long ProtonId { get; set; } = -1;
     public UserRole Role { get; set; } = UserRole.User;
 
     public void SendNotification(NotificationDto notify) => Player.Emit("player:sendNotification", notify);

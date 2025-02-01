@@ -80,12 +80,14 @@ public sealed class TuningShopScript(IDbContextFactory dbFactory) : HostedServic
             "tuning-shop.dev.generate",
             async (player, dto) =>
             {
+                Alt.LogInfo("tuning-shop.dev.generate start");
                 var vehicle = player.Vehicle;
                 if (vehicle is null)
                 {
                     return;
                 }
 
+                Alt.LogInfo("tuning-shop.dev.generate vehicle");
                 await using var db = await dbFactory.CreateDbContextAsync().ConfigureAwait(false);
 
                 foreach (var wheel in dto.Wheels)
@@ -125,7 +127,16 @@ public sealed class TuningShopScript(IDbContextFactory dbFactory) : HostedServic
                     }
                 }
 
-                await db.SaveChangesAsync().ConfigureAwait(false);
+                try
+                {
+                    await db.SaveChangesAsync().ConfigureAwait(false);
+                }
+                catch (Exception e)
+                {
+                    Alt.LogError(e.ToString());
+                    throw;
+                }
+                Alt.LogInfo("tuning-shop.dev.generate end");
             }
         );
         Alt.OnClient<PPlayer, int, int>(

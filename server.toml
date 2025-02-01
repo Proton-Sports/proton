@@ -15,8 +15,9 @@ resources = [
     'proton-client',
     'sport_maps_to_load',
     'sport_stunt_prop_fix',
-    'dlc_mpexample',
-    'dlc_sport_scaleform_core',
+    'republic_proton_lobby_spawn',
+    'sport_scaleform_core',
+    'intls_rdlight_proton_core'
 ]
 debug = true
 spawnAfterConnect = false
