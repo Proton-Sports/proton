@@ -59,15 +59,15 @@ public sealed class RaceFinishScript(IRaceService raceService, IMapCache mapCach
 
         public int Compare(long x, long y)
         {
-            if (x == 0)
-            {
-                return 1;
-            }
-            return x > y
+            return x == 0
                 ? 1
-                : x < y
+                : y == 0
                     ? -1
-                    : 0;
+                    : x > y
+                        ? 1
+                        : x < y
+                            ? -1
+                            : 0;
         }
     }
 }
