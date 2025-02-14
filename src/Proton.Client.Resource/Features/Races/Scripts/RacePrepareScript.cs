@@ -35,7 +35,7 @@ public sealed class RacePrepareScript(IUiView uiView, IRaceService raceService, 
     {
         raceService.Status = RaceStatus.Preparing;
         uiView.Mount(Route.RacePrepareTransition);
-        Alt.OnTick += DisableVehicleMovement;
+        Alt.OnTick += DisableVehicleActions;
         Alt.Natives.DoScreenFadeOut(1000);
         Alt.SetTimeout(
             () =>
@@ -95,13 +95,15 @@ public sealed class RacePrepareScript(IUiView uiView, IRaceService raceService, 
 
     private void HandleOnStarted(long _)
     {
-        Alt.OnTick -= DisableVehicleMovement;
+        Alt.OnTick -= DisableVehicleActions;
     }
 
-    private void DisableVehicleMovement()
+    private void DisableVehicleActions()
     {
+        const int INPUT_VEH_EXIT = 75;
         Alt.Natives.DisableControlAction(27, 71, true);
         Alt.Natives.DisableControlAction(27, 72, true);
         Alt.Natives.DisableControlAction(27, 76, true);
+        Alt.Natives.DisableControlAction(27, INPUT_VEH_EXIT, true);
     }
 }

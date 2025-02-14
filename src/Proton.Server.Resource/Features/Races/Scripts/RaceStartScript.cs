@@ -25,11 +25,10 @@ public sealed class RaceStartScript(IRaceService raceService) : HostedService
         {
             participant.NextRacePointIndex = 0;
             participant.Lap = 0;
-            participant.Player.Frozen = false;
             if (participant.Vehicle is not null)
             {
-                participant.Vehicle!.Frozen = false;
-                participant.Vehicle!.EngineOn = true;
+                participant.Vehicle.Frozen = false;
+                participant.Vehicle.EngineOn = true;
             }
         }
         return Task.CompletedTask;
