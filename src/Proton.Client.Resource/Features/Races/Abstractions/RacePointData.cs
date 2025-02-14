@@ -14,6 +14,7 @@ public class RacePointData : BasePositionData
 
     public override void Destroy()
     {
+        Console.WriteLine("RacePointData destroy");
         base.Destroy();
         Checkpoint.Destroy();
     }

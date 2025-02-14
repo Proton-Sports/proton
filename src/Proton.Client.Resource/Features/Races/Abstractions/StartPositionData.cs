@@ -18,6 +18,7 @@ public class StartPositionData : BasePositionData
 
     public override void Destroy()
     {
+        Console.WriteLine("StartPositionData destroy");
         base.Destroy();
         NumberMarker.Destroy();
         BoxMarker.Destroy();

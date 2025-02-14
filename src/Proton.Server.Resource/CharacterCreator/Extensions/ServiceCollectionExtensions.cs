@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection;
 using Proton.Server.Infrastructure.CharacterCreator;
 using Proton.Server.Resource.CharacterCreator.Scripts;
 
@@ -8,7 +8,7 @@ namespace Proton.Server.Resource.CharacterCreator.Extensions
     {
         public static IServiceCollection AddCharacterCreator(this IServiceCollection services)
         {
-            services.AddStartup<CharacterCreatorScript>();
+            services.AddHostedService<CharacterCreatorScript>();
             services.AddSingleton<CharacterHandler>();
             return services;
         }

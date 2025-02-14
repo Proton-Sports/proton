@@ -205,6 +205,7 @@ public class LandRaceCreator : IRaceCreator
         blip.Sprite = blipSprite;
         blip.Color = BlipColorPrimary;
 
+        Console.WriteLine("CreateRacePositionData " + position);
         return new RacePointData(
             position,
             Alt.CreateCheckpoint(

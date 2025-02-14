@@ -7,35 +7,23 @@ using AltV.Net.Enums;
 using Proton.Server.Core.Models;
 using Proton.Server.Infrastructure.CharacterCreator;
 using Proton.Server.Infrastructure.Factorys;
-using Proton.Shared.Interfaces;
+using Proton.Server.Resource.Authentication.Scripts;
+using Proton.Server.Resource.SharedKernel;
 
 namespace Proton.Server.Resource.CharacterCreator.Scripts;
 
-public class CharacterCreatorScript : IStartup
+public class CharacterCreatorScript(CharacterHandler characterHandler) : HostedService
 {
-    private readonly CharacterHandler characterHandler;
-
-    public CharacterCreatorScript(CharacterHandler characterHandler)
+    public override Task StartAsync(CancellationToken ct)
     {
-        this.characterHandler = characterHandler;
-
         AltAsync.OnClient<IPlayer, string>("characterServer:setAppearance", CreateCharacter);
-        AltAsync.OnServer<IPlayer>("auth:firstSignIn", CheckAppearance);
+        AuthenticationScript.OnAuthenticationDoneEvent += OnAuthenticationDone;
+        return Task.CompletedTask;
     }
 
-    private async void CheckAppearance(IPlayer player)
+    private async Task OnAuthenticationDone(IPlayer player)
     {
-        if (player is not PPlayer protonPlayer)
-        {
-            return;
-        }
-
-        if (!protonPlayer.Exists)
-        {
-            return;
-        }
-
-        if (protonPlayer.ProtonId == -1)
+        if (player is not PPlayer protonPlayer || !protonPlayer.Exists || protonPlayer.ProtonId == -1)
         {
             return;
         }
@@ -140,30 +128,25 @@ public class CharacterCreatorScript : IStartup
                 break;
         }
 
+        player.Spawn(new Position(551.916f, 5562.336f, -96.042f));
         player.Dimension = 0;
-        player.Frozen = false;
-        player.Position = new Position(551.916f, 5562.336f, -96.042f);
         player.Frozen = true;
         player.Invincible = true;
         player.Rotation = Rotation.Zero;
-        player.Visible = false;
+        player.Visible = true;
 
         _ = Task.Run(async () =>
         {
             await Task.Delay(2000).ConfigureAwait(false);
             player.Frozen = false;
-            player.Invincible = false;
-            player.Visible = true;
         });
 
         player.Emit("clientNametags:showNametags", true);
-        // player.Invincible = true;
     }
 
     private async void CreateCharacter(IPlayer player, string appearanceJson)
     {
-        var isValid = player.Exists;
-        if (!isValid)
+        if (!player.Exists || player is not PPlayer protonPlayer)
         {
             return;
         }
@@ -183,11 +166,6 @@ public class CharacterCreatorScript : IStartup
             return;
         }
 
-        if (player is not PPlayer protonPlayer)
-        {
-            return;
-        }
-
         characterAppearance.UserId = protonPlayer.ProtonId;
         await characterHandler.Add(characterAppearance);
 
@@ -199,7 +177,8 @@ public class CharacterCreatorScript : IStartup
     {
         player.Dimension = (int)(int.MaxValue - player.Id);
         player.Frozen = true;
-        player.Position = new Position(402.90833f, -996.61365f, -99.00013f);
+
+        player.Spawn(new Position(402.90833f, -996.61365f, -99.00013f));
         player.Rotation = new Rotation(0, 0, 3.14f);
         player.Model = (uint)PedModel.FreemodeMale01;
         player.Visible = false;

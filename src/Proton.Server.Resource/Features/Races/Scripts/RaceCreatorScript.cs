@@ -60,7 +60,6 @@ public sealed class RaceCreatorScript(
     private void HandleStop(IPlayer player)
     {
         player.Visible = true;
-        player.Invincible = false;
         player.Frozen = false;
         player.Collision = true;
         noClip.Stop(player);
@@ -83,7 +82,6 @@ public sealed class RaceCreatorScript(
                 }
 
                 player.Visible = false;
-                player.Invincible = true;
                 player.Frozen = true;
                 player.Collision = false;
                 playerNoClipStates[player] = new() { Position = player.Position, Rotation = player.Rotation, };
@@ -186,7 +184,6 @@ public sealed class RaceCreatorScript(
         }
 
         player.Visible = true;
-        player.Invincible = false;
         player.Frozen = false;
         player.Collision = true;
         if (playerNoClipStates.Remove(player, out var state))
