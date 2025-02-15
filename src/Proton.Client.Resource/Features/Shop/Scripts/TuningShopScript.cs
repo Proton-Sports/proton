@@ -87,6 +87,10 @@ public sealed class TuningShopScript(IUiView ui) : HostedService
         Alt.OnServer<long, bool>("tuning-shop.wheels.buy", OnServerWheelsBuy);
         ui.OnMount(Route.TuningShop, OnUiMount);
         ui.OnUnmount(Route.TuningShop, OnUiUnmount);
+        ui.On<int>("tuning-shop.mods.requestData", OnUiModsRequestData);
+        Alt.OnServer<int, TuningShopRequestModDataDto>("tuning-shop.mods.requestData", OnServerModsRequestData);
+        ui.On("tuning-shop.wheels.requestData", OnUiWheelsRequestData);
+        Alt.OnServer<TuningShopRequestWheelsDataDto>("tuning-shop.wheels.requestData", OnServerWheelsRequestData);
         return Task.CompletedTask;
     }
 
@@ -97,14 +101,6 @@ public sealed class TuningShopScript(IUiView ui) : HostedService
             return;
         }
 
-        foreach (var type in Enum.GetValues<WheelType>())
-        {
-            if (IsWheelTypeAllowed(vehicle, type))
-            {
-                dto.WheelType = type;
-                break;
-            }
-        }
         ui.Mount(Route.TuningShop, dto);
     }
 
@@ -263,5 +259,37 @@ public sealed class TuningShopScript(IUiView ui) : HostedService
             VehicleClass.OpenWheels => type == WheelType.OpenWheel,
             _ => true,
         };
+    }
+
+    void OnUiModsRequestData(int category)
+    {
+        Alt.EmitServer("tuning-shop.mods.requestData", category);
+    }
+
+    void OnServerModsRequestData(int category, TuningShopRequestModDataDto dto)
+    {
+        ui.Emit("tuning-shop.mods.requestData", category, dto);
+    }
+
+    void OnUiWheelsRequestData()
+    {
+        Alt.EmitServer("tuning-shop.wheels.requestData");
+    }
+
+    void OnServerWheelsRequestData(TuningShopRequestWheelsDataDto dto)
+    {
+        if (Alt.LocalPlayer.Vehicle is not IVehicle vehicle)
+        {
+            return;
+        }
+        foreach (var type in Enum.GetValues<WheelType>())
+        {
+            if (IsWheelTypeAllowed(vehicle, type))
+            {
+                dto.WheelType = type;
+                break;
+            }
+        }
+        ui.Emit("tuning-shop.wheels.requestData", dto);
     }
 }

@@ -5,7 +5,6 @@ using AltV.Net;
 using AltV.Net.Async;
 using AltV.Net.Data;
 using AltV.Net.Enums;
-using AltV.Net.Shared.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
 using Proton.Server.Core.Interfaces;
@@ -23,7 +22,7 @@ public sealed class TuningShopScript(IDbContextFactory dbFactory) : HostedServic
 {
     public override Task StartAsync(CancellationToken ct)
     {
-        AltAsync.OnClient<PPlayer, Task>("tuning-shop.mount", OnMountAsync);
+        Alt.OnClient<PPlayer>("tuning-shop.mount", OnMount);
         Alt.OnClient<PPlayer, int, int>("tuning-shop.values.change", OnValuesChange);
         Alt.OnClient<PPlayer, int, int>("tuning-shop.wheels.change", OnWheelsChange);
         AltAsync.OnClient<PPlayer, long>(
@@ -199,97 +198,22 @@ public sealed class TuningShopScript(IDbContextFactory dbFactory) : HostedServic
                 }
             }
         );
+        AltAsync.OnClient<PPlayer, int, Task>("tuning-shop.mods.requestData", OnModsRequestDataAsync);
+        AltAsync.OnClient<PPlayer, Task>("tuning-shop.wheels.requestData", OnWheelsRequestDataAsync);
         return Task.CompletedTask;
     }
 
-    async Task OnMountAsync(PPlayer player)
+    void OnMount(PPlayer player)
     {
         if (player.Vehicle is not IProtonVehicle vehicle)
         {
             return;
         }
 
-#pragma warning disable CA2007 // Consider calling ConfigureAwait on the awaited task
-        await using var db = await dbFactory.CreateDbContextAsync().ConfigureAwait(false);
-#pragma warning restore CA2007 // Consider calling ConfigureAwait on the awaited task
-        var mods = await db
-            .Mods.Where(a => a.Model == null || a.Model == (VehicleModel)vehicle.Model)
-            .ToListAsync()
-            .ConfigureAwait(false);
-        var wheelVariations = await db
-            .WheelVariations.Where(a => a.Model == null || a.Model == (VehicleModel)vehicle.Model)
-            .ToListAsync()
-            .ConfigureAwait(false);
-        var playerVehicle = await db
-            .PlayerVehicles.Where(a => a.Id == vehicle.GarageId)
-            .Select(a => new
-            {
-                Mods = a.Mods.Select(a => new
-                {
-                    a.Mod.Category,
-                    a.ModId,
-                    IsActive = a.PlayerVehicleActiveMod != null
-                }),
-                WheelVariations = a.WheelVariations.Select(a => new
-                {
-                    a.WheelVariationId,
-                    a.WheelVariation.Type,
-                    a.WheelVariation.Value,
-                    a.WheelVariation.Name,
-                    a.WheelVariation.Price,
-                    IsActive = a.PlayerVehicleActiveWheelVariation != null
-                })
-            })
-            .FirstOrDefaultAsync()
-            .ConfigureAwait(false);
-
         player.Emit(
             "tuning-shop.mount",
             new TuningShopMountDto
             {
-                Mods =
-                [
-                    .. mods.Select(a => new TuningShopModDto
-                    {
-                        Id = a.Id,
-                        Category = a.Category,
-                        Model = (uint?)a.Model,
-                        Price = a.Price,
-                        Value = a.Value,
-                        Name = a.Name
-                    })
-                ],
-                WheelVariations =
-                [
-                    .. wheelVariations.Select(a => new TuningShopWheelVariationDto
-                    {
-                        Id = a.Id,
-                        Type = (int)a.Type,
-                        Model = (uint?)a.Model,
-                        Price = a.Price,
-                        Value = a.Value,
-                        Name = a.Name
-                    })
-                ],
-                OwnedMods =
-                    playerVehicle
-                        ?.Mods.Select(a => new TuningShopOwnedModDto
-                        {
-                            ModId = a.ModId,
-                            Category = a.Category,
-                            IsActive = a.IsActive
-                        })
-                        ?.ToList() ?? [],
-                OwnedWheelVariations =
-                    playerVehicle
-                        ?.WheelVariations.Select(a => new TuningShopOwnedWheelVariationDto
-                        {
-                            WheelVariationId = a.WheelVariationId,
-                            Type = (int)a.Type,
-                            Value = a.Value,
-                            IsActive = a.IsActive
-                        })
-                        ?.ToList() ?? [],
                 PrimaryColor = vehicle.PrimaryColorRgb,
                 SecondaryColor = vehicle.SecondaryColorRgb,
             }
@@ -704,5 +628,129 @@ public sealed class TuningShopScript(IDbContextFactory dbFactory) : HostedServic
                 .ConfigureAwait(false);
             vehicle.SetWheels(0, 0);
         }
+    }
+
+    async Task OnModsRequestDataAsync(PPlayer player, int category)
+    {
+        if (player.Vehicle is not ProtonVehicle vehicle)
+        {
+            return;
+        }
+
+#pragma warning disable CA2007 // Consider calling ConfigureAwait on the awaited task
+        await using var db = await dbFactory.CreateDbContextAsync().ConfigureAwait(false);
+#pragma warning restore CA2007 // Consider calling ConfigureAwait on the awaited task
+        var mods = await db
+            .Mods.Where(a => a.Category == category && (a.Model == null || a.Model == (VehicleModel)vehicle.Model))
+            .ToListAsync()
+            .ConfigureAwait(false);
+        var playerVehicle = await db
+            .PlayerVehicles.Where(a => a.Id == vehicle.GarageId)
+            .Select(a => new
+            {
+                Mods = a.Mods.Select(a => new
+                {
+                    a.Mod.Category,
+                    a.ModId,
+                    IsActive = a.PlayerVehicleActiveMod != null
+                }),
+            })
+            .FirstOrDefaultAsync()
+            .ConfigureAwait(false);
+        player.Emit(
+            "tuning-shop.mods.requestData",
+            category,
+            new TuningShopRequestModDataDto
+            {
+                Mods =
+                [
+                    .. mods.Select(a => new TuningShopModDto
+                    {
+                        Id = a.Id,
+                        Category = a.Category,
+                        Model = (uint?)a.Model,
+                        Price = a.Price,
+                        Value = a.Value,
+                        Name = a.Name
+                    })
+                ],
+                OwnedMods =
+                [
+                    .. (
+                        playerVehicle?.Mods.Select(a => new TuningShopOwnedModDto
+                        {
+                            ModId = a.ModId,
+                            Category = a.Category,
+                            IsActive = a.IsActive
+                        }) ?? []
+                    )
+                ],
+            }
+        );
+    }
+
+    async Task OnWheelsRequestDataAsync(PPlayer player)
+    {
+        if (player.Vehicle is not IProtonVehicle vehicle)
+        {
+            return;
+        }
+#pragma warning disable CA2007 // Consider calling ConfigureAwait on the awaited task
+        await using var db = await dbFactory.CreateDbContextAsync().ConfigureAwait(false);
+#pragma warning restore CA2007 // Consider calling ConfigureAwait on the awaited task
+        var mods = await db
+            .Mods.Where(a => a.Model == null || a.Model == (VehicleModel)vehicle.Model)
+            .ToListAsync()
+            .ConfigureAwait(false);
+        var wheelVariations = await db
+            .WheelVariations.Where(a => a.Model == null || a.Model == (VehicleModel)vehicle.Model)
+            .ToListAsync()
+            .ConfigureAwait(false);
+        var playerVehicle = await db
+            .PlayerVehicles.Where(a => a.Id == vehicle.GarageId)
+            .Select(a => new
+            {
+                WheelVariations = a.WheelVariations.Select(a => new
+                {
+                    a.WheelVariationId,
+                    a.WheelVariation.Type,
+                    a.WheelVariation.Value,
+                    a.WheelVariation.Name,
+                    a.WheelVariation.Price,
+                    IsActive = a.PlayerVehicleActiveWheelVariation != null
+                })
+            })
+            .FirstOrDefaultAsync()
+            .ConfigureAwait(false);
+        player.Emit(
+            "tuning-shop.wheels.requestData",
+            new TuningShopRequestWheelsDataDto
+            {
+                WheelVariations =
+                [
+                    .. wheelVariations.Select(a => new TuningShopWheelVariationDto
+                    {
+                        Id = a.Id,
+                        Type = (int)a.Type,
+                        Model = (uint?)a.Model,
+                        Price = a.Price,
+                        Value = a.Value,
+                        Name = a.Name
+                    })
+                ],
+                OwnedWheelVariations =
+                [
+                    .. (
+                        playerVehicle?.WheelVariations.Select(a => new TuningShopOwnedWheelVariationDto
+                        {
+                            Type = (int)a.Type,
+                            Value = a.Value,
+                            WheelVariationId = a.WheelVariationId,
+                            IsActive = a.IsActive
+                        }) ?? []
+                    )
+                ],
+            }
+        );
     }
 }

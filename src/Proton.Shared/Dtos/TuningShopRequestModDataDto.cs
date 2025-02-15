@@ -1,12 +1,11 @@
 using AltV.Community.MValueAdapters.Generators;
 using AltV.Community.MValueAdapters.Generators.Abstractions;
-using AltV.Net.Data;
 
 namespace Proton.Shared.Dtos;
 
 [MValueAdapter(NamingConvention = NamingConvention.CamelCase)]
-public sealed record TuningShopMountDto
+public sealed record TuningShopRequestModDataDto
 {
-    public Rgba PrimaryColor { get; set; }
-    public Rgba SecondaryColor { get; set; }
+    public List<TuningShopModDto> Mods { get; set; } = [];
+    public List<TuningShopOwnedModDto> OwnedMods { get; set; } = [];
 }
