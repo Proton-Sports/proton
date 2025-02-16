@@ -1,44 +1,72 @@
-﻿using AltV.Net;
+using AltV.Net;
+using AltV.Net.Async;
 using AltV.Net.Elements.Entities;
 using Microsoft.EntityFrameworkCore;
+using Proton.Server.Core.Interfaces;
 using Proton.Server.Infrastructure.Factorys;
-using Proton.Server.Infrastructure.Persistence;
 using Proton.Server.Infrastructure.Services;
-using Proton.Server.Resource.Features.Shop.Extensions;
+using Proton.Server.Resource.SharedKernel;
+using Proton.Shared.Dtos;
 using Proton.Shared.Helpers;
-using Proton.Shared.Interfaces;
-using Proton.Shared.Models;
 
 namespace Proton.Server.Resource.Features.Shop.Scripts;
 
-internal class ClothScript : IStartup
+public sealed class ClothShopScript(IDbContextFactory dbFactory, OutfitService outfitService) : HostedService
 {
-    private readonly IDbContextFactory<DefaultDbContext> dbContext;
-    private readonly OutfitService outfitService;
-
-    public ClothScript(IDbContextFactory<DefaultDbContext> dbContext, OutfitService outfitService)
+    public override Task StartAsync(CancellationToken ct)
     {
-        this.dbContext = dbContext;
-        this.outfitService = outfitService;
         Alt.OnClient<long>("shop:cloth:purchase", (p, id) => BuyItem(p, id).GetAwaiter());
-        Alt.OnClient("shop:cloth:all", GetAllItems);
-        Alt.OnClient("shop:cloth:owned", GetOwnedItems);
         Alt.OnClient<long>("shop:cloth:showroom", (p, i) => SetPreviewCloth(p, i));
         Alt.OnClient("shop:cloth:clear", ClearPreviewCloth);
         Alt.OnClient<bool, long>("shop:cloth:equip", (p, s, id) => EquipToggle(p, s, id).GetAwaiter());
+        AltAsync.OnClient<PPlayer, Task>("cloth-shop.mount", OnMountAsync);
+        return Task.CompletedTask;
+    }
+
+    private async Task OnMountAsync(PPlayer player)
+    {
+        await using var db = await dbFactory.CreateDbContextAsync().ConfigureAwait(false);
+        var clothes = await db
+            .Cloths.Select(a => new ClothShopClothesDto
+            {
+                Id = a.Id,
+                Name = a.DisplayName,
+                Category = a.Category,
+                Price = a.Price,
+            })
+            .ToListAsync()
+            .ConfigureAwait(false);
+        var ownedClothes = await db
+            .Closets.Where(a => a.OwnerId == player.ProtonId)
+            .Select(a => new ClothShopOwnedClothesDto
+            {
+                Id = a.ClothId,
+                Name = a.ClothItem.DisplayName,
+                Category = a.ClothItem.Category,
+                Selected = false,
+            })
+            .ToListAsync()
+            .ConfigureAwait(false);
+
+        // TODO: can be optimized
+        clothes.RemoveAll(a => ownedClothes.FindIndex(b => b.Id == a.Id) != -1);
+
+        player.Emit("cloth-shop.mount", new ClothShopMountDto { Clothes = clothes, OwnedClothes = ownedClothes });
     }
 
     public async Task BuyItem(IPlayer player, long Id)
     {
         var Player = (PPlayer)player;
-        var db = dbContext.CreateDbContext();
+        var db = dbFactory.CreateDbContext();
         var cloth = db.Cloths.Where(x => x.Id == Id).FirstOrDefault();
         var dbUser = db.Users.Where(x => x.Id == Player.ProtonId).FirstOrDefault();
 
         if (cloth != null && dbUser != null)
         {
             if (dbUser.Money >= cloth.Price)
+            {
                 dbUser.Money -= cloth.Price;
+            }
             else
             {
                 Player.Emit("shop:cloth:purchase", (int)ShopStatus.NO_MONEY);
@@ -57,63 +85,10 @@ internal class ClothScript : IStartup
         }
     }
 
-    public Task GetAllItems(IPlayer player)
-    {
-        var Player = (PPlayer)player;
-        var db = dbContext.CreateDbContext();
-        var user = db
-            .Users.Where(x => x.Id == Player.ProtonId)
-            .Include(x => x.Closets)
-            .ThenInclude(y => y.ClothItem)
-            .FirstOrDefault();
-
-        var cloths = db.Cloths.ToList();
-
-        if (user != null)
-        {
-            var playerCloths = user.Closets.Select(x => x.ClothItem).ToList();
-            foreach (var pC in playerCloths)
-            {
-                var alreadyOwned = cloths.Where(x => x.Id == pC.Id).FirstOrDefault();
-                if (alreadyOwned != null)
-                {
-                    cloths.Remove(alreadyOwned);
-                    Alt.LogWarning("Removed Already owned cloth ID: " + pC.Id);
-                }
-            }
-        }
-
-        Alt.LogInfo("Sending cloth: " + cloths.Count);
-        Player.Emit("shop:cloth:all", (int)ShopStatus.OK, cloths.ToShopItems());
-        return Task.CompletedTask;
-    }
-
-    public Task GetOwnedItems(IPlayer _Player)
-    {
-        var Player = (PPlayer)_Player;
-        var db = dbContext.CreateDbContext();
-        var user = db
-            .Users.Where(x => x.Id == Player.ProtonId)
-            .Include(x => x.Closets)
-            .ThenInclude(x => x.ClothItem)
-            .FirstOrDefault();
-
-        if (user != null)
-        {
-            var cloths = user.Closets.Select(x => x.ClothItem.ToShopItem(x.IsEquiped)).ToList();
-            Player.Emit("shop:cloth:owned", (int)ShopStatus.OK, cloths);
-            return Task.CompletedTask;
-        }
-
-        Player.Emit("shop:cloth:owned", (int)ShopStatus.ITEM_NOT_FOUND, new List<SharedClothShopItem>());
-
-        return Task.CompletedTask;
-    }
-
     public Task SetPreviewCloth(IPlayer p, long Id)
     {
         Console.WriteLine("Setting Client cloth " + Id);
-        var db = dbContext.CreateDbContext();
+        var db = dbFactory.CreateDbContext();
         var cloth = db.Cloths.Where(x => x.Id == Id).FirstOrDefault();
 
         if (cloth == null)
@@ -144,7 +119,7 @@ internal class ClothScript : IStartup
     {
         Alt.Log("Updating, " + state + id);
         var player = (PPlayer)p;
-        var db = dbContext.CreateDbContext();
+        var db = dbFactory.CreateDbContext();
         var user = db
             .Users.Where(x => x.Id == player.ProtonId)
             .Include(x => x.Closets)
@@ -176,8 +151,6 @@ internal class ClothScript : IStartup
         }
         await db.SaveChangesAsync();
         await ClearPreviewCloth(p);
-
-        await GetOwnedItems(p);
 
         if (!found)
             Alt.LogWarning(
