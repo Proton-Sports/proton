@@ -78,6 +78,7 @@ public class VehicleShopScript(IDbContextFactory dbContext) : HostedService
                     Price = vehicle.Price,
                     VehicleId = vehicle.Id,
                     AltVColor = Color,
+                    Paint = Paint,
                     Category = vehicle.Category,
                     DisplayName = vehicle.DisplayName,
                 }
