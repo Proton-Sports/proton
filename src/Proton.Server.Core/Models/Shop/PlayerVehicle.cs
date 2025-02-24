@@ -14,6 +14,7 @@ public class PlayerVehicle : IAggregateRoot
     public string DisplayName { get; init; } = string.Empty;
     public int Price { get; init; }
     public int AltVColor { get; init; }
+    public string Paint { get; init; } = string.Empty;
     public string Category { get; init; } = string.Empty;
     public DateTime PurchasedDate { get; init; } = DateTime.UtcNow;
     public Rgba PrimaryColor { get; init; }
