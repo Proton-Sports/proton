@@ -14,7 +14,7 @@ namespace Proton.Client.Resource.Features.Races.Scripts;
 
 public sealed class RacePrepareScript(IUiView uiView, IRaceService raceService, IIplService iplService) : HostedService
 {
-    private IScriptCamera? preloadCamera;
+    IScriptCamera? preloadCamera;
 
     public override Task StartAsync(CancellationToken ct)
     {
@@ -28,14 +28,16 @@ public sealed class RacePrepareScript(IUiView uiView, IRaceService raceService, 
         Alt.OnServer<long>("race:start", HandleOnStarted);
         Alt.OnServer<Vector3>("race-prepare:enterTransition", OnEnterTransition);
         Alt.OnServer("race-prepare:exitTransition", OnExitTransition);
+        Alt.OnServer("race:finish", OnRaceFinished);
         return Task.CompletedTask;
     }
 
-    private void OnEnterTransition(Vector3 position)
+    void OnEnterTransition(Vector3 position)
     {
         raceService.Status = RaceStatus.Preparing;
         uiView.Mount(Route.RacePrepareTransition);
         Alt.OnTick += DisableVehicleActions;
+        Alt.OnTick += DisableLeavingVehicle;
         Alt.Natives.DoScreenFadeOut(1000);
         Alt.SetTimeout(
             () =>
@@ -46,14 +48,14 @@ public sealed class RacePrepareScript(IUiView uiView, IRaceService raceService, 
         );
     }
 
-    private void OnExitTransition()
+    void OnExitTransition()
     {
         uiView.Unmount(Route.RacePrepareTransition);
         Alt.Natives.DoScreenFadeIn(1000);
         Alt.FocusData.ClearFocusOverride();
     }
 
-    private async Task HandleServerMountAsync(RacePrepareDto dto)
+    async Task HandleServerMountAsync(RacePrepareDto dto)
     {
         if (preloadCamera is not null)
         {
@@ -93,17 +95,26 @@ public sealed class RacePrepareScript(IUiView uiView, IRaceService raceService, 
         }
     }
 
-    private void HandleOnStarted(long _)
+    void HandleOnStarted(long _)
     {
         Alt.OnTick -= DisableVehicleActions;
     }
 
-    private void DisableVehicleActions()
+    void DisableVehicleActions()
     {
-        const int INPUT_VEH_EXIT = 75;
         Alt.Natives.DisableControlAction(27, 71, true);
         Alt.Natives.DisableControlAction(27, 72, true);
         Alt.Natives.DisableControlAction(27, 76, true);
+    }
+
+    void DisableLeavingVehicle()
+    {
+        const int INPUT_VEH_EXIT = 75;
         Alt.Natives.DisableControlAction(27, INPUT_VEH_EXIT, true);
+    }
+
+    void OnRaceFinished()
+    {
+        Alt.OnTick -= DisableLeavingVehicle;
     }
 }
