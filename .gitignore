@@ -6,8 +6,11 @@ resources/*
 !resources/proton-client
 !resources/proton-server
 !resources/proton-ui
-!resources/dlc_mpexample
-!resources/dlc_sport_scaleform_core
+!resources/intls_rdlight_proton_core
+!resources/republic_proton_lobby_spawn
+!resources/sport_maps_to_load
+!resources/sport_scaleform_core
+!resources/sport_stunt_prop_fix
 resources/proton-client/*
 resources/proton-server/*
 resources/proton-ui/*
