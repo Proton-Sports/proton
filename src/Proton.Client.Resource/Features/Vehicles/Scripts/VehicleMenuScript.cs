@@ -65,7 +65,7 @@ public sealed class VehicleMenuScript(IUiView ui) : HostedService
 
     private void OnKeyUp(Key key)
     {
-        if (key != Key.Escape)
+        if (key != Key.Escape || !ui.IsMounted(Route.VehicleMenu))
         {
             return;
         }

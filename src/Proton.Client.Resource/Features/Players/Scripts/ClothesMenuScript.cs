@@ -38,6 +38,7 @@ public sealed class ClothesMenuScript(IUiView ui) : HostedService
         Alt.GameControlsEnabled = true;
         ui.Unfocus();
         Alt.OnKeyUp -= OnKeyUp;
+        ui.Mount(Route.RaceMenu, new RaceMenuMountDto { InitialActivePage = "collection" });
     }
 
     private void OnUiOptionChange(long closestId, string value)
@@ -57,10 +58,9 @@ public sealed class ClothesMenuScript(IUiView ui) : HostedService
 
     private void OnKeyUp(Key key)
     {
-        if (key == Key.Escape)
+        if (key == Key.Escape && ui.IsMounted(Route.ClothesMenu))
         {
             ui.Unmount(Route.ClothesMenu);
-            ui.Mount(Route.RaceMenu, new RaceMenuMountDto { InitialActivePage = "collection" });
             return;
         }
     }

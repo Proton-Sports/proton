@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using AltV.Net.Client;
 using AltV.Net.Client.Elements.Entities;
 using Proton.Client.Resource.Features.UiViews.Abstractions;
@@ -7,10 +8,10 @@ namespace Proton.Client.Resource.Features.UiViews;
 
 public class DefaultUiView : WebView, IUiView
 {
-    private readonly Dictionary<string, TaskCompletionSource<bool>> mountTaskDictionary = new();
-    private readonly Dictionary<string, bool> mountedDictionary = new();
-    private readonly Dictionary<string, HashSet<Action>> onMountHandlers = new();
-    private readonly Dictionary<string, HashSet<Action>> onUnmountHandlers = new();
+    readonly ConcurrentDictionary<string, TaskCompletionSource<bool>> mountTaskDictionary = new();
+    readonly ConcurrentDictionary<string, bool> mountedDictionary = new();
+    readonly ConcurrentDictionary<string, HashSet<Action>> onMountHandlers = new();
+    readonly ConcurrentDictionary<string, HashSet<Action>> onUnmountHandlers = new();
 
     public DefaultUiView(ICore core, IntPtr webViewNativePointer, uint id)
         : base(core, webViewNativePointer, id)
@@ -114,10 +115,10 @@ public class DefaultUiView : WebView, IUiView
     public void Unmount(Route route)
     {
         Emit("webview.unmount", route.Value);
-        mountedDictionary.Remove(route.Value);
+        mountedDictionary.Remove(route.Value, out _);
     }
 
-    private void HandleMount(string route, bool success, bool emitHandlers)
+    void HandleMount(string route, bool success, bool emitHandlers)
     {
         if (success)
         {
@@ -131,16 +132,19 @@ public class DefaultUiView : WebView, IUiView
             }
         }
         if (!mountTaskDictionary.TryGetValue(route, out var taskCompletionSource))
+        {
             return;
+        }
+
         taskCompletionSource.SetResult(success);
-        mountTaskDictionary.Remove(route);
+        mountTaskDictionary.Remove(route, out _);
     }
 
-    private void HandleUnmount(string route, bool success, bool emitHandlers)
+    void HandleUnmount(string route, bool success, bool emitHandlers)
     {
         if (success)
         {
-            mountedDictionary.Remove(route);
+            mountedDictionary.Remove(route, out _);
             if (emitHandlers && onUnmountHandlers.TryGetValue(route, out var handlers))
             {
                 foreach (var handler in handlers)
