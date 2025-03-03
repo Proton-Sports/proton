@@ -12,13 +12,12 @@ namespace Proton.Client.Resource.Features.Shop.Scripts;
 
 public sealed class TuningShopScript(IUiView ui) : HostedService
 {
-    readonly List<Position> markerPositions =
-        new()
-        {
-            new(451.07782f, 5611.5645f, -80.02029f),
-            new(461.65985f, 5611.215f, -80.02029f),
-            new(471.04004f, 5611.1133f, -80.020294f)
-        };
+    readonly List<Position> markerPositions = new()
+    {
+        new(451.07782f, 5611.5645f, -80.02029f),
+        new(461.65985f, 5611.215f, -80.02029f),
+        new(471.04004f, 5611.1133f, -80.020294f),
+    };
 
     public override Task StartAsync(CancellationToken ct)
     {
@@ -65,10 +64,10 @@ public sealed class TuningShopScript(IUiView ui) : HostedService
                                     return new TuningShopGenerateWheelDto
                                     {
                                         Type = a,
-                                        Count = Alt.Natives.GetNumVehicleMods(vehicle, 23)
+                                        Count = Alt.Natives.GetNumVehicleMods(vehicle, 23),
                                     };
-                                })
-                        ]
+                                }),
+                        ],
                     }
                 );
             }
@@ -96,7 +95,7 @@ public sealed class TuningShopScript(IUiView ui) : HostedService
 
     void OnServerMount(TuningShopMountDto dto)
     {
-        if (Alt.LocalPlayer.Vehicle is not IVehicle vehicle)
+        if (Alt.LocalPlayer.Vehicle is not IVehicle)
         {
             return;
         }
@@ -107,28 +106,31 @@ public sealed class TuningShopScript(IUiView ui) : HostedService
     void OnUiMount()
     {
         Alt.OnKeyUp += OnKeyUp;
+        Alt.OnTick += DisableMovement;
+        Alt.GameControlsEnabled = false;
     }
 
     void OnUiUnmount()
     {
         Alt.OnKeyUp -= OnKeyUp;
+        Alt.OnTick -= DisableMovement;
         Alt.EmitServer("tuning-shop.unmount");
+    }
+
+    void DisableMovement()
+    {
+        Alt.Natives.DisableControlAction(0, 71, true);
+        Alt.Natives.DisableControlAction(0, 72, true);
+        Alt.Natives.DisableControlAction(0, 63, true);
+        Alt.Natives.DisableControlAction(0, 64, true);
+        Alt.Natives.DisableControlAction(0, 75, true);
     }
 
     void OnKeyUp(Key key)
     {
-        switch (key)
+        if (key == Key.Escape && !Alt.IsConsoleOpen && ui.IsMounted(Route.TuningShop))
         {
-            case Key.Escape:
-                if (!Alt.GameControlsEnabled)
-                {
-                    Alt.GameControlsEnabled = true;
-                }
-                ui.Unmount(Route.TuningShop);
-                break;
-            case Key.Menu:
-                Alt.GameControlsEnabled = !Alt.IsCursorVisible;
-                break;
+            ui.Unmount(Route.TuningShop);
         }
     }
 
