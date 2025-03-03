@@ -14,6 +14,12 @@ namespace Proton.Server.Resource.CharacterCreator.Scripts;
 
 public class CharacterCreatorScript(CharacterHandler characterHandler) : HostedService
 {
+    static readonly JsonSerializerOptions serializerOptions = new()
+    {
+        PropertyNameCaseInsensitive = true,
+        NumberHandling = JsonNumberHandling.AllowReadingFromString,
+    };
+
     public override Task StartAsync(CancellationToken ct)
     {
         AltAsync.OnClient<IPlayer, string>("characterServer:setAppearance", CreateCharacter);
@@ -21,17 +27,17 @@ public class CharacterCreatorScript(CharacterHandler characterHandler) : HostedS
         return Task.CompletedTask;
     }
 
-    private async Task OnAuthenticationDone(IPlayer player)
+    async Task OnAuthenticationDone(IPlayer player)
     {
         if (player is not PPlayer protonPlayer || !protonPlayer.Exists || protonPlayer.ProtonId == -1)
         {
             return;
         }
 
-        var hasCharacter = await characterHandler.HasCharacter(protonPlayer.ProtonId);
+        var hasCharacter = await characterHandler.HasCharacter(protonPlayer.ProtonId).ConfigureAwait(false);
         if (hasCharacter)
         {
-            var userCharacter = await characterHandler.GetByUserId(protonPlayer.ProtonId);
+            var userCharacter = await characterHandler.GetByUserId(protonPlayer.ProtonId).ConfigureAwait(false);
             if (userCharacter == null)
             {
                 player.Kick("Invalid character. Please try again.");
@@ -46,8 +52,15 @@ public class CharacterCreatorScript(CharacterHandler characterHandler) : HostedS
         }
     }
 
-    private void SetAppearance(PPlayer player, Character characterAppearance)
+    static void SetAppearance(PPlayer player, Character characterAppearance)
     {
+        player.Spawn(new Position(551.916f, 5562.336f, -96.042f));
+        player.Dimension = 0;
+        player.Frozen = true;
+        player.Invincible = true;
+        player.Rotation = Rotation.Zero;
+        player.Visible = true;
+
         player.Model = characterAppearance.CharacterGender switch
         {
             0 => (uint)PedModel.FreemodeFemale01,
@@ -128,13 +141,6 @@ public class CharacterCreatorScript(CharacterHandler characterHandler) : HostedS
                 break;
         }
 
-        player.Spawn(new Position(551.916f, 5562.336f, -96.042f));
-        player.Dimension = 0;
-        player.Frozen = true;
-        player.Invincible = true;
-        player.Rotation = Rotation.Zero;
-        player.Visible = true;
-
         _ = Task.Run(async () =>
         {
             await Task.Delay(2000).ConfigureAwait(false);
@@ -144,21 +150,14 @@ public class CharacterCreatorScript(CharacterHandler characterHandler) : HostedS
         player.Emit("clientNametags:showNametags", true);
     }
 
-    private async void CreateCharacter(IPlayer player, string appearanceJson)
+    async void CreateCharacter(IPlayer player, string appearanceJson)
     {
         if (!player.Exists || player is not PPlayer protonPlayer)
         {
             return;
         }
 
-        var characterAppearance = JsonSerializer.Deserialize<Character>(
-            appearanceJson,
-            new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true,
-                NumberHandling = JsonNumberHandling.AllowReadingFromString
-            }
-        );
+        var characterAppearance = JsonSerializer.Deserialize<Character>(appearanceJson, serializerOptions);
 
         if (characterAppearance == null)
         {
@@ -167,13 +166,13 @@ public class CharacterCreatorScript(CharacterHandler characterHandler) : HostedS
         }
 
         characterAppearance.UserId = protonPlayer.ProtonId;
-        await characterHandler.Add(characterAppearance);
+        await characterHandler.Add(characterAppearance).ConfigureAwait(false);
 
         SetAppearance(protonPlayer, characterAppearance);
         player.Emit("characterClient:stopCharacterCreator");
     }
 
-    private void StartCharacterCreator(IPlayer player)
+    static void StartCharacterCreator(IPlayer player)
     {
         player.Dimension = (int)(int.MaxValue - player.Id);
         player.Frozen = true;
