@@ -36,22 +36,23 @@ public sealed class RacePhasingScript : IStartup
         const float distanceSquared = 20 * 20;
         var vehicle = Alt.LocalPlayer.Vehicle;
         var position = vehicle?.Position ?? Alt.LocalPlayer.Position;
-        var vehicles = Alt
-            .GetAllVehicles()
-            .Where(a => a != vehicle
-                && a.ScriptId != 0
-                && a.Position.GetDistanceSquaredTo(position) <= distanceSquared)
+        var vehicles = Alt.GetAllVehicles()
+            .Where(a => a != vehicle && a.ScriptId != 0 && a.Position.GetDistanceSquaredTo(position) <= distanceSquared)
             .ToList();
         if (vehicle is not null)
         {
             vehicles.Add(vehicle);
         }
-        for (var i = 0; i != vehicles.Count; ++i)
+        for (var i = 0; i != vehicles.Count - 1; ++i)
         {
             for (var j = i + 1; i != vehicles.Count; ++j)
             {
                 Alt.Natives.SetEntityNoCollisionEntity(vehicles[i], vehicles[j], true);
             }
+        }
+        foreach (var v in vehicles)
+        {
+            Alt.Natives.SetGameplayCamIgnoreEntityCollisionThisUpdate(v);
         }
     }
 }
