@@ -1,5 +1,6 @@
 using System.Numerics;
 using AltV.Net.Client;
+using AltV.Net.Data;
 using AltV.Net.Elements.Entities;
 using AsyncAwaitBestPractices;
 using Proton.Client.Core.Interfaces;
@@ -42,9 +43,9 @@ public sealed class RacePrepareScript(IUiView uiView, IRaceService raceService, 
         Alt.SetTimeout(
             () =>
             {
-                Alt.FocusData.OverrideFocusPosition(position, Vector3.Zero);
+                Alt.FocusData.OverrideFocusPosition(position, new Position(64, 64, 64));
             },
-            1000
+            500
         );
     }
 
@@ -52,7 +53,7 @@ public sealed class RacePrepareScript(IUiView uiView, IRaceService raceService, 
     {
         uiView.Unmount(Route.RacePrepareTransition);
         Alt.Natives.DoScreenFadeIn(1000);
-        Alt.FocusData.ClearFocusOverride();
+        Alt.SetTimeout(Alt.FocusData.ClearFocusOverride, 500);
     }
 
     async Task HandleServerMountAsync(RacePrepareDto dto)

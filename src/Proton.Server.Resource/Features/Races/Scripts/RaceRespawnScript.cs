@@ -32,8 +32,8 @@ public sealed class RaceRespawnScript(IRaceService raceService, IMapCache mapCac
             return;
         }
 
-        var entity = (IEntity)player.Vehicle ?? player;
         var participant = race.Participants[index];
+        var entity = participant.Vehicle ?? (IEntity?)player.Vehicle ?? player;
         if (participant.PointLogs.Last is not null)
         {
             entity.Position = map.RacePoints[participant.PointLogs.Last.Value.Index].Position;

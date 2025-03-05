@@ -55,7 +55,6 @@ public sealed class RacePrepareScript(IRaceService raceService, IMapCache mapCac
 
         foreach (var (point, participant) in map.StartPoints.Zip(participants))
         {
-            createTasks.AddLast(AltAsync.CreateVehicle(participant.VehicleModel, point.Position, point.Rotation, 256));
             participant.Player.Emit("race-prepare:enterTransition", point.Position);
         }
 
@@ -63,9 +62,14 @@ public sealed class RacePrepareScript(IRaceService raceService, IMapCache mapCac
 
         foreach (var (point, participant) in map.StartPoints.Zip(participants))
         {
+            createTasks.AddLast(AltAsync.CreateVehicle(participant.VehicleModel, point.Position, point.Rotation, 256));
+        }
+
+        var now = DateTimeOffset.UtcNow;
+        foreach (var (point, participant) in map.StartPoints.Zip(participants))
+        {
             participant.Player.Position = point.Position;
             participant.Player.Dimension = (int)race.Id;
-            var now = DateTimeOffset.UtcNow;
             participant.Player.SetDateTime(
                 now.Day - 1,
                 now.Month - 1,
@@ -80,7 +84,7 @@ public sealed class RacePrepareScript(IRaceService raceService, IMapCache mapCac
                     "clear" => WeatherType.Clear,
                     "foggy" => WeatherType.Foggy,
                     "rainy" => WeatherType.Rain,
-                    _ => WeatherType.Clear
+                    _ => WeatherType.Clear,
                 }
             );
         }
@@ -125,9 +129,10 @@ public sealed class RacePrepareScript(IRaceService raceService, IMapCache mapCac
                 EndTime = race.StartTime.ToUnixTimeMilliseconds(),
                 RaceType = (byte)race.Type,
                 Dimension = (int)race.Id,
-                RacePoints = map
-                    .RacePoints.Select(x => new RacePointDto { Position = x.Position, Radius = x.Radius })
-                    .ToList(),
+                RacePoints =
+                [
+                    .. map.RacePoints.Select(x => new RacePointDto { Position = x.Position, Radius = x.Radius }),
+                ],
                 IplName = map.IplName,
             }
         );
