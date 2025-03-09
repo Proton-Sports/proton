@@ -1,11 +1,13 @@
 name: Build and Push | Handlers
 on: [push]
 
+
 env:
   PRODUCTION_BRANCH: main
 
 jobs:
   build-server: # run this job on every push
+    if: false
     name: Build Server
     uses: ./.github/workflows/infra.yml
     secrets: inherit
@@ -13,6 +15,7 @@ jobs:
       job: build-server
 
   build-client: # run this job on every push
+    if: false
     name: Build Client
     uses: ./.github/workflows/infra.yml
     secrets: inherit
