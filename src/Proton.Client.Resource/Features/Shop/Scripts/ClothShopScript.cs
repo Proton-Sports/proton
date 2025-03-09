@@ -13,8 +13,7 @@ namespace Proton.Client.Resource.Features.Shop.Scripts;
 
 public sealed class ClothShopScript(IUiView uiView, INotificationService notification) : HostedService
 {
-    bool isUiOpen;
-    Position purchasePosition = new Position(547.337f, 5515.422f, -90.64761f);
+    Position purchasePosition = new(547.337f, 5515.422f, -90.64761f);
 
     public override Task StartAsync(CancellationToken ct)
     {
@@ -44,7 +43,7 @@ public sealed class ClothShopScript(IUiView uiView, INotificationService notific
         uiView.Focus();
         Alt.GameControlsEnabled = false;
         Alt.ShowCursor(true);
-        Alt.SetConfigFlag("DISABLE_IDLE_CAMERA", isUiOpen);
+        Alt.SetConfigFlag("DISABLE_IDLE_CAMERA", true);
     }
 
     void OnUiUnmount()
@@ -55,7 +54,8 @@ public sealed class ClothShopScript(IUiView uiView, INotificationService notific
         uiView.Unfocus();
         Alt.GameControlsEnabled = true;
         Alt.ShowCursor(false);
-        Alt.SetConfigFlag("DISABLE_IDLE_CAMERA", isUiOpen);
+        Alt.SetConfigFlag("DISABLE_IDLE_CAMERA", false);
+        Alt.EmitServer("cloth-shop.unmount");
     }
 
     void UiMountedOnKeyUp(Key key)
@@ -95,20 +95,19 @@ public sealed class ClothShopScript(IUiView uiView, INotificationService notific
         {
             case ShopStatus.OK:
                 uiView.Unmount(Route.ClothShop);
-                //TODO: Replace CHAR_BOATSITE2
                 notification.DrawNotification(
                     image: "CHAR_BOATSITE2",
-                    header: "Vehicle Cloth",
+                    header: "Cloth Shop",
                     details: "OK",
-                    message: "Cloth bought!"
+                    message: "Cloth purchased successfully!"
                 );
                 break;
             case ShopStatus.NO_MONEY:
                 notification.DrawNotification(
                     image: "CHAR_BOATSITE2",
-                    header: "Vehicle Cloth",
+                    header: "Cloth Shop",
                     details: "Error",
-                    message: "You dont have enough money to buy this Vehicle!"
+                    message: "You dont have enough money to buy this clothes!"
                 );
                 break;
             case ShopStatus.ITEM_NOT_FOUND:
@@ -117,7 +116,7 @@ public sealed class ClothShopScript(IUiView uiView, INotificationService notific
                     image: "CHAR_BOATSITE2",
                     header: "Cloth Shop",
                     details: "Error",
-                    message: "The Requested cloth was not found!"
+                    message: "The requested cloth was not found!"
                 );
                 break;
         }

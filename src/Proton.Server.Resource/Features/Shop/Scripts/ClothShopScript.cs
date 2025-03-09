@@ -1,5 +1,7 @@
+using System.Collections.Concurrent;
 using AltV.Net;
 using AltV.Net.Async;
+using AltV.Net.Data;
 using AltV.Net.Elements.Entities;
 using Microsoft.EntityFrameworkCore;
 using Proton.Server.Core.Interfaces;
@@ -13,6 +15,8 @@ namespace Proton.Server.Resource.Features.Shop.Scripts;
 
 public sealed class ClothShopScript(IDbContextFactory dbFactory, OutfitService outfitService) : HostedService
 {
+    readonly ConcurrentDictionary<IPlayer, List<(byte, DlcCloth)>> playerOriginalClothes = new();
+
     public override Task StartAsync(CancellationToken ct)
     {
         Alt.OnClient<long>("shop:cloth:purchase", (p, id) => BuyItem(p, id).GetAwaiter());
@@ -20,11 +24,54 @@ public sealed class ClothShopScript(IDbContextFactory dbFactory, OutfitService o
         Alt.OnClient("shop:cloth:clear", ClearPreviewCloth);
         Alt.OnClient<bool, long>("shop:cloth:equip", (p, s, id) => EquipToggle(p, s, id).GetAwaiter());
         AltAsync.OnClient<PPlayer, Task>("cloth-shop.mount", OnMountAsync);
+        Alt.OnClient<PPlayer>("cloth-shop.unmount", OnUnmount);
+        Alt.OnPlayerDisconnect += OnPlayerDisconnect;
         return Task.CompletedTask;
     }
 
-    private async Task OnMountAsync(PPlayer player)
+    void OnPlayerDisconnect(IPlayer player, string _reason)
     {
+        playerOriginalClothes.TryRemove(player, out _);
+    }
+
+    void OnUnmount(IPlayer player)
+    {
+        if (playerOriginalClothes.TryRemove(player, out var clothes))
+        {
+            foreach (var (component, cloth) in clothes)
+            {
+                if (cloth.Dlc == 0)
+                {
+                    player.SetClothes(component, cloth.Drawable, cloth.Texture, cloth.Palette);
+                }
+                else
+                {
+                    player.SetDlcClothes(component, cloth.Drawable, cloth.Texture, cloth.Palette, cloth.Dlc);
+                }
+            }
+        }
+    }
+
+    async Task OnMountAsync(PPlayer player)
+    {
+        byte[] components = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
+        var dlcClothes = new List<(byte, DlcCloth)>(12);
+        foreach (var component in components)
+        {
+            var dlcCloth = new DlcCloth();
+            player.GetDlcClothes(component, ref dlcCloth);
+            if (dlcCloth.Dlc == 0)
+            {
+                var cloth = new Cloth();
+                player.GetClothes(component, ref cloth);
+                dlcCloth.Drawable = cloth.Drawable;
+                dlcCloth.Texture = cloth.Texture;
+                dlcCloth.Palette = cloth.Palette;
+            }
+            dlcClothes.Add((component, dlcCloth));
+        }
+        playerOriginalClothes[player] = dlcClothes;
+
         await using var db = await dbFactory.CreateDbContextAsync().ConfigureAwait(false);
         var clothes = await db
             .Cloths.Select(a => new ClothShopClothesDto
@@ -73,7 +120,7 @@ public sealed class ClothShopScript(IDbContextFactory dbFactory, OutfitService o
                 return;
             }
 
-            dbUser.Closets.Add(new Core.Models.Shop.Closet { ClothId = cloth.Id, });
+            dbUser.Closets.Add(new Core.Models.Shop.Closet { ClothId = cloth.Id });
 
             db.Users.Update(dbUser);
             await db.SaveChangesAsync();

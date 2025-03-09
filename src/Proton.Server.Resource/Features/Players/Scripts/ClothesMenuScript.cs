@@ -60,7 +60,7 @@ public sealed class ClothesMenuScript(IDbContextFactory dbFactory, IClosetServic
                 a.ClothItem.Drawable,
                 a.ClothItem.Texture,
                 a.ClothItem.Palette,
-                a.ClothItem.DlcName
+                a.ClothItem.DlcName,
             })
             .FirstOrDefaultAsync()
             .ConfigureAwait(false);
@@ -97,7 +97,7 @@ public sealed class ClothesMenuScript(IDbContextFactory dbFactory, IClosetServic
                 Drawable = (ushort)closet.Drawable,
                 Texture = (byte)closet.Texture,
                 Palette = (byte)closet.Palette,
-                Dlc = string.IsNullOrEmpty(closet.DlcName) ? 0 : Alt.Hash(closet.DlcName)
+                Dlc = string.IsNullOrEmpty(closet.DlcName) ? 0 : Alt.Hash(closet.DlcName),
             }
         );
         player.Emit("clothes-menu.option.change", closetId, "equip");
