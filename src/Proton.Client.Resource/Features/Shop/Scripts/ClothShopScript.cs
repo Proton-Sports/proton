@@ -78,7 +78,7 @@ public sealed class ClothShopScript(IUiView uiView, INotificationService notific
             return;
         }
 
-        if (Alt.LocalPlayer.Position.GetDistanceSquaredTo(purchasePosition) <= 16f)
+        if (key == Key.E && Alt.LocalPlayer.Position.GetDistanceSquaredTo(purchasePosition) <= 16f)
         {
             Alt.EmitServer("cloth-shop.mount");
         }
