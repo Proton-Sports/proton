@@ -1,5 +1,5 @@
-﻿using AltV.Net;
-using AltV.Net.Async;
+﻿using AltV.Net.Async;
+using AltV.Net.Data;
 using AltV.Net.Elements.Entities;
 using AltV.Net.Enums;
 using Microsoft.EntityFrameworkCore;
@@ -16,7 +16,7 @@ public class VehicleShopScript(IDbContextFactory dbContext) : HostedService
 {
     public override Task StartAsync(CancellationToken ct)
     {
-        Alt.OnClient<string, int>("shop:vehicle:purchase", (p, n, c) => BuyItem(p, n, c).GetAwaiter());
+        AltAsync.OnClient<PPlayer, string, int, Task>("shop:vehicle:purchase", BuyItemAsync);
         AltAsync.OnClient<PPlayer, Task>("vehicle-shop.mount", OnMount);
         return Task.CompletedTask;
     }
@@ -40,14 +40,14 @@ public class VehicleShopScript(IDbContextFactory dbContext) : HostedService
                         DisplayName = a.DisplayName,
                         ItemName = Enum.GetName(a.Model) ?? "N/A",
                         Category = a.Category,
-                        Price = a.Price
-                    })
-                ]
+                        Price = a.Price,
+                    }),
+                ],
             }
         );
     }
 
-    public async Task BuyItem(IPlayer player, string Name, int Color)
+    public async Task BuyItemAsync(IPlayer player, string Name, int Color)
     {
         if (!Enum.TryParse(Name, true, out VehicleModel model))
         {
@@ -77,7 +77,24 @@ public class VehicleShopScript(IDbContextFactory dbContext) : HostedService
                     Model = vehicle.Model,
                     Price = vehicle.Price,
                     VehicleId = vehicle.Id,
-                    AltVColor = Color,
+                    PrimaryColor = Color switch
+                    {
+                        111 => new Rgba(255, 255, 246, 255),
+                        150 => new Rgba(188, 25, 23, 255),
+                        80 => new Rgba(66, 113, 225, 255),
+                        126 => new Rgba(241, 204, 64, 255),
+                        125 => new Rgba(131, 197, 102, 255),
+                        _ => Rgba.Zero,
+                    },
+                    SecondaryColor = Color switch
+                    {
+                        111 => new Rgba(255, 255, 246, 255),
+                        150 => new Rgba(188, 25, 23, 255),
+                        80 => new Rgba(66, 113, 225, 255),
+                        126 => new Rgba(241, 204, 64, 255),
+                        125 => new Rgba(131, 197, 102, 255),
+                        _ => Rgba.Zero,
+                    },
                     Category = vehicle.Category,
                     DisplayName = vehicle.DisplayName,
                 }
